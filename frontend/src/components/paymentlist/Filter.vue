@@ -1,32 +1,30 @@
 <template>
   <div class="filter-bar">
-    <RotateCcw class="reset-icon"/>
+    <RotateCcw class="reset-icon" />
 
     <button
-        class="filter-button"
-        :class="{ active: isDateModalOpen }"
-        @click="toggleDateModal"
+      class="filter-button"
+      :class="{ active: isDateModalOpen }"
+      @click="toggleDateModal"
     >
       <div class="filter-row">
-        <div class="filter-text">날짜</div>      
-        <ChevronDown class="down-icon"/>
-      </div>    
+        <div class="filter-text">날짜</div>
+        <ChevronDown class="down-icon" />
+      </div>
     </button>
 
-    <button
-      class="filter-button">
+    <button class="filter-button">
       <div class="filter-row">
-        <div class="filter-text">카테고리</div>      
-        <ChevronDown class="down-icon"/>
-      </div>    
+        <div class="filter-text">카테고리</div>
+        <ChevronDown class="down-icon" />
+      </div>
     </button>
 
-    <button
-      class="filter-button">
+    <button class="filter-button" @click="toggleParticipantModal">
       <div class="filter-row">
-        <div class="filter-text">결제 참여자</div>      
-        <ChevronDown class="down-icon"/>
-      </div>    
+        <div class="filter-text">결제 참여자</div>
+        <ChevronDown class="down-icon" />
+      </div>
     </button>
   </div>
 
@@ -40,14 +38,26 @@
       </div>
     </transition>
   </div>
+
+  <div
+    v-if="isParticipantModalOpen"
+    class="overlay"
+    @click.self="closeParticipantModal"
+  >
+    <transition name="slide-up" appear>
+      <div class="bottom-modal">
+        <h3>결제 참여자</h3>
+      </div>
+    </transition>
+  </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import { ChevronDown, RotateCcw } from 'lucide-vue-next';
 
-
 const isDateModalOpen = ref(false);
+const isParticipantModalOpen = ref(false);
 const dateRange = ref({ start: '', end: '' });
 
 const toggleDateModal = () => {
@@ -62,16 +72,28 @@ const applyDateFilter = () => {
   console.log(dateRange.value);
   closeDateModal();
 };
+
+const toggleParticipantModal = () => {
+  isParticipantModalOpen.value = !isParticipantModalOpen.value;
+};
+
+const closeParticipantModal = () => {
+  isDateModalOpen.value = false;
+};
+
+const applyParticipantFilter = () => {
+  closeParticipantModal();
+};
 </script>
 
 <style scoped>
-.filter-bar{
-  margin-top:10px;
+.filter-bar {
+  margin-top: 10px;
 }
 
 .filter-button {
   /* background-color: red !important; */
-  all:unset;
+  all: unset;
   border: 1px solid #d9d9d9;
   border-radius: 10px;
   cursor: pointer;
@@ -91,20 +113,20 @@ const applyDateFilter = () => {
   justify-content: space-between;
 }
 
-.filter-text{
+.filter-text {
   font-size: 12px;
-  color: #B0ADAD;
-  font-weight:500;
+  color: #b0adad;
+  font-weight: 500;
 }
 
-.reset-icon{
-  color: #B0ADAD;
+.reset-icon {
+  color: #b0adad;
   stroke-width: 2.3;
-  padding-top:5px;
-  width:20px;
+  padding-top: 5px;
+  width: 20px;
 }
-.down-icon{
-  color: #B0ADAD;
+.down-icon {
+  color: #b0adad;
   stroke-width: 1;
 }
 
@@ -124,7 +146,7 @@ const applyDateFilter = () => {
   /* max-width: 24rem; */
   margin: 0;
   background-color: white;
-  padding: 20px ;
+  padding: 20px;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
   z-index: 20;
