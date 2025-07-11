@@ -13,11 +13,7 @@
       </div>
     </button>
 
-    <button
-      class="filter-button"
-      :class="{ active: isCategoryModalOpen }"
-      @click="toggleCategoryModal"
-    >
+    <button class="filter-button">
       <div class="filter-row">
         <div class="filter-text">카테고리</div>
         <ChevronDown class="down-icon" />
@@ -86,7 +82,6 @@ const selectedMembers = ref([]);
 
 const isDateModalOpen = ref(false);
 const isParticipantModalOpen = ref(false);
-const isCategoryModalOpen = ref(false);
 const dateRange = ref({ start: '', end: '' });
 
 const toggleDateModal = () => {
@@ -114,19 +109,6 @@ const closeParticipantModal = () => {
 const applyParticipantFilter = () => {
   // 선택된 결제 참여자 필터링 로직 추가
   closeParticipantModal();
-};
-
-const toggleCategoryModal = async () => {
-  isCategoryModalOpen.value = !isCategoryModalOpen.value;
-};
-
-const closeCategoryModal = () => {
-  isCategoryModalOpen.value = false;
-};
-
-const applyCategoryFilter = () => {
-  // 선택된 결제 참여자 필터링 로직 추가
-  closeCategoryModal();
 };
 
 onMounted(async () => {
