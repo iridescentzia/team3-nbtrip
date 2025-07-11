@@ -13,7 +13,11 @@
       </div>
     </button>
 
-    <button class="filter-button">
+    <button
+      class="filter-button"
+      :class="{ active: isCategoryModalOpen }"
+      @click="toggleCategoryModal"
+    >
       <div class="filter-row">
         <div class="filter-text">카테고리</div>
         <ChevronDown class="down-icon" />
@@ -39,6 +43,19 @@
         <input type="date" v-model="dateRange.start" />
         <input type="date" v-model="dateRange.end" />
         <button @click="applyDateFilter">적용</button>
+      </div>
+    </transition>
+  </div>
+
+  <div
+    v-if="isCategoryModalOpen"
+    class="overlay"
+    @click.self="closeCategoryModal"
+  >
+    <transition name="slide-up" appear>
+      <div class="bottom-modal">
+        <h3>카테고리</h3>
+        <button @click="applyCategoryFilter">적용</button>
       </div>
     </transition>
   </div>
@@ -82,6 +99,7 @@ const selectedMembers = ref([]);
 
 const isDateModalOpen = ref(false);
 const isParticipantModalOpen = ref(false);
+const isCategoryModalOpen = ref(false);
 const dateRange = ref({ start: '', end: '' });
 
 const toggleDateModal = () => {
@@ -96,6 +114,19 @@ const applyDateFilter = () => {
   console.log(dateRange.value);
   // 선택된 날짜 필터링 로직 추가
   closeDateModal();
+};
+
+const toggleCategoryModal = async () => {
+  isCategoryModalOpen.value = !isCategoryModalOpen.value;
+};
+
+const closeCategoryModal = () => {
+  isCategoryModalOpen.value = false;
+};
+
+const applyCategoryFilter = () => {
+  // 선택된 결제 참여자 필터링 로직 추가
+  closeCategoryModal();
 };
 
 const toggleParticipantModal = async () => {

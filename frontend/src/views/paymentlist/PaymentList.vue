@@ -39,10 +39,18 @@ import Summary from '@/components/common/Summary.vue';
 
 const tripStore = useTripStore();
 
-// timestamp -> date 변환
+// timestamp -> KST 기준 date 변환
 const formatDate = (timestamp) => {
   const date = new Date(timestamp);
-  return date.toISOString().split('T')[0].replace(/-/g, '.');
+  return date
+    .toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      timeZone: 'Asia/Seoul',
+    })
+    .replace(/\.\s/g, '.')
+    .replace(/\.$/, ''); // 2025.07.30 형태로 맞춤
 };
 
 onMounted(async () => {
