@@ -2,9 +2,11 @@ package org.scoula.security.accounting.domain;
 
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
 import java.util.Collection;
+import java.util.List;
 
 @Getter
 public class CustomUser extends User {
@@ -12,7 +14,11 @@ public class CustomUser extends User {
 
     // 메인 생성자
     public CustomUser(MemberVO memberVO) {
-        super(memberVO.getEmail(), memberVO.getPassword(), memberVO.getAuthList());
+        super(
+                memberVO.getEmail(),  // 로그인 시 사용 계정
+                memberVO.getPassword(),  // 해시된 비밀번호
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))  // 기본 권한("ROLE_USER" 고정)
+        );
         this.member = memberVO;
     }
 
