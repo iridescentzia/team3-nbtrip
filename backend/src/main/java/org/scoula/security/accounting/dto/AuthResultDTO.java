@@ -1,0 +1,81 @@
+package org.scoula.security.accounting.dto;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class AuthResultDTO {
+    private boolean success;  // 인증 성공/실패 여부
+    private String message;  // 결과 메시지
+    private String accessToken;  // JWT 액세스 토큰
+    private String refreshToken;  // JWT 리프레시 토큰
+    private Long tokenExpiry;  // 토큰 만료 시간(timestamp)
+    private String tokenType;  // 토큰 타입
+    private UserInfoDTO userInfo;  // 로그인된 사용자 정보
+
+    // 로그인 성공 응답
+    public static AuthResultDTO success(String accessToken, String refreshToken, Long tokenExpiry, UserInfoDTO userInfo) {
+        return AuthResultDTO.builder()
+                .success(true)
+                .message("로그인에 성공했습니다.")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .tokenExpiry(tokenExpiry)
+                .tokenType("Bearer")
+                .userInfo(userInfo)
+                .build();
+    }
+
+    // 로그인 성공 응답(refreshToken(X))
+    public static AuthResultDTO success(String accessToken, Long tokenExpiry, UserInfoDTO userInfo) {
+        return AuthResultDTO.builder()
+                .success(true)
+                .message("로그인에 성공했습니다.")
+                .accessToken(accessToken)
+                .tokenExpiry(tokenExpiry)
+                .tokenType("Bearer")
+                .userInfo(userInfo)
+                .build();
+    }
+
+    // 로그인 실패 응답
+    public static AuthResultDTO failure(String message) {
+        return AuthResultDTO.builder()
+                .success(false)
+                .message(message)
+                .tokenType("Bearer")
+                .build();
+    }
+
+    // 이메일/비밀번호 불일치 실패 응답
+    public static AuthResultDTO invalidCredentials() {
+        return failure("이메일 또는 비밀번호가 올바르지 않습니다.");
+    }
+
+    // 계정 비활성화 실패 응답
+    public static AuthResultDTO accountDisabled() {
+        return failure("비활성화된 계정입니다.");
+    }
+
+    // 계정 잠금 실패 응답
+    public static AuthResultDTO accountLocked() {
+        return failure("잠긴 계정입니다. 관리자에게 문의해주세요.");
+    }
+
+    // 토큰 만료 실패 응답
+    public static AuthResultDTO tokenExpired() {
+        return failure("토큰이 만료되었습니다. 다시 로그인해주세요.");
+    }
+
+    // 서버 에러 응답
+    public static AuthResultDTO serverError() {
+        return failure("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+    }
+}
