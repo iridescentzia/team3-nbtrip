@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root {
+    /* 기본 색상 (단일 컬러) */
+    --color-red-soft: rgba(255, 29, 12, 0.2); /* 연한 빨강 (20% 투명도) - 경고/에러 강조용 */
+    --color-yellow-primary: rgba(255, 209, 102, 0.65); /* 연한 노랑 (65% 투명도) - 버튼 배경 등 */
+    --color-blue-strong: #2f6be9; /* 진한 파랑 (100%) - 메인 액센트 컬러 */
+
+    /* 헤더 전용 텍스트 컬러 */
+    --color-header-dark: #575757; /* 어두운 회색 (진한 글자) */
+    --color-header-gray: #4a4a4a; /* 중간 회색 (서브 타이틀 등) */
+
+    /* 배경용 연한 그라데이션 블루 */
+    --gradient-blue-soft: linear-gradient(
+            to bottom,
+            rgba(162, 210, 255, 0.5) 0%,
+                /* 매우 연한 하늘색 */ rgba(185, 221, 255, 0.5) 25%,
+                /* 연한 하늘색 */ rgba(208, 232, 255, 0.5) 50%,
+                /* 밝은 하늘색 */ rgba(255, 255, 255, 0.5) 100% /* 투명한 흰색 */
+    );
+}

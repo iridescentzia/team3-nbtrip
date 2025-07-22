@@ -1,23 +1,41 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+
+// 컴포넌트 import
+import Home from '@/views/home/Home.vue'
+import GroupList from '@/views/group/GroupList.vue'
+import QRScanner from '@/views/payment/QRScanner.vue'
+import MyPage from '@/views/member/MyPage.vue'
+
+const routes = [
+  {
+    path: '/',
+    redirect: '/home', // 기본 경로를 홈으로 리다이렉트
+  },
+  {
+    path: '/home',
+    name: 'Home',
+    component: Home,
+  },
+  {
+    path: '/group',
+    name: 'GroupList',
+    component: GroupList,
+  },
+  {
+    path: '/payment',
+    name: 'QRScanner',
+    component: QRScanner,
+  },
+  {
+    path: '/mypage',
+    name: 'MyPage',
+    component: MyPage,
+  },
+]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: HomeView,
-    },
-    {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
-    },
-  ],
+  history: createWebHistory(),
+  routes,
 })
 
 export default router
