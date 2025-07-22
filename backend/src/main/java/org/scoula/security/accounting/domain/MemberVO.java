@@ -17,10 +17,12 @@ public class MemberVO {
     private String email;
     private String password;
     private String nickname;
-    private LocalDateTime createdAt;
     private String fcmToken;
     private String name;
     private String phoneNumber;
+    private boolean enabled;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     private List<AuthVO> authList;
 }
