@@ -12,28 +12,14 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AuthResultDTO {
-    private boolean success;  // 인증 성공/실패 여부
-    private String message;  // 결과 메시지
-    private String accessToken;  // JWT 액세스 토큰(접근)
-    private String refreshToken;  // JWT 리프레시 토큰(재발급)
+    private boolean success;
+    private String message;
+    private String accessToken;
     private Long tokenExpiry;  // 토큰 만료 시간(timestamp)
-    private String tokenType;  // 토큰 타입
-    private UserInfoDTO userInfo;  // 로그인된 사용자 정보
+    private String tokenType;
+    private UserInfoDTO userInfo;
 
     // 로그인 성공 응답
-    public static AuthResultDTO success(String accessToken, String refreshToken, Long tokenExpiry, UserInfoDTO userInfo) {
-        return AuthResultDTO.builder()
-                .success(true)
-                .message("로그인에 성공했습니다.")
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .tokenExpiry(tokenExpiry)
-                .tokenType("Bearer")
-                .userInfo(userInfo)
-                .build();
-    }
-
-    // 로그인 성공 응답(refreshToken(X))
     public static AuthResultDTO success(String accessToken, Long tokenExpiry, UserInfoDTO userInfo) {
         return AuthResultDTO.builder()
                 .success(true)
