@@ -5,22 +5,25 @@ import org.springframework.http.HttpStatus;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JsonResponse {
-    public static <T> void send(HttpServletResponse response, T result) throws IOException {
-        ObjectMapper om = new ObjectMapper();
-        response.setContentType("application/json;charset=UTF-8");
-        Writer out = response.getWriter();
-        out.write(om.writeValueAsString(result));
-        out.flush();
-    }
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static void sendError(HttpServletResponse response, HttpStatus status, String message) throws IOException {
-        response.setStatus(status.value());
-        response.setContentType("application/json;charset=UTF-8");
-        Writer out = response.getWriter();
-        out.write(message);
-        out.flush();
+    public static void sendError(HttpServletResponse response, HttpStatus status, String message) {
+        try {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", status.value());
+            errorResponse.put("message", message);
+            errorResponse.put("success", false);
+            errorResponse.put("timestamp", System.currentTimeMillis());
+
+            response.setStatus(status.value());
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+        } catch (IOException e) {
+            log.error("JSON 오류 응답 생성 실패 : {}", e.getMessage());
+        }
     }
 }

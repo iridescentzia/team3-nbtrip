@@ -30,7 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // JWT 토큰에서 이메일 추출 및 인증 정보 생성(username => email 값 의미)
     private Authentication getAuthentication(String token) {
         String email = jwtProcessor.getUsername(token);
-        log.debug("JWT에서 추출한 이메일: {}", email);
+        log.debug("JWT에서 추출한 이메일 : {}", email);
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -47,7 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 2. Bearer 토큰 형식 검증 및 JWT 토큰 추출
         if (bearerToken != null && bearerToken.startsWith(BEARER_PREFIX)) {
             String token = bearerToken.substring(BEARER_PREFIX.length());
-            log.debug("JWT 토큰 감지 - URI: {}", request.getRequestURI());
+            log.debug("JWT 토큰 감지 - URI : {}", request.getRequestURI());
 
             // 3. JWT 토큰 유효성 검증
             if (jwtProcessor.validateToken(token)) {
@@ -56,9 +56,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // 5. SecurityContext에 인증 정보 설정
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.debug("JWT 인증 성공 - 이메일: {}", authentication.getName());
+                log.debug("JWT 인증 성공 - 이메일 : {}", authentication.getName());
             } else {
-                log.warn("유효하지 않은 JWT 토큰 - URI: {}", request.getRequestURI());
+                log.warn("유효하지 않은 JWT 토큰 - URI : {}", request.getRequestURI());
             }
         }
 
@@ -76,8 +76,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 path.startsWith("/api/status") ||
                 path.startsWith("/swagger-ui") ||
                 path.startsWith("/v3/api-docs") ||
-                path.startsWith("/api/auth") ||
-                path.equals("/api/users/register");
+                path.equals("/api/auth/login") ||
+                path.equals("/api/users/register") ||
+                (path.startsWith("/api/merchants/") && request.getMethod().equals("GET"));
     }
 }
 

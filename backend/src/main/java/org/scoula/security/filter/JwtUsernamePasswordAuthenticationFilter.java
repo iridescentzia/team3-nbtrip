@@ -2,6 +2,7 @@ package org.scoula.security.filter;
 
 import lombok.extern.log4j.Log4j2;
 import org.scoula.security.accounting.dto.LoginDTO;
+import org.scoula.security.handler.LoginFailureHandler;
 import org.scoula.security.handler.LoginSuccessHandler;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,7 +26,7 @@ public class JwtUsernamePasswordAuthenticationFilter  extends UsernamePasswordAu
         setFilterProcessesUrl("/api/auth/login");
         setAuthenticationSuccessHandler(loginSuccessHandler);  // 성공
         setAuthenticationFailureHandler(loginFailureHandler);  // 실패
-        log.info("jwt 로그인 필터 초기화 완료")
+        log.info("jwt 로그인 필터 초기화 완료");
     }
 
     @Override
@@ -35,7 +36,10 @@ public class JwtUsernamePasswordAuthenticationFilter  extends UsernamePasswordAu
 
         // 1. HTTP Body에서 JSON 로그인 정보 추출
         LoginDTO loginDTO = LoginDTO.of(request);
-        log.debug("로그인 정보 추출 완료 - 이메일 : {}", loginDTO.getEmail());
+        log.debug("로그인 정보 추출 완료 - 이메일 : {}, FCM 토큰 : {}, 로그인 유지 : {}",
+                loginDTO.getEmail(),
+                loginDTO.getFcmToken() != null ? "있음" : "없음",
+                loginDTO.isRememberMe());
 
         // 2. 인증 토큰 생성
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
