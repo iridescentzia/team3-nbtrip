@@ -16,7 +16,4 @@ public interface UserDetailsMapper {
 
     // FCM 토큰 업데이트
     int updateFcmToken(String email, String fcmToken);
-
-    // 사용자 상태 업데이트
-    int updateUserStatus(String nickname, boolean enabled);
 }
