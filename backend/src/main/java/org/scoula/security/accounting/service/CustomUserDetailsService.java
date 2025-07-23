@@ -20,16 +20,13 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         log.info("로그인 요청 이메일 : {}", email);
 
+        // 사용자 정보 조회(email)
         MemberVO member = userDetailsMapper.getByEmail(email);
 
+        // 사용자가 존재하지 않는 경우 예외 처리
         if (member == null) {
             log.warn("사용자 없음 : {}", email);
             throw new UsernameNotFoundException("가입된 사용자가 없습니다. : " + email);
-        }
-
-        if(!member.isEnabled()) {
-            log.warn("비활성 사용자 : {}", email);
-            throw new UsernameNotFoundException("비활성화된 계정입니다.");
         }
 
         log.info("로그인 성공 : {} (userId : {})", member.getNickname(), member.getUserId());

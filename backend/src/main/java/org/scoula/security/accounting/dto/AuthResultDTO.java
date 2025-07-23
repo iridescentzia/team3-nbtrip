@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 public class AuthResultDTO {
     private boolean success;  // 인증 성공/실패 여부
     private String message;  // 결과 메시지
-    private String accessToken;  // JWT 액세스 토큰
-    private String refreshToken;  // JWT 리프레시 토큰
+    private String accessToken;  // JWT 액세스 토큰(접근)
+    private String refreshToken;  // JWT 리프레시 토큰(재발급)
     private Long tokenExpiry;  // 토큰 만료 시간(timestamp)
     private String tokenType;  // 토큰 타입
     private UserInfoDTO userInfo;  // 로그인된 사용자 정보
@@ -57,16 +57,6 @@ public class AuthResultDTO {
     // 이메일/비밀번호 불일치 실패 응답
     public static AuthResultDTO invalidCredentials() {
         return failure("이메일 또는 비밀번호가 올바르지 않습니다.");
-    }
-
-    // 계정 비활성화 실패 응답
-    public static AuthResultDTO accountDisabled() {
-        return failure("비활성화된 계정입니다.");
-    }
-
-    // 계정 잠금 실패 응답
-    public static AuthResultDTO accountLocked() {
-        return failure("잠긴 계정입니다. 관리자에게 문의해주세요.");
     }
 
     // 토큰 만료 실패 응답

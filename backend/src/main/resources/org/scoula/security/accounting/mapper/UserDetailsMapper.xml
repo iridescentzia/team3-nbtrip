@@ -27,14 +27,7 @@
     <!-- FCM 토큰 update -->
     <update id="updateFcmToken">
         UPDATE users
-        SET fcm_token = #{fcmToken}, updated_at = NOW()
-        WHERE email = #{email}
-    </update>
-
-    <!-- 계정 활성/비활성 -->
-    <update id="updateUserStatus">
-        UPDATE users
-        SET enabled = #{enabled}, updated_at = NOW()
+        SET fcm_token = #{fcmToken}
         WHERE email = #{email}
     </update>
 </mapper>
