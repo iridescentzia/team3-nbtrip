@@ -24,19 +24,47 @@ const emits = defineEmits(['click'])
 </script>
 
 <template>
-  <button class="fixed bottom-[85px] left-1/2 -translate-x-1/2
-                 w-[calc(100%-32px)] max-w-[343px] h-14
-                 bg-[#ffd166a6] text-[#333] text-base font-semibold font-ibm
-                 rounded-xl shadow-[0_2px_6px_rgba(0,0,0,0.05)]
-                 cursor-pointer z-[200] transition-colors duration-200
-                 hover:bg-[#ffd166] hover:-translate-y-px
-                 active:translate-y-0
-                 disabled:bg-[#e2e2e2] disabled:text-[#999] disabled:cursor-not-allowed"
-          :disabled="disabled"
-          @click="$emit('click')">
+  <button class="bottom-button" :disabled="disabled" @click="$emit('click')">
     {{ label }}
   </button>
 </template>
 
 <style scoped>
+/* 기본 버튼 스타일 */
+.bottom-button {
+  display: block;
+  margin: 64px auto 24px auto;
+
+  width: calc(100% - 32px);
+  max-width: 343px;
+  height: 56px;
+  background-color: rgba(255, 209, 102, 0.65);
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'IBM Plex Sans KR', sans-serif;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  z-index: 1001;
+  transition: background-color 0.2s;
+}
+
+.bottom-button:hover:not(:disabled) {
+  background-color: rgba(255, 209, 102, 1);
+  /* 위치 이동 제거 */
+}
+
+.bottom-button:active:not(:disabled) {
+  background-color: rgba(255, 209, 102, 1);
+  /* 위치 이동 제거 */
+}
+
+.bottom-button:disabled {
+  background-color: #e2e2e2;
+  color: #999;
+  cursor: not-allowed;
+}
+
 </style>
