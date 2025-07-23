@@ -2,6 +2,19 @@
 <!DOCTYPE mapper
         PUBLIC "--//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="">
+<mapper namespace="org.scoula.account.mapper.AccountMapper">
+    <!-- 사용자 계좌 잔액 차감 -->
+    <update id="decreaseUserBalance">
+        UPDATE account
+        SET balance = balance - #{amount}
+        WHERE user_id = #{userId}
+        AND balance >= #{amount}
+    </update>
 
+    <!-- 가맹점 사업자 계좌 잔액 증가 -->
+    <update id="increaseMerchantBalance">
+        UPDATE merchant_account
+        SET merchant_balance = merchant_balance + #{amount}
+        WHERE merchant_id = #{merchantId}
+    </update>
 </mapper>
