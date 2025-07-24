@@ -2,6 +2,21 @@
 <!DOCTYPE mapper
         PUBLIC "--//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="">
+<mapper namespace="org.scoula.merchant.mapper.MerchantMapper">
 
+    <select id="getMerchant" resultType="org.scoula.merchant.domain.MerchantVO">
+        SELECT *
+        FROM merchant
+        WHERE merchant_id=#{id}
+    </select>
+    <select id="getMerchantCategory" resultType="org.scoula.merchant.domain.MerchantCategoryVO">
+        SELECT *
+        FROM merchant_category
+        WHERE category_id=#{categoryId}
+    </select>
+    <select id="getMerchantAccount" resultType="org.scoula.merchant.domain.MerchantAccountVO">
+        SELECT *
+        FROM merchant_account
+        WHERE merchant_id=#{merchantAccountId}
+    </select>
 </mapper>
