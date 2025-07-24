@@ -1,6 +1,6 @@
 package org.scoula.group.domain;
 
-public enum TripStatus {
+public enum GroupStatus {
     READY,
     ACTIVE,
     CLOSED

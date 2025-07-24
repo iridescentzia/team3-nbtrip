@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GroupMemberVO {
-    private int member_id;
-    private int user_id;
-    private int trip_id;
-    private GroupMemberStatus member_status;
+    private int memberId;
+    private int userId;
+    private int groupId;
+    private GroupMemberStatus memberStatus;
 }
