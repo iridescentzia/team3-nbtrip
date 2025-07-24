@@ -2,6 +2,35 @@
 <!DOCTYPE mapper
         PUBLIC "--//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="">
+<mapper namespace="org.scoula.settlement.mapper.SettlementMapper">
+    <!-- 1. 특정 여행의 총 사용 금액을 계산하는 쿼리 -->
+    <!-- payment 테이블에서 trip_id가 일치하는 모든 amount를 합산합니다. -->
+    <select id="getTotalAmountByTripId" resultType="int">
+        SELECT SUM(amount)
+        FROM payment
+        WHERE trip_id = #{tripId}
+    </select>
 
+    <!-- 2. 특정 여행의 멤버별 총 결제 금액을 계산하는 쿼리 -->
+    <!-- trip_member와 users 테이블을 조인하여 해당 여행의 모든 멤버를 가져온 후,
+         payment 테이블과 LEFT JOIN하여 각 멤버가 결제한 금액의 총합을 구합니다.
+         LEFT JOIN을 사용하여, 결제 내역이 없는 멤버(0원)도 결과에 포함되도록 합니다. -->
+    <select id="getMemberPaymentsByTripId" resultType="org.scoula.settlement.dto.SettlementDTO$MemberPaymentInfo">
+        SELECT
+            u.nickname,
+            COALESCE(p.total_paid, 0) AS amount
+        FROM
+            trip_member tm
+                JOIN
+            users u ON tm.user_id = u.user_id
+                LEFT JOIN
+            (SELECT user_id, SUM(amount) AS total_paid
+             FROM payment
+             WHERE trip_id = #{tripId}
+             GROUP BY user_id) p
+            ON
+                tm.user_id = p.user_id
+        WHERE
+            tm.trip_id = #{tripId}
+    </select>
 </mapper>
