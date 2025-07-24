@@ -1,3 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* 여기에 앱 전체에 적용될 공통 스타일을 추가할 수 있습니다. */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f8f9fa; /* 기본 배경색 설정 */
+}

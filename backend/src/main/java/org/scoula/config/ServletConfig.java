@@ -12,7 +12,8 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
 @EnableWebMvc
-@ComponentScan(basePackages = {"org.scoula.controller", "org.scoula.exception"})
+// FIX: 컴포넌트 스캔 범위를 'org.scoula'로 확장하여 모든 하위 패키지의 컨트롤러를 찾도록 수정합니다.
+@ComponentScan(basePackages = {"org.scoula"})
 public class ServletConfig implements WebMvcConfigurer {
 
     @Override
