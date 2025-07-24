@@ -1,5 +1,6 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router';
 // import HomeView from '../views/HomeView.vue'
+import SettlementSummaryView from '../views/settlement/SettlementSummaryView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,7 +18,13 @@ const router = createRouter({
     //   // which is lazy-loaded when the route is visited.
     //   component: () => import('../views/AboutView.vue'),
     // },
+    {
+      // /settlement/1, /settlement/4 처럼 동적인 tripId를 받을 수 있도록 설정합니다.
+      path: '/settlement/:tripId',
+      name: 'settlementSummary',
+      component: SettlementSummaryView,
+    },
   ],
-})
+});
 
-export default router
+export default router;
