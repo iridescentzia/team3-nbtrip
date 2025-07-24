@@ -9,8 +9,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MerchantVO {
+public class MerchantAccountVO {
+    private int merchantAccountId;
     private int merchantId;
-    private int categoryId;
-    private String merchantName;
+    private String merchantBank;
+    private String merchantAccountNumber;
+    private int merchantBalance;
 }
