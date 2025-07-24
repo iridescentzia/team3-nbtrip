@@ -32,15 +32,10 @@ public class CustomUser extends User {
     public Integer getUserId() {  // 데이터 타입 변경(Long -> Integer)
         return member != null ? member.getUserId() : null;
     }
-
-    public String getNickname() {
-        return member != null ? member.getNickname() : null;
-    }
-
+    public String getNickname() { return member != null ? member.getNickname() : null; }
     public String getPhoneNumber() {
         return member != null ? member.getPhoneNumber() : null;
     }
-
     public String getName() {
         return member != null ? member.getName() : null;
     }

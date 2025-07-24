@@ -44,4 +44,7 @@ public class MemberDTO {
     @Size(max = 30, message = "휴대폰 번호는 30자 이내여야 합니다.")
     @Pattern(regexp = "^01[0-9]-[0-9]{4}-[0-9]{4}$", message = "올바른 휴대폰 번호 형식이 아닙니다(010-1234-5678).")
     private String phoneNumber;
+
+    // FCM Token
+    private String fcmToken;
 }
