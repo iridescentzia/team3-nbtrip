@@ -21,24 +21,18 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-/**
- * MemberService 단위 테스트 (JUnit 5)
- * - 회원가입, 로그인, 정보조회, 수정, FCM 토큰 갱신 등 핵심 비즈니스 로직 테스트
- * - Mock 객체 활용으로 DB 의존성 제거
- */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("MemberService 단위 테스트")
+@DisplayName("MemberService 단위 테스트(24시간 토큰)")
 class MemberServiceTest {
-
     @Mock private MemberMapper memberMapper;
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private JwtProcessor jwtProcessor;
-
     @InjectMocks private MemberServiceImpl memberService;
 
     private MemberDTO validMemberDTO;
     private MemberVO existingMember;
     private MemberLoginRequestDTO loginRequest;
+    private static final long TOKEN_24_HOURS = 86400000L;  // 만료 시간(24시간)
 
     @BeforeEach
     void setUp() {
@@ -69,9 +63,7 @@ class MemberServiceTest {
         loginRequest.setPassword("Test1234!");
     }
 
-    /**
-     * 회원가입 성공 테스트
-     */
+    // 회원가입 성공 테스트
     @Test
     @DisplayName("회원가입 성공 테스트")
     void testRegisterMember_성공() {
@@ -94,9 +86,7 @@ class MemberServiceTest {
         verify(memberMapper, times(1)).insertMember(any(MemberVO.class));
     }
 
-    /**
-     * 회원가입 - 이메일 중복 테스트
-     */
+    // 회원가입 - 이메일 중복 테스트
     @Test
     @DisplayName("회원가입 - 이메일 중복 시 예외 발생")
     void testRegisterMember_이메일중복() {
@@ -109,9 +99,7 @@ class MemberServiceTest {
                 .hasMessage("이미 가입된 이메일입니다.");
     }
 
-    /**
-     * 회원가입 - 닉네임 중복 테스트
-     */
+    // 회원가입 - 닉네임 중복 테스트
     @Test
     @DisplayName("회원가입 - 닉네임 중복 시 예외 발생")
     void testRegisterMember_닉네임중복() {
@@ -125,11 +113,9 @@ class MemberServiceTest {
                 .hasMessage("이미 사용중인 닉네임입니다.");
     }
 
-    /**
-     * 로그인 성공 테스트
-     */
+    // 로그인 성공 테스트 - 24시간 토큰 발급 확인
     @Test
-    @DisplayName("로그인 성공 테스트")
+    @DisplayName("로그인 성공 - 24시간 유효 토큰 발급")
     void testLoginMember_성공() {
         // Given: 로그인 성공 상황 설정
         when(memberMapper.findByEmail("test@example.com")).thenReturn(Optional.of(existingMember));
@@ -143,14 +129,12 @@ class MemberServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getAccessToken()).isEqualTo("jwt-token");
         assertThat(result.getMember().getUserId()).isEqualTo(1);
-
+        assertThat(result.getExpiresIn()).isEqualTo(TOKEN_24_HOURS);
         verify(memberMapper, times(1)).findByEmail("test@example.com");
         verify(passwordEncoder, times(1)).matches("Test1234!", "encodedPassword");
     }
 
-    /**
-     * 로그인 실패 - 존재하지 않는 회원
-     */
+    // 로그인 실패 - 존재하지 않는 회원
     @Test
     @DisplayName("로그인 실패 - 존재하지 않는 회원")
     void testLoginMember_존재하지않는회원() {
@@ -163,9 +147,7 @@ class MemberServiceTest {
                 .hasMessage("존재하지 않는 회원입니다.");
     }
 
-    /**
-     * 로그인 실패 - 비밀번호 불일치
-     */
+    // 로그인 실패 - 비밀번호 불일치
     @Test
     @DisplayName("로그인 실패 - 비밀번호 불일치")
     void testLoginMember_비밀번호불일치() {
@@ -179,9 +161,7 @@ class MemberServiceTest {
                 .hasMessage("이메일 또는 비밀번호가 올바르지 않습니다.");
     }
 
-    /**
-     * 회원 정보 조회 성공 테스트
-     */
+    // 회원 정보 조회 성공 테스트
     @Test
     @DisplayName("회원 정보 조회 성공 테스트")
     void testGetMemberInfo_성공() {
@@ -200,9 +180,7 @@ class MemberServiceTest {
         verify(memberMapper, times(1)).findById(1);
     }
 
-    /**
-     * FCM 토큰 갱신 성공 테스트
-     */
+    // FCM 토큰 갱신 성공 테스트
     @Test
     @DisplayName("FCM 토큰 갱신 성공 테스트")
     void testUpdateFcmToken_성공() {
@@ -219,9 +197,7 @@ class MemberServiceTest {
         verify(memberMapper, times(1)).updateFcmToken(1, "new-fcm-token");
     }
 
-    /**
-     * 닉네임 중복 체크 테스트
-     */
+    // 닉네임 중복 체크 테스트
     @Test
     @DisplayName("닉네임 중복 체크 테스트")
     void testCheckNicknameDuplicate() {
@@ -232,5 +208,20 @@ class MemberServiceTest {
         // When & Then: 중복 체크 결과 확인
         assertThat(memberService.checkNicknameDuplicate("existing")).isTrue();
         assertThat(memberService.checkNicknameDuplicate("available")).isFalse();
+    }
+
+    // 로그아웃 성공 테스트
+    @Test
+    @DisplayName("로그아웃 성공 - FCM 토큰 삭제")
+    void testLogoutMember_성공() {
+        // Given: 회원 존재 상황
+        when(memberMapper.existsById(1)).thenReturn(true);
+
+        // When: 로그아웃 실행
+        memberService.logoutMember(1);
+
+        // Then: FCM 토큰 삭제 확인
+        verify(memberMapper, times(1)).existsById(1);
+        verify(memberMapper, times(1)).updateFcmToken(1, null);
     }
 }
