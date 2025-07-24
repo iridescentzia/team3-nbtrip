@@ -12,7 +12,13 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
 @EnableWebMvc
-@ComponentScan(basePackages = {"org.scoula.controller", "org.scoula.exception"})
+@ComponentScan(basePackages = {
+        "org.scoula.controller",
+        "org.scoula.exception",
+        "org.scoula.merchant.controller",
+        "org.scoula.payment.controller",
+        "org.scoula.account.controller"
+})
 public class ServletConfig implements WebMvcConfigurer {
 
     @Override
