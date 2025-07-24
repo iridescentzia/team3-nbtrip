@@ -1,4 +1,4 @@
-package org.scoula.account.domain;
+package org.scoula.account.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,10 +9,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AccountVO {
+public class AccountTransferDTO {
     private int accountId;
     private int userId;
     private String accountNumber;
     private String bankName;
     private int balance;
+
+    private String transferType;
+    private int tripId;
 }
