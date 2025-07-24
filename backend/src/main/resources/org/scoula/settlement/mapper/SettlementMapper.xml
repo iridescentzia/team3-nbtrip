@@ -54,4 +54,10 @@
         WHERE settlement_id = #{settlementId}
     </update>
 
+    <!-- n빵 분배 db에 insert -->
+    <insert id="insertSettlement">
+        INSERT INTO settlement (trip_id, sender_id, receiver_id, settlement_status, amount)
+        VALUES (#{vo.tripId}, #{vo.senderId}, #{vo.receiverId}, #{vo.settlementStatus}, #{vo.amount})
+    </insert>
+
 </mapper>

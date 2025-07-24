@@ -1,10 +1,11 @@
 package org.scoula.settlement.service;
 
+import org.apache.ibatis.annotations.Param;
 import org.scoula.settlement.domain.SettlementVO;
 
 import java.util.List;
 
-// 정산 상태 처리 비즈니스 로직
+// 정산 상태 처리와 그룹원 간 송금 처리 비즈니스 로직
 public interface SettlementService {
 
     // 조회 관련
@@ -18,4 +19,9 @@ public interface SettlementService {
     boolean markAsCompleted(int settlementId); // 사용자 송금 완료 시점에만 사용 (API 노출용)
     List<SettlementVO> getPendingOrProcessingByTripId(int tripId); // 정산 상태 확인 (아직 완료되지 않은 정산 건 존재 여부 판단용)
 
+    // 그룹원 간 송금 처리
+    boolean transferToUser(int settlementId);
+
+    // 사용자의 정산 상태 조회
+    String getMyOverallSettlementStatus(int userId);
 }
