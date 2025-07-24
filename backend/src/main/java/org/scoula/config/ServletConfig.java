@@ -1,5 +1,6 @@
 package org.scoula.config;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.multipart.MultipartResolver;
@@ -12,7 +13,8 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
 @EnableWebMvc
-@ComponentScan(basePackages = {"org.scoula.controller", "org.scoula.exception"})
+@ComponentScan(basePackages = {"org.scoula.controller", "org.scoula.exception", "org.scoula.payment.controller", "org.scoula.payment.service"})
+@MapperScan({"org.scoula.payment.mapper", "org.scoula.account.mapper"})
 public class ServletConfig implements WebMvcConfigurer {
 
     @Override
