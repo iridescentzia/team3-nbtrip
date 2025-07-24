@@ -1,4 +1,4 @@
-package org.scoula.member.dto;
+package org.scoula.member.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,11 +9,13 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserResponseDTO {
-    // 민감 정보(password, fcmToken, phoneNumber) 제외
+public class MemberVO {
     private int userId;
     private String email;
+    private String password;
     private String nickname;
-    private String name;
     private LocalDateTime createdAt;
+    private String fcmToken;
+    private String name;
+    private String phoneNumber;
 }

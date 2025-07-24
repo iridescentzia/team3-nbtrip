@@ -11,7 +11,7 @@ import javax.validation.constraints.Size;
 @Getter
 @Setter
 @NoArgsConstructor
-public class PasswordChangeDTO {
+public class MemberPasswordDTO {
     // 현재 비밀번호
     @NotBlank(message = "현재 비밀번호를 입력해주세요.")
     private String currentPassword;
