@@ -9,5 +9,5 @@ public interface MerchantMapper {
 
     MerchantCategoryVO getMerchantCategory(int categoryId);
 
-    MerchantAccountVO getMerchantAccount(int merchantAccountId);
+    MerchantAccountVO getMerchantAccount(int id);
 }
