@@ -2,6 +2,89 @@
 <!DOCTYPE mapper
         PUBLIC "--//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="">
+<mapper namespace="org.scoula.notification.mapper.NotificationMapper">
+
+    <!-- 특정 유저의 모든 알림 -->
+    <select id="findByUserId" resultType="org.scoula.notification.domain.NotificationVO">
+        SELECT n.notification_id AS notificationId,
+               n.user_id AS userId,
+               n.from_user_id AS fromUserId,
+               u.nickname AS fromUserNickname,
+               n.trip_id AS tripId,
+               t.trip_name AS groupName,
+               tm.member_status AS memberStatus,
+               n.payment_id AS paymentId,
+               p.amount AS amount,
+               m.merchant_name AS merchantName,
+               n.notification_type AS notificationType,
+               n.send_at AS sendAt
+        FROM notification n
+                 LEFT JOIN users u ON n.from_user_id = u.user_id
+                 LEFT JOIN trip t ON n.trip_id = t.trip_id
+                 LEFT JOIN trip_member tm ON n.user_id = tm.user_id AND n.trip_id = tm.trip_id
+                 LEFT JOIN payment p ON n.payment_id = p.payment_id
+                 LEFT JOIN merchant m ON p.merchant_id = m.merchant_id
+        WHERE n.user_id = #{userId}
+        ORDER BY n.send_at DESC
+    </select>
+
+    <!-- 특정 유저의 특정 타입 알림 -->
+    <select id="findByUserIdAndType" resultType="org.scoula.notification.domain.NotificationVO">
+        SELECT n.notification_id AS notificationId,
+               n.user_id AS userId,
+               n.from_user_id AS fromUserId,
+               u.nickname AS fromUserNickname,
+               n.trip_id AS tripId,
+               t.trip_name AS groupName,
+               tm.member_status AS memberStatus,
+               n.payment_id AS paymentId,
+               p.amount AS amount,
+               m.merchant_name AS merchantName,
+               n.notification_type AS notificationType,
+               n.send_at AS sendAt
+        FROM notification n
+                 LEFT JOIN users u ON n.from_user_id = u.user_id
+                 LEFT JOIN trip t ON n.trip_id = t.trip_id
+                 LEFT JOIN trip_member tm ON n.user_id = tm.user_id AND n.trip_id = tm.trip_id
+                 LEFT JOIN payment p ON n.payment_id = p.payment_id
+                 LEFT JOIN merchant m ON p.merchant_id = m.merchant_id
+        WHERE n.user_id = #{userId}
+          AND n.notification_type = #{notificationType}
+        ORDER BY n.send_at DESC
+    </select>
+
+    <!-- 카테고리로 여러 타입 알림 조회 -->
+    <select id="findByUserIdAndTypes" resultType="org.scoula.notification.domain.NotificationVO">
+        SELECT n.notification_id AS notificationId,
+        n.user_id AS userId,
+        n.from_user_id AS fromUserId,
+        u.nickname AS fromUserNickname,
+        n.trip_id AS tripId,
+        t.trip_name AS groupName,
+        tm.member_status AS memberStatus,
+        n.payment_id AS paymentId,
+        p.amount AS amount,
+        m.merchant_name AS merchantName,
+        n.notification_type AS notificationType,
+        n.send_at AS sendAt
+        FROM notification n
+        LEFT JOIN users u ON n.from_user_id = u.user_id
+        LEFT JOIN trip t ON n.trip_id = t.trip_id
+        LEFT JOIN trip_member tm ON n.user_id = tm.user_id AND n.trip_id = tm.trip_id
+        LEFT JOIN payment p ON n.payment_id = p.payment_id
+        LEFT JOIN merchant m ON p.merchant_id = m.merchant_id
+        WHERE n.user_id = #{userId}
+        AND n.notification_type IN
+        <foreach item="type" collection="types" open="(" separator="," close=")">
+            #{type}
+        </foreach>
+        ORDER BY n.send_at DESC
+    </select>
+
+    <!-- 알림 생성 -->
+    <insert id="insertNotification" parameterType="org.scoula.notification.domain.NotificationVO">
+        INSERT INTO notification (user_id, from_user_id, trip_id, payment_id, notification_type, send_at)
+        VALUES (#{userId}, #{fromUserId}, #{tripId}, #{paymentId}, #{notificationType}, NOW())
+    </insert>
 
 </mapper>
