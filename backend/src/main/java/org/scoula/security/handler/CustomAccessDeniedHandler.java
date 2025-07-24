@@ -24,8 +24,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                        AccessDeniedException accessDeniedException) throws IOException, ServletException {
         String requestURI = request.getRequestURI();
         String method = request.getMethod();
-        String ClientIP = getClientIP(request);
-        log.warn("접근 거부 - URI : {} {}, IP : {}, 사유 : {}", method, requestURI, ClientIP, accessDeniedException.getMessage());
+        log.warn("접근 거부 - URI : {} {}, 사유 : {}", method, requestURI, accessDeniedException.getMessage());
 
         // 접근 거부 응답 생성
         Map<String, Object> errorResponse = new HashMap<>();

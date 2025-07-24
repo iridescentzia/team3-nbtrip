@@ -1,7 +1,7 @@
 package org.scoula.member.mapper;
 
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.mapstruct.Mapper;
 import org.scoula.member.domain.MemberVO;
 
 import java.util.List;
@@ -22,10 +22,10 @@ public interface MemberMapper {
     int findUserIdByNickname(@Param("nickname") String nickname);
 
     // email 존재 여부 확인
-    boolean exsitsByEmail(@Param("email") String email);
+    boolean existsByEmail(@Param("email") String email);
 
     // nickname 존재 여부 확인
-    boolean exsitsByNickname(@Param("nickname") String nickname);
+    boolean existsByNickname(@Param("nickname") String nickname);
 
     // userId 존재 여부 확인
     boolean existsById(@Param("userId") int userId);
@@ -38,7 +38,4 @@ public interface MemberMapper {
 
     // FCM 토큰 업데이트
     void updateFcmToken(@Param("userId") int userId, @Param("fcmToken") String fcmToken);
-
-    // 마지막 로그인 시간 업데이트
-    void updateLastLongTime(@Param("userId") int userId, @Param("lastLongTime") String lastLongTime);
 }
