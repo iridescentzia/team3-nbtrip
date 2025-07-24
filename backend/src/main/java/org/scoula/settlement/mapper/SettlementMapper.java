@@ -24,4 +24,7 @@ public interface SettlementMapper {
 
     // 특정 여행 내 아직 완료되지 않은 정산 건 존재 여부 확인용
     public List<SettlementVO> getPendingOrProcessingByTripId(@Param("tripId") int tripId);
+
+    // DB insert용
+    public void insertSettlement(@Param("vo") SettlementVO vo);
 }

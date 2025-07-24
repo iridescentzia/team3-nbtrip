@@ -46,6 +46,11 @@ public class SettlementController {
         //    return ResponseEntity.status(403).build();
         //}
 
+        // 이미 정산 요청한 적 있는 상태인데 또 요청하는 경우 방어
+        if(!settlementService.getPendingOrProcessingByTripId(tripId).isEmpty()) {
+            return ResponseEntity.status(409).body(null);
+        }
+
         // n빵 계산 서비스 연동 + settlement에 insert (모두 pending)
         // List<SettlementDTO> results = settlementCalculator.calculate(tripId);
         // settlementService.saveCalculatedResults(results);
@@ -54,6 +59,8 @@ public class SettlementController {
     }
 
     // 3. 정산 상태 업데이트 (pending -> processing)
+    // 특정 정산 row(1건)의 상태 변경
+    // ex) /api/settlements/12/status?status=PROCESSING → A가 B에게 송금 시작
     @PutMapping("/{settlementId}/status")
     public ResponseEntity<String> updateStatus(
             @PathVariable int settlementId,
@@ -116,10 +123,17 @@ public class SettlementController {
         return ok
                 ? ResponseEntity.ok("Settlement marked as COMPLETED.")
                 : ResponseEntity.badRequest().body("정산 완료 처리 실패");
-
     }
 
-    // 5. 여행별 미정산 존재 여부 (메인 홈 "아직 안한 정산" 용)
+    // 5. 사용자의 정산 상태 조회
+    @GetMapping("/status")
+    public ResponseEntity<String> getMySettlementStatus(Principal principal) {
+        int userId = extractUserId(principal);
+        String status = settlementService.getMyOverallSettlementStatus(userId);
+        return ResponseEntity.ok(status); // "COMPLETED", "PROCESSING", or "PENDING"
+    }
+
+    // 6. 여행별 미정산 존재 여부 (메인 홈 "아직 안한 정산" 용)
     // true : 아직 pending/processing 남아 있음
     // false : 모두 completed
     @GetMapping("/{tripId}/remaining")
@@ -127,6 +141,40 @@ public class SettlementController {
         log.info("🟢GET /api/settlements/tripId={}/remaining", tripId);
         boolean hasRemaining = !settlementService.getPendingOrProcessingByTripId(tripId).isEmpty();
         return ResponseEntity.ok(hasRemaining);
+    }
+
+    // 7. 실제 그룹원 간 송금 처리 (정산 상태: pending -> processing 전환 + 잔액 차감/입금 수행)
+    @PostMapping("/{settlementsId}/transfer")
+    public ResponseEntity<String> transferToUser(
+            @PathVariable int settlementsId,
+            Principal principal
+    ) {
+        log.info("🟢POST /api/settlements/settlementId={}/transfer", settlementsId);
+        int loginUserId = extractUserId(principal);
+
+        SettlementVO vo;
+        try{
+            vo = settlementService.getById(settlementsId);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.badRequest().body("정산 내역을 찾을 수 없습니다.");
+        }
+
+        // sender 권한 확인
+        if(vo.getSenderId() == null || vo.getSenderId() != loginUserId) {
+            log.warn("권한 없음 - userId={} tried to transfer settlement {} (sender={})", loginUserId, settlementsId, vo.getSenderId());
+            return ResponseEntity.status(403).body("권한 없음 - 송금은 sender만 할 수 있습니다.");
+        }
+
+        // 상태 확인
+        if(!"PENDING".equalsIgnoreCase(vo.getSettlementStatus())) {
+            return ResponseEntity.badRequest().body("정산 상태가 pending일 때만 송금이 가능합니다.");
+        }
+
+        // 실제 송금 수행
+        boolean ok = settlementService.transferToUser(settlementsId);
+        return ok
+                ? ResponseEntity.ok("송금 완료 및 상태 processing으로 변경됨")
+                : ResponseEntity.badRequest().body("송금 실패: 잔액 부족 또는 처리 오류");
     }
 
     // 내부애서 사용
@@ -144,16 +192,17 @@ public class SettlementController {
 
     // 로그인 사용자 ID 추출 -> 추후, security와 연동 후 정식으로 교체
     private int extractUserId(Principal principal) {
-        if(principal == null) {
-            log.warn("Principal is null");
-            return 1;
-        }
-        try {
-            return Integer.parseInt(principal.getName());
-        } catch (Exception e) {
-            log.warn("Principal parse 실 [{}]", principal.getName());
-            return 1;
-        }
+        //if(principal == null) {
+        //    log.warn("Principal is null");
+        //    return 1;
+        //}
+        //try {
+        //    return Integer.parseInt(principal.getName());
+        //} catch (Exception e) {
+        //    log.warn("Principal parse 실 [{}]", principal.getName());
+        //    return 1;
+        //}
+        return 4;
     }
 
     // 주어진 settlementId의 sender가 로그인 사용자와 같은지 확인
