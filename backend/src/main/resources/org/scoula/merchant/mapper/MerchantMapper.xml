@@ -17,6 +17,6 @@
     <select id="getMerchantAccount" resultType="org.scoula.merchant.domain.MerchantAccountVO">
         SELECT *
         FROM merchant_account
-        WHERE merchant_id=#{merchantAccountId}
+        WHERE merchant_id=#{id}
     </select>
 </mapper>
