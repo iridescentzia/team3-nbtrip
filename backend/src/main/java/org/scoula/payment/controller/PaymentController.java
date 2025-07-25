@@ -31,7 +31,13 @@ public class PaymentController {
             log.error("QR 결제 실패: {}", e.getMessage());
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
-                    .body("결제 실패: {}" + e.getMessage());
+                    .body("결제 실패: " + e.getMessage());
         }
     }
+//    @PostMapping("/qr")
+//    public ResponseEntity<String> processPayment(@RequestBody PaymentDTO paymentDTO) {
+//        log.info("QR 결제 요청: {}", paymentDTO);
+//        paymentService.processPayment(paymentDTO);
+//        return ResponseEntity.ok("QR 결제가 성공적으로 처리되었습니다.");
+//    }
 }
