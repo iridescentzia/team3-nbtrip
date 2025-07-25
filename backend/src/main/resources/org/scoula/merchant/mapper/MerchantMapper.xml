@@ -3,6 +3,10 @@
         PUBLIC "--//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.scoula.merchant.mapper.MerchantMapper">
+    <insert id="createMerchant">
+        INSERT INTO merchant (category_id, merchant_name)
+        VALUES (#{categoryId}, #{merchantName})
+    </insert>
 
     <select id="getMerchant" resultType="org.scoula.merchant.domain.MerchantVO">
         SELECT *

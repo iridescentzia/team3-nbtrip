@@ -10,4 +10,6 @@ public interface MerchantMapper {
     MerchantCategoryVO getMerchantCategory(int categoryId);
 
     MerchantAccountVO getMerchantAccount(int id);
+
+    void createMerchant(MerchantVO merchant);
 }

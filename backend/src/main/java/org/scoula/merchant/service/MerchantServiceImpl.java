@@ -9,8 +9,12 @@ import org.scoula.merchant.dto.MerchantAccountDTO;
 import org.scoula.merchant.dto.MerchantCategoryDTO;
 import org.scoula.merchant.dto.MerchantDTO;
 import org.scoula.merchant.mapper.MerchantMapper;
+import org.scoula.payment.domain.PaymentType;
+import org.scoula.payment.domain.PaymentVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Log4j2
 @Service
@@ -35,5 +39,12 @@ public class MerchantServiceImpl implements MerchantService {
     public MerchantAccountDTO getMerchantAccount(int merchantId) {
         MerchantAccountVO merchantAccount = mapper.getMerchantAccount(merchantId);
         return MerchantAccountDTO.of(merchantAccount);
+    }
+
+    @Override
+    public void createMerchant(MerchantDTO merchantDTO) {
+        MerchantVO merchantVO = merchantDTO.toVO();
+
+        mapper.createMerchant(merchantVO);
     }
 }
