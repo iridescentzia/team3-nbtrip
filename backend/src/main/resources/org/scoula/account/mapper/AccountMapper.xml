@@ -18,7 +18,15 @@
     </update>
 
     <!-- 계좌 상세 조회 - 홈 화면 계좌 잔액 표시용 -->
-    <select id="selectAccountByUserId" resultType="org.scoula.account.domain.AccountVO">
+    <resultMap id="accountResultMap" type="org.scoula.account.domain.AccountVO">
+        <id property="accountId" column="account_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="accountNumber" column="account_number"/>
+        <result property="bankName" column="bank_name"/>
+        <result property="balance" column="balance"/>
+    </resultMap>
+
+    <select id="selectAccountByUserId" resultMap="accountResultMap">
         SELECT account_id, user_id, account_number, bank_name, balance
         FROM account
         WHERE user_id = #{userId}
