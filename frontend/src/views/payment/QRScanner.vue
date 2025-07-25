@@ -4,16 +4,18 @@ import { ref } from 'vue';
 import { QrcodeStream } from 'vue-qrcode-reader';
 
 const merchantID = ref(null);
+const merchant = ref('');
 const merchantName = ref('');
 const isModalVisible = ref(false);
 
-function onDetect(result) {
+async function onDetect(result) {
   const raw = result[0]?.rawValue;
 
   try {
     const parsed = JSON.parse(raw);
     merchantID.value = parsed.merchantID;
-    console.log('merchantID:', merchantID.value);
+    merchant.value = await api.get(merchantID.value);
+    merchantName.value = merchant.value.merchantName;
     isModalVisible.value = true;
   } catch (error) {
     console.error('QR 내용 파싱 오류:', error);
@@ -30,10 +32,17 @@ function onInit(promise) {
     });
 }
 
-const load = async () => {
-  merchantName.value = await api.get(merchantID.value);
-};
-load();
+// const load = async () => {
+//   if (merchantID.value) {
+//     try {
+//       const merchant = await api.get(merchantID.value);
+//       merchantName.value = merchant.name;
+//     } catch (error) {
+//       console.error('가맹점 정보 로드 실패:', error);
+//     }
+//   }
+// };
+// load();
 </script>
 
 <template>
@@ -52,16 +61,11 @@ load();
     <div v-if="isModalVisible" class="modal">
       <div class="modal-container">
         모달창
-        <!-- <h3>‘{{ tripName }}’ 중</h3>
+        <h3>‘{{ tripName }}’ 중</h3>
 
         <div class="input-group">
           <label for="merchant">가맹점</label>
-          <input
-            id="merchant"
-            v-model="merchant"
-            type="text"
-            :placeholder="merchantName"
-          />
+          <input id="merchant" :value="merchantName" type="text" readonly />
         </div>
 
         <div class="input-group">
@@ -100,7 +104,7 @@ load();
           </div>
         </div>
 
-        <button @click="submitPayment">결제하기</button> -->
+        <button @click="submitPayment">결제하기</button>
       </div>
       <!-- <button @click="isModalVisible = false">닫기</button> -->
     </div>
