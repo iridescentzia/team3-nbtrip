@@ -1,14 +1,28 @@
 <script setup>
 import Header from "@/components/layout/Header.vue";
 import Button from "@/components/common/Button.vue";
-import {useRouter} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import catImage from "@/assets/img/smiling_cat.png";
+import axios from "axios";
+import {ref} from "vue";
 
 const router = useRouter()
+const route = useRoute()
+
+const trip = ref({tripName: ''})
 
 // 홈 화면으로 이동
 const goHome = () => {
   router.push('/')
+}
+
+const fetchTrip = async () => {
+  try {
+    const {data} = await axios.get(`/api/trips/${tripId}`)
+    trip.value = data
+  } catch (error) {
+    console.error('여행 정보 불러오기 실패: ', error)
+  }
 }
 </script>
 
@@ -19,7 +33,7 @@ const goHome = () => {
       <img class="cat-img" :src="catImage" alt="웃고있는 고양이"/>
 
       <div class="text-area">
-        <p class="trip-name">서울 우정여행</p>
+        <p class="trip-name">{{trip.tripName}}</p>
         <h2 class="main-msg">정산이 완료되었습니다.</h2>
       </div>
     </div>
