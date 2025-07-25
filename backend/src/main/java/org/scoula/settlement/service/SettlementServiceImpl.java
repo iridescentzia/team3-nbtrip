@@ -326,32 +326,41 @@ public class SettlementServiceImpl implements SettlementService {
         SettlementDTO.MySettlementStatusResponseDto response = new SettlementDTO.MySettlementStatusResponseDto();
 
         // 보내야 할 정산들 상태별 카운트
+
+        // 보낼 돈 중 pending 상태 건수
         int pendingToSend = (int) list.stream()
-                .filter(vo -> userId == vo.getSenderId())
-                .filter(vo -> "PENDING".equalsIgnoreCase(vo.getSettlementStatus()))
+                .filter(vo -> userId == vo.getSenderId()) // 내가 송금자
+                .filter(vo -> "PENDING".equalsIgnoreCase(vo.getSettlementStatus())) // 상태 pending
                 .count();
 
+        // 보낼 돈 중 processing 상태 건수
         int processingToSend = (int) list.stream()
                 .filter(vo -> userId == vo.getSenderId())
                 .filter(vo -> "PROCESSING".equalsIgnoreCase(vo.getSettlementStatus()))
                 .count();
 
         // 받아야 할 정산들 상태별 카운트
+
+        // 받을 돈 중 pending 상태 건수
         int pendingToReceive = (int) list.stream()
-                .filter(vo -> userId == vo.getReceiverId())
+                .filter(vo -> userId == vo.getReceiverId()) // 내가 수신자
                 .filter(vo -> "PENDING".equalsIgnoreCase(vo.getSettlementStatus()))
                 .count();
 
+        // 받을 돈 중 processing 상태 건수
         int processingToReceive = (int) list.stream()
                 .filter(vo -> userId == vo.getReceiverId())
                 .filter(vo -> "PROCESSING".equalsIgnoreCase(vo.getSettlementStatus()))
                 .count();
 
+        // 완료된 건수 : 송금자/수신자 여부와 상관없이 상태가 completed인 모든 건수 계산
         int completed = (int) list.stream()
                 .filter(vo -> "COMPLETED".equalsIgnoreCase(vo.getSettlementStatus()))
                 .count();
 
         // 전체 상태 결정
+        // 보낼 돈, 받을 돈 중 pending 또는 processing 상태의 건이 0개라면 -> 전체 정산 상태를 completed로 판단
+        // 하나라도 pending 또는 processing이 있으면 -> 전체 상태는 processing으로 판단
         String overallStatus;
         if (pendingToSend + processingToSend + pendingToReceive + processingToReceive == 0) {
             overallStatus = "COMPLETED";
@@ -359,10 +368,11 @@ public class SettlementServiceImpl implements SettlementService {
             overallStatus = "PROCESSING";
         }
 
+        // DTO에 값 세팅 -> 사용자의 현재 정산 진행 상황을 상세하게 반환
         response.setOverallStatus(overallStatus);
-        response.setPendingToSendCount(pendingToSend);
+        response.setPendingToSendCount(pendingToSend); // 내가 아직 안 보낸 돈
         response.setProcessingToSendCount(processingToSend);
-        response.setPendingToReceiveCount(pendingToReceive);
+        response.setPendingToReceiveCount(pendingToReceive); // 내가 아직 못 받은 돈
         response.setProcessingToReceiveCount(processingToReceive);
         response.setCompletedCount(completed);
 
