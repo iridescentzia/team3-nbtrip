@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 // import HomeView from '../views/HomeView.vue'
 import SettlementSummaryView from '../views/settlement/SettlementSummaryView.vue';
+import SettlementRequestView from '../views/settlement/SettlementRequestView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,6 +24,11 @@ const router = createRouter({
       path: '/settlement/:tripId',
       name: 'settlementSummary',
       component: SettlementSummaryView,
+    },
+    {
+      path: '/settlement/:tripId/request',
+      name: 'settlementRequest',
+      component: SettlementRequestView,
     },
   ],
 });
