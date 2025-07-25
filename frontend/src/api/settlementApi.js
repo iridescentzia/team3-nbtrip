@@ -12,13 +12,18 @@ export const getSettlementSummary = (tripId) => {
   return apiClient.get(`/settlements/${tripId}/summary`);
 };
 
-/*
-// [참고] 앞으로 2, 3단계 기능을 만들 때, 이 파일에 아래와 같이 함수를 추가해나갈 수 있습니다.
-export const calculateOptimalSettlement = (tripId) => {
-  return apiClient.get(`/settlements/${tripId}`);
+/**
+ * 정산 2단계: 최종 정산 결과 계산 API
+ * @param {number} tripId - 여행 ID
+ */
+export const calculateFinalSettlement = (tripId) => {
+  return apiClient.get(`/settlements/${tripId}/calculate`);
 };
 
-export const requestSettlement = (tripId) => {
-  return apiClient.post('/settlements', { tripId });
+/**
+ *  정산 2단계: 정산 요청 생성 API
+ * @param {object} payload - { tripId }
+ */
+export const requestSettlement = (payload) => {
+  return apiClient.post('/settlements', payload);
 };
-*/

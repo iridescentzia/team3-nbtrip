@@ -40,7 +40,6 @@ onMounted(async () => {
 
 const goToNextStep = () => {
   console.log('다음 단계로 이동합니다.');
-  // 6. 실제 라우터 이동 로직을 사용합니다.
   router.push(`/settlement/${tripId}/request`);
 };
 </script>
@@ -92,9 +91,7 @@ const goToNextStep = () => {
       </main>
 
       <footer class="footer">
-        <button @click="goToNextStep" class="next-button">
-          정산 요청 보내기
-        </button>
+        <button @click="goToNextStep" class="next-button">다음</button>
       </footer>
     </div>
   </div>
@@ -207,12 +204,12 @@ const goToNextStep = () => {
   font-weight: 700;
   color: var(--theme-text);
   padding-left: 0.25rem;
+  margin: 5px 0 20px 0;
 }
 .member-list {
   margin-top: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
 }
 .member-item {
   display: flex;

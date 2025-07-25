@@ -36,4 +36,20 @@ public class SettlementController {
         // 조회된 데이터를 ResponseEntity에 담아 프론트엔드로 반환
         return ResponseEntity.ok(summaryDto);
     }
+
+    /**
+     * [NEW] 정산 2단계: 최종 정산 결과 계산 API
+     * 상계 처리가 완료된 최적의 송금 목록을 조회함.
+     *
+     * @param tripId 조회할 여행의 ID
+     * @return ResponseEntity<SettlementResultResponseDto> 최종 송금 목록을 담은 DTO
+     */
+    @GetMapping("/{tripId}/calculate")
+    public ResponseEntity<SettlementDTO.SettlementResultResponseDto> calculateFinalSettlement(@PathVariable Long tripId) {
+        // SettlementService를 호출하여 최종 정산 결과를 계산
+        SettlementDTO.SettlementResultResponseDto resultDto = settlementService.calculateFinalSettlement(tripId);
+
+        // 계산된 결과를 ResponseEntity에 담아 프론트엔드로 반환
+        return ResponseEntity.ok(resultDto);
+    }
 }
