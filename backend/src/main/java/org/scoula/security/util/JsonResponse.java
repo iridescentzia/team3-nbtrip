@@ -1,6 +1,7 @@
 package org.scoula.security.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.http.HttpServletResponse;
@@ -8,6 +9,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 public class JsonResponse {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 

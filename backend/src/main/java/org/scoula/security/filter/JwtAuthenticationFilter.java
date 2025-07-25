@@ -70,14 +70,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-
+        log.info("[JwtFilter] 요청 경로: {}", path);
         return path.startsWith("/assets") ||
                 path.startsWith("/api/health") ||
                 path.startsWith("/api/status") ||
                 path.startsWith("/swagger-ui") ||
                 path.startsWith("/v3/api-docs") ||
                 path.equals("/api/auth/login") ||
-                path.equals("/api/users/register") ||
+                path.equals("/api/auth/register") ||
                 (path.startsWith("/api/merchants/") && request.getMethod().equals("GET"));
     }
 }

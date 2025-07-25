@@ -10,6 +10,7 @@ import lombok.extern.log4j.Log4j2;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import java.io.IOException;
 
 @Data
 @NoArgsConstructor
@@ -33,24 +34,35 @@ public class LoginDTO {
     // JSON 요청에서 LoginDTO 객체 생성
     public static LoginDTO of(HttpServletRequest request) {
         ObjectMapper objectMapper = new ObjectMapper();
-
         try {
+            int length = request.getContentLength();
+            if (length <= 0) {
+                log.error("요청 바디가 비어 있습니다. Content-Length: {}", length);
+                throw new IllegalArgumentException("요청 바디가 비어 있습니다.");
+            }
             LoginDTO loginDTO = objectMapper.readValue(request.getInputStream(), LoginDTO.class);
             if (loginDTO.getEmail() == null || loginDTO.getEmail().trim().isEmpty()) {
+                log.warn("이메일 누락");
                 throw new IllegalArgumentException("이메일을 입력해주세요.");
             }
             if (loginDTO.getPassword() == null || loginDTO.getPassword().trim().isEmpty()) {
+                log.warn("비밀번호 누락");
                 throw new IllegalArgumentException("비밀번호를 입력해주세요.");
             }
             log.debug("로그인 DTO 파싱 완료 - 이메일: {}, FCM 토큰: {}, 로그인유지: {}",
                     loginDTO.getEmail(),
                     loginDTO.getFcmToken() != null ? "있음" : "없음",
                     loginDTO.isRememberMe());
-
             return loginDTO;
+        } catch (IOException e) {
+            log.error("JSON 파싱 실패 - 메시지: {}", e.getMessage(), e);
+            throw new RuntimeException("요청 본문(JSON) 파싱 중 오류가 발생했습니다.", e);
+        } catch (IllegalArgumentException e) {
+            log.error("입력 값 검증 실패 - {}", e.getMessage());
+            throw new RuntimeException("입력값 오류: " + e.getMessage(), e);
         } catch (Exception e) {
-            log.error("로그인 JSON 파싱 실패 : {}", e.getMessage());
-            throw new RuntimeException("로그인 정보를 읽을 수 없습니다.", e);
+            log.error("예기치 못한 오류 발생 - {}", e.getMessage(), e);
+            throw new RuntimeException("로그인 요청 처리 중 오류가 발생했습니다.", e);
         }
     }
 }
