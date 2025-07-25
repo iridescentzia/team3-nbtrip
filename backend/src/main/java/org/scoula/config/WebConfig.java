@@ -32,15 +32,15 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
         return new String[] { "/" };
     }
 
-    @Override
-    protected Filter[] getServletFilters() {
-        CharacterEncodingFilter characterEncodingFilter = new CharacterEncodingFilter();
-
-        characterEncodingFilter.setEncoding("UTF-8");
-        characterEncodingFilter.setForceEncoding(true);
-
-        return new Filter[] { characterEncodingFilter };
-    }
+//    @Override
+//    protected Filter[] getServletFilters() {
+//        CharacterEncodingFilter characterEncodingFilter = new CharacterEncodingFilter();
+//
+//        characterEncodingFilter.setEncoding("UTF-8");
+//        characterEncodingFilter.setForceEncoding(true);
+//
+//        return new Filter[] { characterEncodingFilter };
+//    }
 
     @Override
     protected void customizeRegistration(ServletRegistration.Dynamic registration) {
