@@ -1,5 +1,6 @@
 package org.scoula.mypage.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,6 +33,7 @@ public class MyPageDTO {
     @Pattern(regexp = "^01[0-9]-[0-9]{4}-[0-9]{4}$", message = "올바른 휴대폰 번호 형식을 입력해주세요. (예: 010-1234-5678)")
     private String phoneNumber;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
     private String fcmToken;
 

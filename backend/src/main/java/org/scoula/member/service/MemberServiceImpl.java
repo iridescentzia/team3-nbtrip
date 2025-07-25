@@ -24,6 +24,12 @@ public class MemberServiceImpl implements MemberService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProcessor jwtProcessor;
 
+    // 전화번호 마스킹 처리 메서드
+    private String maskPhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.length() < 7) return phoneNumber;
+        return phoneNumber.substring(0, 3) + "-****-" + phoneNumber.substring(phoneNumber.length() - 4);
+    }
+
     // 회원가입
     @Override
     public ApiResponse registerMember(MemberDTO memberDTO) {
@@ -70,8 +76,8 @@ public class MemberServiceImpl implements MemberService {
         log.info("로그인 시도 - 이메일 : {}", loginRequestDTO.getEmail());
         try {
             // 1. MyBatis로 회원정보 조회
-            Optional<MemberVO> memberOptional = memberMapper.findByEmail(loginRequestDTO.getEmail());
-            MemberVO memberVO = memberOptional.orElseThrow(() -> new UserNotFoundException("존재하지 않는 회원입니다."));
+            MemberVO memberVO = memberMapper.findByEmail(loginRequestDTO.getEmail());
+            if (memberVO == null) { throw new UserNotFoundException("존재하지 않는 회원입니다."); }
 
             // 2. 비밀번호 검증
             if(!passwordEncoder.matches(loginRequestDTO.getPassword(), memberVO.getPassword())) {
@@ -93,6 +99,7 @@ public class MemberServiceImpl implements MemberService {
             memberResponse.setEmail(memberVO.getEmail());
             memberResponse.setNickname(memberVO.getNickname());
             memberResponse.setName(memberVO.getName());
+            memberResponse.setMaskedPhoneNumber(maskPhoneNumber(memberVO.getPhoneNumber()));
             memberResponse.setCreatedAt(memberVO.getCreatedAt());
 
             // 6. 토큰 만료 시간 계산
@@ -134,14 +141,15 @@ public class MemberServiceImpl implements MemberService {
     public MemberResponseDTO getMemberInfo(int userId) {
         log.info("회원 정보 조회 - 회원 ID : {}", userId);
         try {
-            Optional<MemberVO> memberOptional = memberMapper.findById(userId);
-            MemberVO memberVO = memberOptional.orElseThrow(() -> new UserNotFoundException("존재하지 않는 회원입니다."));
+            MemberVO memberVO = memberMapper.findById(userId);
+            if (memberVO == null) { throw new UserNotFoundException("존재하지 않는 회원입니다."); }
 
             MemberResponseDTO responseDTO = new MemberResponseDTO();
             responseDTO.setUserId(memberVO.getUserId());
             responseDTO.setEmail(memberVO.getEmail());
             responseDTO.setNickname(memberVO.getNickname());
             responseDTO.setName(memberVO.getName());
+            responseDTO.setMaskedPhoneNumber(maskPhoneNumber(memberVO.getPhoneNumber()));
             responseDTO.setCreatedAt(memberVO.getCreatedAt());
             return responseDTO;
         } catch (UserNotFoundException e) {
@@ -158,8 +166,8 @@ public class MemberServiceImpl implements MemberService {
         log.info("회원 정보 수정 시작 - 회원ID : {}", userId);
         try {
             // 1. MyBatis로 회원 존재 확인
-            Optional<MemberVO> memberOptional = memberMapper.findById(userId);
-            MemberVO memberVO = memberOptional.orElseThrow(() -> new UserNotFoundException("존재하지 않는 회원입니다."));
+            MemberVO memberVO = memberMapper.findById(userId);
+            if (memberVO == null) { throw new UserNotFoundException("존재하지 않는 회원입니다."); }
 
             // 2. nickname 변경 시 중복 확인
             if (StringUtils.hasText(updateDTO.getNickname()) && !updateDTO.getNickname().equals(memberVO.getNickname())) {
@@ -189,6 +197,7 @@ public class MemberServiceImpl implements MemberService {
             responseDTO.setEmail(memberVO.getEmail());
             responseDTO.setNickname(memberVO.getNickname());
             responseDTO.setName(memberVO.getName());
+            responseDTO.setMaskedPhoneNumber(maskPhoneNumber(memberVO.getPhoneNumber()));
             responseDTO.setCreatedAt(memberVO.getCreatedAt());
             return responseDTO;
         } catch (UserNotFoundException | DuplicateNicknameException e) {
@@ -205,8 +214,8 @@ public class MemberServiceImpl implements MemberService {
         log.info("비밀번호 변경 시작 - 회원 ID: {}", userId);
         try {
             // 1. MyBatis로 회원 정보 조회
-            Optional<MemberVO> memberOptional = memberMapper.findById(userId);
-            MemberVO memberVO = memberOptional.orElseThrow(() -> new UserNotFoundException("존재하지 않는 회원입니다."));
+            MemberVO memberVO = memberMapper.findById(userId);
+            if (memberVO == null) { throw new UserNotFoundException("존재하지 않는 회원입니다."); }
 
             // 2. 현재 비밀번호 검증
             if (!passwordEncoder.matches(passwordDTO.getCurrentPassword(), memberVO.getPassword())) {

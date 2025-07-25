@@ -28,6 +28,8 @@ public class MyPageServiceImpl implements MyPageService {
             throw new IllegalArgumentException("사용자 ID가 유효하지 않습니다.");
         }
         MyPageDTO userInfo = myPageMapper.selectUserInfo(userId);
+        System.out.println("userId = " + userId);
+        System.out.println("createdAt = " + userInfo.getCreatedAt());
         if (userInfo == null) {
             throw new Exception("사용자 정보를 찾을 수 없습니다. (ID: " + userId + ")");
         }

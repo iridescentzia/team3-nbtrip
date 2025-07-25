@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-        PUBLIC "--//mybatis.org//DTD Mapper 3.0//EN"
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.scoula.member.mapper.MemberMapper">
     <!-- MemberVO 결과 매핑 -->
@@ -22,14 +22,14 @@
     </insert>
 
     <!-- email로 회원 조회 -->
-    <select id="findByEmail" parameterType="string" resultType="org.scoula.member.domain.MemberVO">
+    <select id="findByEmail" parameterType="string" resultMap="memberResultMap">
         SELECT user_id, email, password, nickname, name, phone_number, fcm_token, created_at
         FROM users
-        WHERE emil = #{email}
+        WHERE email = #{email}
     </select>
 
     <!-- userId로 회원 조회 -->
-    <select id="findById" parameterType="int" resultType="org.scoula.member.domain.MemberVO">
+    <select id="findById" parameterType="int" resultMap="memberResultMap">
         SELECT user_id, email, password, nickname, name, phone_number, fcm_token, created_at
         FROM users
         WHERE user_id = #{userId}
@@ -43,21 +43,21 @@
     </select>
 
     <!-- 이메일 존재 여부 확인 -->
-    <select id="existsByEmail" resultType="java.lang.Boolean">
+    <select id="existsByEmail" parameterType="string" resultType="java.lang.Boolean">
         SELECT COUNT(*) > 0
         FROM users
         WHERE email = #{email}
     </select>
 
     <!-- 닉네임 존재 여부 확인 -->
-    <select id="existsByNickname" resultType="java.lang.Boolean">
+    <select id="existsByNickname" parameterType="string" resultType="java.lang.Boolean">
         SELECT COUNT(*) > 0
         FROM users
         WHERE nickname = #{nickname}
     </select>
 
     <!-- 회원 ID 존재 여부 확인 -->
-    <select id="existsById" resultType="java.lang.Boolean">
+    <select id="existsById" parameterType="int" resultType="java.lang.Boolean">
         SELECT COUNT(*) > 0
         FROM users
         WHERE user_id = #{userId}
