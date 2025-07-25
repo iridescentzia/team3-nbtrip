@@ -9,6 +9,7 @@ const merchant = ref('');
 const merchantName = ref('');
 
 const payment = ref('');
+const reason = ref('');
 
 const isModalVisible = ref(false);
 const ModalType = ref(1);
@@ -54,6 +55,7 @@ async function submitPayment() {
     ModalType.value = 2; // 결제 완료 모달
   } catch (error) {
     console.error('결제 실패:', error);
+    reason.value = error.response.data || '알 수 없는 오류';
     ModalType.value = 3; // 결제 실패 모달
   }
 }
@@ -136,7 +138,7 @@ async function submitPayment() {
       <div class="modal-container">
         <h3>결제에 실패했어요...</h3>
         <!-- 고양이 -->
-        <p>사유:</p>
+        <p>사유: {{ reason }}</p>
         <div style="display: flex">
           <button @click="isModalVisible = false">취소하기</button>
           <button @click="submitPayment">다시 시도하기</button>
