@@ -11,14 +11,11 @@ import TravelCard from '../common/TravelCard.vue'
     <div class="layout-container">
       <Header />
       <main class="content">
-        <TravelCard trip-name="서울 우정 여행" start-date="2025-07-22" end-date="2025-07-22" />
+        <RouterView/>
       </main>
       <div class="mid">
 
       </div>
-      <Button />
-
-      <Footer />
     </div>
   </div>
 </template>

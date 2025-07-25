@@ -1,4 +1,6 @@
 /* src/assets/main.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR&display=swap');
+
+body {
+    font-family: 'IBM Plex Sans KR', sans-serif;
+}

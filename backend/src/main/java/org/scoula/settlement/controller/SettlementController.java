@@ -202,7 +202,7 @@ public class SettlementController {
         //    log.warn("Principal parse 실 [{}]", principal.getName());
         //    return 1;
         //}
-        return 4;
+        return 3;
     }
 
     // 주어진 settlementId의 sender가 로그인 사용자와 같은지 확인
