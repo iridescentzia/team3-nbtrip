@@ -61,7 +61,7 @@ public class SettlementController {
     }
 
     /**
-     * 4. 여행별 미정산 존재 여부 (메인 홈 "아직 안한 정산" 용)
+     * 4. 여행별 미정산 존재 여부
      */
     @GetMapping("/{tripId}/remaining")
     public ResponseEntity<SettlementDTO.RemainingSettlementResponseDto> hasRemainingUnsettled(@PathVariable int tripId) {
@@ -192,7 +192,6 @@ public class SettlementController {
 
     /**
      * 정산 관련 알림 발송
-     * TODO: 팀원 머지 후 주석 해제
      */
     private void sendSettlementNotification(int fromUserId, int tripId, String notificationType) {
         // TODO: 팀원 머지 후 주석 해제
@@ -252,7 +251,7 @@ public class SettlementController {
         //     log.warn("Principal parse 실패 [{}]", principal.getName());
         //     return 1;
         // }
-        return 4; // 테스트용
+        return 3; // 테스트용
     }
 
     /**
