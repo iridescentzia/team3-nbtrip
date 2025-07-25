@@ -13,10 +13,10 @@ public interface MemberMapper {
     void insertMember(MemberVO memberVO);
 
     // email로 회원 조회
-    Optional<MemberVO> findByEmail(@Param("email") String email);
+    MemberVO findByEmail(@Param("email") String email);
 
     // userId로 회원 조회
-    Optional<MemberVO> findById(@Param("userId") int userId);
+    MemberVO findById(@Param("userId") int userId);
 
     // nickname으로 userId 조회
     int findUserIdByNickname(@Param("nickname") String nickname);

@@ -4,7 +4,7 @@
 
 <mapper namespace="org.scoula.mypage.mapper.MyPageMapper">
 
-    <!-- 사용자 정보 조회(GET /api/users/{userId})-->
+    <!-- 사용자 정보 조회(GET /api/users/{userId}) -->
     <select id="selectUserInfo" parameterType="int" resultType="org.scoula.mypage.dto.MyPageDTO">
         SELECT
             user_id as userId,

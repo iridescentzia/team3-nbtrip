@@ -1,5 +1,7 @@
 package org.scoula.security.config;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.mybatis.spring.annotation.MapperScan;
@@ -14,6 +16,7 @@ import org.scoula.security.handler.LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -28,6 +31,8 @@ import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+
+import java.time.format.DateTimeFormatter;
 
 @Configuration
 @EnableWebSecurity
@@ -61,12 +66,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);          // 쿠키/인증 헤더 전송 허용
-        config.addAllowedOriginPattern("*");       // 모든 도메인 허용 (개발용)
-        config.addAllowedHeader("*");              // 모든 헤더 허용
-        config.addAllowedMethod("*");              // 모든 HTTP 메서드 허용
+        config.setAllowCredentials(true);  // 쿠키/인증 헤더 전송 허용
+        config.addAllowedOriginPattern("*");  // 모든 도메인 허용 (개발용)
+        config.addAllowedHeader("*");  // 모든 헤더 허용
+        config.addAllowedMethod("*");  // 모든 HTTP 메서드 허용
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
+    }
+
+    // LocalDateTime → yyyy-MM-dd HH:mm:ss 포맷 직렬화 설정
+    @Bean
+    public Jackson2ObjectMapperBuilder jacksonObjectMapperBuilder() {
+        Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
+        builder.simpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        builder.serializers(new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        builder.featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return builder;
     }
 
     // 보안 검사를 제외할 리소스 설정

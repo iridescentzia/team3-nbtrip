@@ -3,6 +3,7 @@ package org.scoula.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -13,10 +14,9 @@ import javax.servlet.*;
 @Configuration
 @EnableWebMvc
 @ComponentScan(basePackages = {
-        "org.scoula.member.controller",
-        "org.scoula.mypage.controller",
-        "org.scoula.security.accounting.controller"
+        "org.scoula.member.controller", "org.scoula.mypage.controller", "org.scoula.security.accounting.controller"
 })
+@Slf4j
 public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitializer implements WebMvcConfigurer {
     final String LOCATION = "/Users/zia/upload";
     final long MAX_FILE_SIZE = 1024 * 1024 * 10L;
@@ -30,7 +30,7 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
 
     @Override
     protected Class<?>[] getServletConfigClasses() {
-        return new Class[] { ServletConfig.class };
+        return new Class[] { WebConfig.class };
     }
 
     @Override

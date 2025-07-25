@@ -5,9 +5,9 @@ import javax.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.scoula.member.dto.MemberResponseDTO;
+import org.scoula.member.service.MemberService;
 import org.scoula.mypage.dto.ApiResponse;
-import org.scoula.mypage.dto.FcmTokenRequestDTO;
-import org.scoula.mypage.dto.MyPageDTO;
 import org.scoula.mypage.dto.PasswordChangeRequestDTO;
 import org.scoula.mypage.dto.UserUpdateRequestDTO;
 import org.scoula.mypage.service.MyPageService;
@@ -35,6 +35,9 @@ public class MyPageController {
     @Autowired
     private HttpServletRequest request;
 
+    @Autowired
+    private MemberService memberService;
+
     // 내 정보 조회 - GET /api/mypage
     @GetMapping
     public ResponseEntity<Map<String, Object>> getMyProfile(@AuthenticationPrincipal UserDetails userDetails) {
@@ -43,7 +46,7 @@ public class MyPageController {
             String userEmail = userDetails.getUsername();
             log.info("마이페이지 - 내 정보 조회: {}", userEmail);
             Integer userId = extractUserIdFromToken();
-            MyPageDTO userInfo = myPageService.getUserInfo(userId);
+            MemberResponseDTO userInfo = memberService.getMemberInfo(userId);
             response.put("success", true);
             response.put("data", userInfo);
             response.put("message", "내 정보 조회 성공");
@@ -107,27 +110,27 @@ public class MyPageController {
     }
 
     // FCM 토큰 갱신 - PUT /api/mypage/fcm-token
-    @PutMapping("/fcm-token")
-    public ResponseEntity<ApiResponse<String>> updateFcmToken(
-            @RequestBody FcmTokenRequestDTO requestDTO,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        try {
-            String userEmail = userDetails.getUsername();
-            log.info("마이페이지 - FCM 토큰 갱신: {}, 토큰: {}", userEmail, requestDTO.getFcmToken());
-            Integer userId = extractUserIdFromToken();
-            boolean result = myPageService.updateFcmToken(userId, requestDTO.getFcmToken());
-            if (result) {
-                return ResponseEntity.ok(ApiResponse.success("FCM 토큰이 성공적으로 갱신되었습니다."));
-            } else {
-                return ResponseEntity.badRequest()
-                        .body(ApiResponse.error("FCM 토큰 갱신에 실패했습니다."));
-            }
-        } catch (Exception e) {
-            log.error("FCM 토큰 갱신 실패: {}", e.getMessage());
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("FCM 토큰 갱신 실패: " + e.getMessage()));
-        }
-    }
+//    @PutMapping("/fcm-token")
+//    public ResponseEntity<ApiResponse<String>> updateFcmToken(
+//            @RequestBody FcmTokenRequestDTO requestDTO,
+//            @AuthenticationPrincipal UserDetails userDetails) {
+//        try {
+//            String userEmail = userDetails.getUsername();
+//            log.info("마이페이지 - FCM 토큰 갱신: {}, 토큰: {}", userEmail, requestDTO.getFcmToken());
+//            Integer userId = extractUserIdFromToken();
+//            boolean result = myPageService.updateFcmToken(userId, requestDTO.getFcmToken());
+//            if (result) {
+//                return ResponseEntity.ok(ApiResponse.success("FCM 토큰이 성공적으로 갱신되었습니다."));
+//            } else {
+//                return ResponseEntity.badRequest()
+//                        .body(ApiResponse.error("FCM 토큰 갱신에 실패했습니다."));
+//            }
+//        } catch (Exception e) {
+//            log.error("FCM 토큰 갱신 실패: {}", e.getMessage());
+//            return ResponseEntity.badRequest()
+//                    .body(ApiResponse.error("FCM 토큰 갱신 실패: " + e.getMessage()));
+//        }
+//    }
 
     // JWT에서 userId 추출 메서드
     private Integer extractUserIdFromToken() {

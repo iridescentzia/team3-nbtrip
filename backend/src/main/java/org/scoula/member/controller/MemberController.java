@@ -50,10 +50,12 @@ public class MemberController {
     // 2. 정보 조회(GET /api/users/{userId})
     @GetMapping("/users/{userId}")
     public ResponseEntity<?> getUserInfo(@PathVariable("userId") int userId) {
+        log.info("회원 정보 조회 요청 - userId: {}", userId);
         try {
             MemberResponseDTO member = memberService.getMemberInfo(userId);
             return ResponseEntity.ok(member);
         } catch (UserNotFoundException e) {
+            log.warn("유저 없음 : {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, e.getMessage()));
         } catch (Exception e) {
             log.error("회원 정보 조회 실패", e);
