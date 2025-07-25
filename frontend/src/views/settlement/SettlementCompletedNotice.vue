@@ -49,7 +49,6 @@ const fetchTrip = async () => {
   height: 100vh;
   justify-content: space-between;
   padding: 16px;
-  background-color: #fefefe;
 }
 
 .content {
