@@ -23,8 +23,6 @@ public class NotificationController {
             @PathVariable Integer userId,
             @RequestParam(required = false) String category){
 
-        log.info("userId = " + userId + ", category = " + category);
-
         List<NotificationDTO> notifications = (category != null && !category.isEmpty())
                 ? notificationService.getNotificationsByCategory(userId, category)
                 : notificationService.getNotificationsByUserId(userId);
