@@ -1,6 +1,7 @@
 package org.scoula.report.mapper;
 
 import org.scoula.report.domain.ChartVO;
+
 import java.util.List;
 
 public interface ChartMapper {
