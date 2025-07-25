@@ -7,10 +7,7 @@ import org.scoula.merchant.dto.MerchantCategoryDTO;
 import org.scoula.merchant.dto.MerchantDTO;
 import org.scoula.merchant.service.MerchantService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,5 +29,11 @@ public class MerchantController {
     @GetMapping("/account/{id}")
     public ResponseEntity<MerchantAccountDTO> getMerchantAccount(@PathVariable("id") int id) {
         return ResponseEntity.ok(service.getMerchantAccount(id));
+    }
+
+    @PostMapping("")
+    public ResponseEntity<Void> createMerchant(@RequestBody MerchantDTO dto) {
+        service.createMerchant(dto);
+        return ResponseEntity.ok().build();
     }
 }

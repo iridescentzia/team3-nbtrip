@@ -20,4 +20,11 @@ public class MerchantDTO {
                 .merchantName(vo.getMerchantName())
                 .build();
     }
+
+    public MerchantVO toVO() {
+        return MerchantVO.builder()
+                .categoryId(categoryId)
+                .merchantName(merchantName)
+                .build();
+    }
 }

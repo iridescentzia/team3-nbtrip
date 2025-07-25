@@ -10,4 +10,6 @@ public interface MerchantService {
     MerchantCategoryDTO getMerchantCategory(int categoryId);
 
     MerchantAccountDTO getMerchantAccount(int merchantId);
+
+    void createMerchant(MerchantDTO merchantDTO);
 }
