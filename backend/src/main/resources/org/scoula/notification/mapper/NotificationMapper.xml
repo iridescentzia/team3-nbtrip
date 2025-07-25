@@ -15,7 +15,7 @@
                tm.member_status AS memberStatus,
                n.payment_id AS paymentId,
                p.amount AS amount,
-               m.merchant_name AS merchantName,
+               COALESCE(m.merchant_name, p.memo) AS merchantName,
                n.notification_type AS notificationType,
                n.send_at AS sendAt
         FROM notification n
@@ -39,7 +39,7 @@
                tm.member_status AS memberStatus,
                n.payment_id AS paymentId,
                p.amount AS amount,
-               m.merchant_name AS merchantName,
+               COALESCE(m.merchant_name, p.memo) AS merchantName,
                n.notification_type AS notificationType,
                n.send_at AS sendAt
         FROM notification n
@@ -64,7 +64,7 @@
         tm.member_status AS memberStatus,
         n.payment_id AS paymentId,
         p.amount AS amount,
-        m.merchant_name AS merchantName,
+        COALESCE(m.merchant_name, p.memo) AS merchantName,
         n.notification_type AS notificationType,
         n.send_at AS sendAt
         FROM notification n

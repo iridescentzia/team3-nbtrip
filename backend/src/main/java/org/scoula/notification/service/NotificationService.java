@@ -1,9 +1,6 @@
 package org.scoula.notification.service;
 
-import org.scoula.notification.domain.NotificationVO;
 import org.scoula.notification.dto.NotificationDTO;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 
