@@ -21,14 +21,14 @@ import javax.validation.Valid;
 
 @Slf4j
 @RequiredArgsConstructor
-@RestControllerAdvice
+@RestController
 @RequestMapping("/api")
 public class MemberController {
     private final MemberService memberService;
     private final JwtProcessor jwtProcessor;
 
-    // 1. 회원가입(POST /api/user/register)
-    @PostMapping("/users/register")
+    // 1. 회원가입(POST /api/auth/register)
+    @PostMapping("/auth/register")
     public ResponseEntity<ApiResponse> register(@Valid @RequestBody MemberDTO memberDTO, BindingResult bindingResult) {
         log.info("회원가입 요청 - 이메일 : {}", memberDTO.getEmail());
 

@@ -9,9 +9,9 @@ import org.scoula.security.filter.JwtAuthenticationFilter;
 import org.scoula.security.filter.JwtUsernamePasswordAuthenticationFilter;
 import org.scoula.security.handler.CustomAccessDeniedHandler;
 import org.scoula.security.handler.CustomAuthenticationEntryPoint;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.scoula.security.handler.LoginFailureHandler;
+import org.scoula.security.handler.LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,25 +27,28 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
 @Log4j2
-@MapperScan(basePackages = {"org.scoula.security.accounting.mapper"})
-@ComponentScan(basePackages = {"org.scoula.security"})
+@MapperScan(basePackages = {"org.scoula.security.accounting.mapper", "org.scoula.member.mapper", "org.scoula.mypage.mapper"})
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final CustomUserDetailsService userDetailsService;  // 사용자 인증 처리 서비스
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;  // jwt 토큰 인증 필터
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;  // JWT 토큰 인증 필터
     private final AuthenticationErrorFilter authenticationErrorFilter;  // 인증 오류 처리 필터
     private final CustomAccessDeniedHandler accessDeniedHandler;  // 접근 거부 처리 핸들러
-    private final CustomAuthenticationEntryPoint authenticationEntryPoint;  // 인증 처리 시점 처리 핸들러
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;  // 인증 진입점 처리 핸들러
+    private final LoginSuccessHandler loginSuccessHandler;  // 로그인 성공 핸들러
+    private final LoginFailureHandler loginFailureHandler;  // 로그인 실패 핸들러
 
-    // 로그인 처리 필터
-    @Autowired
-    private JwtUsernamePasswordAuthenticationFilter jwtUsernamePasswordAuthenticationFilter;
+    // AuthenticationManager Bean 등록
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
 
     // 비밀번호 암호화를 위한 BCrypt 인코더
     @Bean
@@ -53,39 +56,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
-    // 한글 인코딩 처리 필터
-    public CharacterEncodingFilter encodingFilter() {
-        CharacterEncodingFilter encodingFilter = new CharacterEncodingFilter();
-        encodingFilter.setEncoding("UTF-8");
-        encodingFilter.setForceEncoding(true);
-        return encodingFilter;
-    }
-
-    // AuthenticationManager 빈 등록
-    @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-    }
-
     // CORS 설정 필터
     @Bean
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("*");
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
+        config.setAllowCredentials(true);          // 쿠키/인증 헤더 전송 허용
+        config.addAllowedOriginPattern("*");       // 모든 도메인 허용 (개발용)
+        config.addAllowedHeader("*");              // 모든 헤더 허용
+        config.addAllowedMethod("*");              // 모든 HTTP 메서드 허용
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
 
-    // 보안 제외 설정
+    // 보안 검사를 제외할 리소스 설정
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(
-                // 정적 리소스만 제외
+                // 정적 리소스
                 "/assets/**",
                 "/favicon.ico",
                 "/robots.txt",
@@ -94,7 +82,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/api/health",
                 "/api/status",
 
-                // 최신 Swagger/OpenAPI 3.x 경로
+                // Swagger/OpenAPI 문서
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
                 "/swagger-resources/**",
@@ -105,19 +93,26 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     // HTTP 보안 설정 및 필터 체인 구성
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        // 필터 체인 구성
+        JwtUsernamePasswordAuthenticationFilter jwtLoginFilter =
+                new JwtUsernamePasswordAuthenticationFilter(
+                        authenticationManagerBean(),
+                        loginSuccessHandler,
+                        loginFailureHandler
+                );
+
         http
-                .addFilterBefore(encodingFilter(), CsrfFilter.class)
-                .addFilterBefore(authenticationErrorFilter, JwtAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtUsernamePasswordAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(corsFilter(), CsrfFilter.class)
+                .addFilterBefore(authenticationErrorFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtLoginFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // 기본 인증 방식 비활성화
         http
-                .httpBasic().disable()
-                .csrf().disable()
-                .formLogin().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .httpBasic().disable()  // HTTP Basic 인증 비활성화
+                .csrf().disable()  // CSRF 보호 비활성화 (JWT 사용으로 불필요)
+                .formLogin().disable()  // 폼 로그인 비활성화
+                .sessionManagement()  // 세션 정책 설정
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS); // Stateless (세션 사용 안함)
 
         // 예외 처리 핸들러 설정
         http
@@ -128,31 +123,33 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // URL별 접근 권한 설정
         http
                 .authorizeRequests()
+
+                // OPTIONS 요청 (CORS Preflight) 항상 허용
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
 
                 // 인증 불필요(공개 API)
-                .antMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                .antMatchers(HttpMethod.POST, "/api/users/register").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/merchants/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/auth/login").permitAll()  // 로그인
+                .antMatchers(HttpMethod.POST, "/api/auth/register").permitAll()  // 회원가입
+                .antMatchers(HttpMethod.GET, "/api/merchants/**").permitAll()  // 가맹점 조회
 
-                // 인증 필요
-                .antMatchers("/api/auth/logout", "/api/auth/refresh").authenticated()
-                .antMatchers("/api/users/**").authenticated()
-                .antMatchers("/api/groups/**").authenticated()
-                .antMatchers(HttpMethod.POST, "/api/merchants").authenticated()
-                .antMatchers("/api/transactions/**").authenticated()
-                .antMatchers("/api/settlements/**").authenticated()
-                .antMatchers("/api/accounts/**").authenticated()
-                .antMatchers("/api/notifications/**").authenticated()
+                // 인증 필요(보호된 API)
+                .antMatchers("/api/auth/logout").authenticated()  // 인증 관련
+                .antMatchers("/api/users/**").authenticated()  // 사용자 관리
+                .antMatchers("/api/groups/**").authenticated()  // 그룹 관리
+                .antMatchers(HttpMethod.POST, "/api/merchants").authenticated()  // 가맹점 등록
+                .antMatchers("/api/transactions/**").authenticated()  // 거래 관리
+                .antMatchers("/api/settlements/**").authenticated()  // 정산 관리
+                .antMatchers("/api/accounts/**").authenticated()  // 계좌 관리
+                .antMatchers("/api/notifications/**").authenticated()  // 알림 관리
                 .anyRequest().authenticated();
     }
 
-    // 사용자 인증 방식 설정
+    //사용자 인증 방식 설정
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        log.info("AuthenticationManagerBuilder 설정 시작 ===========");
+        log.info("============= AuthenticationManagerBuilder 설정 시작 =============");
         auth
-                .userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder());
+                .userDetailsService(userDetailsService)  // 커스텀 사용자 정보 서비스
+                .passwordEncoder(passwordEncoder());  // BCrypt 암호화
     }
 }

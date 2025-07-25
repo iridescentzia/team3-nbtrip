@@ -14,11 +14,5 @@ public class SecurityInitializer extends AbstractSecurityWebApplicationInitializ
         encodingFilter.setForceEncoding(true);
         return encodingFilter;
     }
-
-    // Spring Security 필터 체인 이전에 실행될 필터
-    @Override
-    protected void beforeSpringSecurityFilterChain(ServletContext servletContext) {
-        insertFilters(servletContext, encodingFilter(), new MultipartFilter());
-    }
 }
 
