@@ -1,12 +1,19 @@
 <script setup>
-import api from '@/api/merchantApi';
+import merchantApi from '@/api/merchantApi';
+import paymentApi from '@/api/paymentApi';
 import { ref } from 'vue';
 import { QrcodeStream } from 'vue-qrcode-reader';
 
 const merchantID = ref(null);
 const merchant = ref('');
 const merchantName = ref('');
+
+const payment = ref('');
+
 const isModalVisible = ref(false);
+const ModalType = ref(1);
+
+const amount = ref(0);
 
 async function onDetect(result) {
   const raw = result[0]?.rawValue;
@@ -14,7 +21,7 @@ async function onDetect(result) {
   try {
     const parsed = JSON.parse(raw);
     merchantID.value = parsed.merchantID;
-    merchant.value = await api.get(merchantID.value);
+    merchant.value = await merchantApi.get(merchantID.value);
     merchantName.value = merchant.value.merchantName;
     isModalVisible.value = true;
   } catch (error) {
@@ -32,22 +39,32 @@ function onInit(promise) {
     });
 }
 
-// const load = async () => {
-//   if (merchantID.value) {
-//     try {
-//       const merchant = await api.get(merchantID.value);
-//       merchantName.value = merchant.name;
-//     } catch (error) {
-//       console.error('가맹점 정보 로드 실패:', error);
-//     }
-//   }
-// };
+async function submitPayment() {
+  try {
+    const payload = {
+      tripId: 1, // 임시 tripId, 실제로는 tripId를 받아와야 함
+      userId: 1, // 임시 userId, 실제로는 로그인된 사용자 ID를 받아와야 함
+      merchantId: merchantID.value,
+      amount: amount.value,
+      paymentType: 'QR', // QR 결제 타입
+    };
+    console.log('결제 요청 데이터:', payload);
+    payment.value = await paymentApi.create(payload);
+    console.log('결제 정보:', payment.value);
+    ModalType.value = 2; // 결제 완료 모달
+  } catch (error) {
+    console.error('결제 실패:', error);
+    ModalType.value = 3; // 결제 실패 모달
+  }
+}
+
+// const load = async () => {};
 // load();
 </script>
 
 <template>
   <div>
-    <div>
+    <div style="text-align: center; margin-top: 10%">
       <h3>QR 스캔</h3>
       <p>결제할 가맹점의 QR코드를 인식해주세요.</p>
       <qrcode-stream
@@ -58,9 +75,8 @@ function onInit(promise) {
       />
     </div>
 
-    <div v-if="isModalVisible" class="modal">
+    <div v-if="isModalVisible && ModalType == 1" class="modal">
       <div class="modal-container">
-        모달창
         <h3>‘{{ tripName }}’ 중</h3>
 
         <div class="input-group">
@@ -106,7 +122,26 @@ function onInit(promise) {
 
         <button @click="submitPayment">결제하기</button>
       </div>
-      <!-- <button @click="isModalVisible = false">닫기</button> -->
+    </div>
+
+    <div v-if="isModalVisible && ModalType == 2" class="modal">
+      <div class="modal-container">
+        <h3>결제 완료!</h3>
+        <!-- 고양이 -->
+        <button @click="$router.push('/home')">홈으로 돌아가기</button>
+      </div>
+    </div>
+
+    <div v-if="isModalVisible && ModalType == 3" class="modal">
+      <div class="modal-container">
+        <h3>결제에 실패했어요...</h3>
+        <!-- 고양이 -->
+        <p>사유:</p>
+        <div style="display: flex">
+          <button @click="isModalVisible = false">취소하기</button>
+          <button @click="submitPayment">다시 시도하기</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
