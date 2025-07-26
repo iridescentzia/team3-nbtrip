@@ -48,6 +48,7 @@ const handleBackClick = () => {
     <!-- 중앙 영역 : 제목 -->
     <div class="center">
       <h1 v-if="title">{{ title }}</h1>
+<!--      <h1>{{title}}</h1>-->
     </div>
 
     <!-- 오른쪽 영역 (비어 있음) -->
@@ -74,6 +75,7 @@ const handleBackClick = () => {
   background-color: #f9fafb;
   border-bottom: none; /* slate-200 */
   box-sizing: border-box;
+
 }
 
 .left,
