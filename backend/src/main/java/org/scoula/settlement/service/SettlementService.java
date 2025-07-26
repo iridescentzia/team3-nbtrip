@@ -11,10 +11,10 @@ import java.util.List;
 public interface SettlementService {
   
     /* 정산 1단계에 필요한 요약 정보를 조회함. */
-    SettlementDTO.SettlementSummaryResponseDto getSettlementSummary(Long tripId);
+    SettlementDTO.SettlementSummaryResponseDto getSettlementSummary(int tripId);
 
     /* 정산 2단계: 최종 정산 결과를 계산하여 반환함. */
-    SettlementDTO.SettlementResultResponseDto calculateFinalSettlement(Long tripId);
+    SettlementDTO.SettlementResultResponseDto calculateFinalSettlement(int tripId);
 
     // ==================== 조회 관련 ====================
 

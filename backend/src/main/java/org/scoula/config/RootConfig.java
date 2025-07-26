@@ -32,7 +32,8 @@ import javax.sql.DataSource;
         "org.scoula.settlement.mapper",
         "org.scoula.payment.mapper",
         "org.scoula.notification.mapper",
-        "org.scoula.account.mapper"
+        "org.scoula.account.mapper",
+        "org.scoula.report.mapper"
   })
 @EnableTransactionManagement
 public class RootConfig {
