@@ -1,14 +1,20 @@
 package org.scoula.settlement.service;
 
-import org.scoula.settlement.domain.SettlementVO;
 import org.scoula.settlement.dto.SettlementDTO;
-
+import org.springframework.stereotype.Service;
+import org.scoula.settlement.domain.SettlementVO;
 import java.util.List;
 
 /**
  * 정산 상태 처리와 그룹원 간 송금 처리 비즈니스 로직
  */
 public interface SettlementService {
+  
+    /* 정산 1단계에 필요한 요약 정보를 조회함. */
+    SettlementDTO.SettlementSummaryResponseDto getSettlementSummary(Long tripId);
+
+    /* 정산 2단계: 최종 정산 결과를 계산하여 반환함. */
+    SettlementDTO.SettlementResultResponseDto calculateFinalSettlement(Long tripId);
 
     // ==================== 조회 관련 ====================
 

@@ -5,6 +5,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
@@ -38,15 +41,28 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
         return new String[] { "/" };
     }
 
-//    @Override
-//    protected Filter[] getServletFilters() {
-//        CharacterEncodingFilter characterEncodingFilter = new CharacterEncodingFilter();
-//
-//        characterEncodingFilter.setEncoding("UTF-8");
-//        characterEncodingFilter.setForceEncoding(true);
-//
-//        return new Filter[] { characterEncodingFilter };
-//    }
+    @Override
+    protected Filter[] getServletFilters() {
+        CharacterEncodingFilter characterEncodingFilter = new CharacterEncodingFilter();
+        characterEncodingFilter.setEncoding("UTF-8");
+        characterEncodingFilter.setForceEncoding(true);
+
+        // FIX: CORS 필터 생성 및 설정 추가
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+
+        // 프론트엔드 개발 서버 주소(http://localhost:5173)의 요청을 허용합니다.
+        config.addAllowedOrigin("http://localhost:5173");
+        config.addAllowedHeader("*"); // 모든 헤더 허용
+        config.addAllowedMethod("*"); // 모든 HTTP 메소드(GET, POST, PUT 등) 허용
+        config.setAllowCredentials(true); // 쿠키/인증 정보 포함 허용
+
+        source.registerCorsConfiguration("/**", config); // 모든 경로에 대해 위 CORS 설정을 적용
+        CorsFilter corsFilter = new CorsFilter(source);
+        // ===================================
+
+        return new Filter[] { characterEncodingFilter, corsFilter }; // 필터 배열에 corsFilter 추가
+    }
 
     @Override
     protected void customizeRegistration(ServletRegistration.Dynamic registration) {
