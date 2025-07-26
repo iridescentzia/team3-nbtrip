@@ -1,17 +1,26 @@
 package org.scoula.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
-import javax.servlet.Filter;
-import javax.servlet.MultipartConfigElement;
-import javax.servlet.ServletRegistration;
+import javax.servlet.*;
 
-@Slf4j
 @Configuration
-public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitializer {
+@EnableWebMvc
+@ComponentScan(basePackages = {
+        "org.scoula.member.controller", "org.scoula.mypage.controller", "org.scoula.security.accounting.controller"
+})
+@Slf4j
+public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitializer implements WebMvcConfigurer {
     final String LOCATION = "/Users/zia/upload";
     final long MAX_FILE_SIZE = 1024 * 1024 * 10L;
     final long MAX_REQUEST_SIZE = 1024 * 1024 * 20L;
@@ -24,7 +33,7 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
 
     @Override
     protected Class<?>[] getServletConfigClasses() {
-        return new Class[] { ServletConfig.class };
+        return new Class[] { WebConfig.class };
     }
 
     @Override
@@ -35,11 +44,24 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
     @Override
     protected Filter[] getServletFilters() {
         CharacterEncodingFilter characterEncodingFilter = new CharacterEncodingFilter();
-
         characterEncodingFilter.setEncoding("UTF-8");
         characterEncodingFilter.setForceEncoding(true);
 
-        return new Filter[] { characterEncodingFilter };
+        // FIX: CORS 필터 생성 및 설정 추가
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+
+        // 프론트엔드 개발 서버 주소(http://localhost:5173)의 요청을 허용합니다.
+        config.addAllowedOrigin("http://localhost:5173");
+        config.addAllowedHeader("*"); // 모든 헤더 허용
+        config.addAllowedMethod("*"); // 모든 HTTP 메소드(GET, POST, PUT 등) 허용
+        config.setAllowCredentials(true); // 쿠키/인증 정보 포함 허용
+
+        source.registerCorsConfiguration("/**", config); // 모든 경로에 대해 위 CORS 설정을 적용
+        CorsFilter corsFilter = new CorsFilter(source);
+        // ===================================
+
+        return new Filter[] { characterEncodingFilter, corsFilter }; // 필터 배열에 corsFilter 추가
     }
 
     @Override

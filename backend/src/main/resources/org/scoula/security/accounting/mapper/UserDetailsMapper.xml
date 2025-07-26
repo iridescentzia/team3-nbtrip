@@ -2,6 +2,56 @@
 <!DOCTYPE mapper
         PUBLIC "--//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="">
+<mapper namespace="org.scoula.security.accounting.mapper.UserDetailsMapper">
+    <!-- 로그인(email) -->
+    <select id="getByEmail" resultType="org.scoula.security.accounting.domain.MemberVO">
+        SELECT
+            user_id AS userId,
+            email,
+            password,
+            nickname,
+            name,
+            phone_number AS phoneNumber,
+            fcm_token AS fcmToken,
+            created_at AS createdAt
+        FROM users
+        WHERE email = #{email}
+    </select>
 
+    <!-- 사용자 조회(nickname) -->
+    <select id="getByNickname" resultType="org.scoula.security.accounting.domain.MemberVO">
+        SELECT
+            user_id AS userId,
+            email,
+            password,
+            nickname,
+            name,
+            phone_number AS phoneNumber,
+            fcm_token AS fcmToken,
+            created_at AS createdAt
+        FROM users
+        WHERE nickname = #{nickname}
+    </select>
+
+    <!-- userId로 조회 -->
+    <select id="getById" resultType="org.scoula.security.accounting.domain.MemberVO">
+        SELECT
+            user_id AS userId,
+            email,
+            password,
+            nickname,
+            name,
+            phone_number AS phoneNumber,
+            fcm_token AS fcmToken,
+            created_at AS createdAt
+        FROM users
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- FCM 토큰 update -->
+    <update id="updateFcmToken">
+        UPDATE users
+        SET fcm_token = #{fcmToken}
+        WHERE email = #{email}
+    </update>
 </mapper>
