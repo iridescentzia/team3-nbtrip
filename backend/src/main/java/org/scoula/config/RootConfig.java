@@ -21,7 +21,16 @@ import javax.sql.DataSource;
 @ComponentScan(basePackages = {"org.scoula.security", "org.scoula.member.service", "org.scoula.mypage.service"}, excludeFilters = {
         @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = Controller.class)
 })
-@MapperScan(basePackages = {"org.scoula.security.accounting.mapper", "org.scoula.member.mapper", "org.scoula.mypage.mapper"})
+@MapperScan(basePackages = {
+        "org.scoula.security.accounting.mapper", 
+        "org.scoula.member.mapper", 
+        "org.scoula.mypage.mapper",
+        "org.scoula.member.mapper",
+        "org.scoula.group.mapper",
+        "org.scoula.settlement.mapper",
+        "org.scoula.payment.mapper",
+        "org.scoula.notification.mapper"
+  })
 @EnableTransactionManagement
 public class RootConfig {
     @Value("${jdbc.driver}") String driver;
