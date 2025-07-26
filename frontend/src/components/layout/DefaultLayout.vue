@@ -1,36 +1,16 @@
 <script setup>
-import Header from './Header.vue'
-import Footer from './Footer.vue'
-import Button from '../common/Button.vue'
-import TravelCard from '../common/TravelCard.vue'
-
-import {onMounted} from 'vue'
-import {useTripStore} from "@/stores/trip.js";
-import Summary from "@/components/common/Summary.vue";
-
-const tripStore = useTripStore()
-
-// 컴포넌트가 마운트될 때 trip 정보 가져오기
-onMounted(()=>{
-  tripStore.fetchActiveTrip()
-})
 </script>
-
 
 <template>
   <div class="layout-wrapper">
     <div class="layout-container">
-      <Header title="진행 중인 여행" />
 
       <main class="content">
-        <slot />
+        <RouterView/>
       </main>
       <div class="mid">
 
       </div>
-<!--      <Button />-->
-
-      <Footer />
     </div>
   </div>
 </template>
@@ -47,7 +27,7 @@ onMounted(()=>{
 
 }
 
-.content{
+.content {
   padding-top: 56px;
   width: 100%;
   max-width: 414px;
@@ -64,11 +44,10 @@ onMounted(()=>{
   max-width: 414px; /* 모바일 기준 */
   position: relative;
   padding-top: 0px;
-  margin-top:0px;
-  //background: lightgray;
+  margin-top: 0px;
 }
 
-.mid{
-  height:250px;
+.mid {
+  height: 250px;
 }
 </style>

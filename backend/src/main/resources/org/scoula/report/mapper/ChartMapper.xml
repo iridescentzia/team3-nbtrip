@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.scoula.report.mapper.ChartMapper">
+
+    <!-- VO 필드 매핑 -->
+    <resultMap id="ChartResultMap" type="org.scoula.report.domain.ChartVO">
+        <result property="category"    column="category" />
+        <result property="totalAmount" column="total_amount" />
+        <result property="date"        column="date" />
+        <result property="count"       column="count" />
+    </resultMap>
+
+    <!-- 도넛 차트: 카테고리별 합계 -->
+    <select id="selectDonutChart"
+            parameterType="long"
+            resultMap="ChartResultMap">
+        SELECT
+            mc.category_name   AS category,
+            SUM(p.amount)      AS total_amount,
+            NULL               AS date,
+    NULL               AS count
+        FROM payment AS p
+            JOIN merchant AS m
+        ON p.merchant_id = m.merchant_id
+            JOIN merchant_category AS mc
+            ON m.category_id = mc.category_id
+        WHERE p.trip_id = #{tripId}
+        GROUP BY mc.category_name;
+    </select>
+
+    <!-- 라인 차트: 날짜별 건수 및 합계 -->
+    <select id="selectLineChart"
+            parameterType="long"
+            resultMap="ChartResultMap">
+        SELECT
+            NULL                                    AS category,
+            SUM(p.amount)                           AS total_amount,
+            DATE_FORMAT(p.pay_at, '%Y-%m-%d')       AS date,
+      COUNT(*)                                AS count
+        FROM payment p
+        WHERE p.trip_id = #{tripId}
+        GROUP BY DATE_FORMAT(p.pay_at, '%Y-%m-%d')
+        ORDER BY DATE_FORMAT(p.pay_at, '%Y-%m-%d')
+    </select>
+
+    <!-- 추가: trip_status 조회 -->
+    <select id="getTripStatus" parameterType="long" resultType="string">
+        SELECT trip_status
+        FROM trip
+        WHERE id = #{tripId}
+    </select>
+
+</mapper>
