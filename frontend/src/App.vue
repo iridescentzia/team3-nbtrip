@@ -1,13 +1,13 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import DefaultLayout from './components/layout/DefaultLayout.vue'
+import { RouterLink, RouterView } from 'vue-router';
+import DefaultLayout from './components/layout/DefaultLayout.vue';
 </script>
 
 <template>
-  <DefaultLayout>
+  <router-view></router-view>
+  <!-- <DefaultLayout>
     <RouterView />
-  </DefaultLayout>
+  </DefaultLayout> -->
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
