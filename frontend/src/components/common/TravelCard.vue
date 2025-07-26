@@ -64,14 +64,15 @@ function selectTab(tab) {
   margin: 30px auto 0 auto;
   padding: 16px 16px;
   box-sizing: border-box;
-
   border-radius: 16px;
-  background: linear-gradient(to bottom, #a2d2ff80, #b9ddff80, #ffffff80);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   font-family: 'IBM Plex Sans KR', sans-serif;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+
+  background: linear-gradient(to bottom, #a2d2ff80, #b9ddff80, #ffffff80);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
 }
 
 .card-header {
