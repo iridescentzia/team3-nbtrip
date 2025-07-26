@@ -1,5 +1,4 @@
 package org.scoula.settlement.dto;
-
 import lombok.Data;
 import java.util.List;
 
@@ -45,9 +44,11 @@ public class SettlementDTO {
      */
     @Data
     public static class OptimizedTransaction {
+        private Integer settlementId;
         private String senderNickname;
         private String receiverNickname;
         private int amount;
+        private String status; // PENDING, PROCESSING, COMPLETED
     }
 
     /**
@@ -58,6 +59,7 @@ public class SettlementDTO {
     public static class PersonalSettlementResponseDto {
         private List<OptimizedTransaction> toReceive;
         private List<OptimizedTransaction> toSend;
+        private String overallStatus; // PENDING, PROCESSING, COMPLETED
     }
 
     /**
@@ -66,7 +68,18 @@ public class SettlementDTO {
      */
     @Data
     public static class CreateSettlementRequestDto {
-        private Long tripId;
+        private Integer tripId;
+    }
+
+    /**
+     * 정산 요청 생성 응답 DTO
+     */
+    @Data
+    public static class CreateSettlementResponseDto {
+        private boolean success;
+        private String message;
+        private int createdCount; // 생성된 정산 건수
+        private List<OptimizedTransaction> settlements;
     }
 
     /**
@@ -88,5 +101,50 @@ public class SettlementDTO {
         private String payerNickname;
         private String participantNickname;
         private int splitAmount;
+    }
+}
+     * 송금 처리 응답 DTO
+     */
+    @Data
+    public static class TransferResponseDto {
+        private boolean success;
+        private String message;
+        private String newStatus;
+        private int senderBalance; // 송금 후 잔액
+    }
+
+    /**
+     * 송금 완료 처리 응답 DTO
+     */
+    @Data
+    public static class CompleteSettlementResponseDto {
+        private boolean success;
+        private String message;
+        private String newStatus;
+    }
+
+    /**
+     * 개인 정산 상태 조회 응답 DTO
+     */
+    @Data
+    public static class MySettlementStatusResponseDto {
+        private String overallStatus; // PENDING, PROCESSING, COMPLETED
+        private int pendingToSendCount;
+        private int processingToSendCount;
+        private int pendingToReceiveCount;
+        private int processingToReceiveCount;
+        private int completedCount;
+    }
+
+    /**
+     * 미정산 존재 여부 응답 DTO
+     */
+    @Data
+    public static class RemainingSettlementResponseDto {
+        private boolean hasRemaining;
+        private int totalCount;
+        private int pendingCount;
+        private int processingCount;
+        private int completedCount;
     }
 }
