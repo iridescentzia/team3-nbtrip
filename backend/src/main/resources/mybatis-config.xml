@@ -3,4 +3,11 @@
         PUBLIC "--//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
+    <!-- FIX: 이 <settings> 블록을 추가해주세요. -->
+    <settings>
+        <!-- 데이터베이스의 snake_case 컬럼명을 Java의 camelCase 프로퍼티로 자동 매핑해주는 설정입니다. -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+
+    <!-- (만약 다른 설정이 있다면 여기에 위치합니다) -->
 </configuration>

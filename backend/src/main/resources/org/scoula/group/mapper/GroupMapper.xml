@@ -53,6 +53,12 @@
               AND owner_id = #{userId}
         )
     </select>
+    <select id="findNicknamesByTripId" resultType="string">
+        SELECT u.nickname
+        FROM trip_member tm
+                 JOIN users u ON tm.user_id = u.user_id
+        WHERE tm.trip_id = #{tripId} AND tm.member_status = 'JOINED'
+    </select>
     <resultMap id="groupMap" type="org.scoula.group.domain.GroupVO">
         <id property="groupId" column="trip_id" />
         <result property="ownerId" column="owner_id" />
@@ -80,5 +86,4 @@
         <result property="budget" column="budget" />
         <result property="groupStatus" column="trip_status" />
     </resultMap>
-
 </mapper>
