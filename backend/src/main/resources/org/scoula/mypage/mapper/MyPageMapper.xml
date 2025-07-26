@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.scoula.mypage.mapper.MyPageMapper">
+
+    <!-- 사용자 정보 조회(GET /api/users/{userId}) -->
+    <select id="selectUserInfo" parameterType="int" resultType="org.scoula.mypage.dto.MyPageDTO">
+        SELECT
+            user_id as userId,
+            email,
+            nickname,
+            name,
+            phone_number as phoneNumber,
+            created_at as createdAt,
+            fcm_token as fcmToken
+        FROM users
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 사용자 정보 업데이트(PUT /api/users/{userId}) -->
+    <update id="updateUserInfo" parameterType="org.scoula.mypage.dto.MyPageDTO">
+        UPDATE users
+        SET
+            email = #{email},
+            nickname = #{nickname},
+            name = #{name},
+            phone_number = #{phoneNumber}
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 사용자 비밀번호 조회 -->
+    <select id="selectUserPassword" parameterType="int" resultType="string">
+        SELECT password
+        FROM users
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 사용자 비밀번호 업데이트(PUT /api/users/{userId}/password) -->
+    <update id="updateUserPassword" parameterType="map">
+        UPDATE users
+        SET password = #{password}
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 이메일 중복 검사 -->
+    <select id="checkEmailExists" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM users
+        WHERE email = #{email}
+          AND user_id != #{userId}
+    </select>
+
+    <!-- 닉네임 중복 검사 -->
+    <select id="checkNicknameExists" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM users
+        WHERE nickname = #{nickname}
+          AND user_id != #{userId}
+    </select>
+
+    <!-- FCM 토큰 업데이트(PUT /api/users/fcm-token) -->
+    <update id="updateFcmToken" parameterType="map">
+        UPDATE users
+        SET fcm_token = #{fcmToken}
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>
