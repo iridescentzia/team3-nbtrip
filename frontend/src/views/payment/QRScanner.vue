@@ -52,10 +52,12 @@ async function submitPayment() {
     console.log('결제 요청 데이터:', payload);
     payment.value = await paymentApi.create(payload);
     console.log('결제 정보:', payment.value);
+    payment.value = null; // 결제 정보 초기화
     ModalType.value = 2; // 결제 완료 모달
   } catch (error) {
     console.error('결제 실패:', error);
     reason.value = error.response.data || '알 수 없는 오류';
+    payment.value = null; // 결제 정보 초기화
     ModalType.value = 3; // 결제 실패 모달
   }
 }
@@ -66,7 +68,7 @@ async function submitPayment() {
 
 <template>
   <div>
-    <div style="text-align: center; margin-top: 10%">
+    <div style="text-align: center">
       <h3>QR 스캔</h3>
       <p>결제할 가맹점의 QR코드를 인식해주세요.</p>
       <qrcode-stream
@@ -149,11 +151,11 @@ async function submitPayment() {
 </template>
 
 <style scoped>
-/* qrcode-stream {
+qrcode-stream {
   width: 100%;
   max-width: 400px;
   margin: auto;
-} */
+}
 
 .modal-container {
   width: 300px;
