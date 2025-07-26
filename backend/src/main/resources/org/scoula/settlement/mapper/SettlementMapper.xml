@@ -59,5 +59,78 @@
         INSERT INTO settlement (trip_id, sender_id, receiver_id, settlement_status, amount)
         VALUES (#{vo.tripId}, #{vo.senderId}, #{vo.receiverId}, #{vo.settlementStatus}, #{vo.amount})
     </insert>
+    <!-- 1. 특정 여행의 총 사용 금액을 계산하는 쿼리 -->
+    <!-- payment 테이블에서 trip_id가 일치하는 모든 amount를 합산합니다. -->
+    <select id="getTotalAmountByTripId" resultType="int">
+        SELECT SUM(amount)
+        FROM payment
+        WHERE trip_id = #{tripId}
+    </select>
 
+    <!-- 2. 특정 여행의 멤버별 총 결제 금액을 계산하는 쿼리 -->
+    <!-- trip_member와 users 테이블을 조인하여 해당 여행의 모든 멤버를 가져온 후,
+         payment 테이블과 LEFT JOIN하여 각 멤버가 결제한 금액의 총합을 구합니다.
+         LEFT JOIN을 사용하여, 결제 내역이 없는 멤버(0원)도 결과에 포함되도록 합니다. -->
+    <select id="getMemberPaymentsByTripId" resultType="org.scoula.settlement.dto.SettlementDTO$MemberPaymentInfo">
+        SELECT
+            u.nickname,
+            COALESCE(p.total_paid, 0) AS amount
+        FROM
+            trip_member tm
+                JOIN
+            users u ON tm.user_id = u.user_id
+                LEFT JOIN
+            (SELECT user_id, SUM(amount) AS total_paid
+             FROM payment
+             WHERE trip_id = #{tripId}
+             GROUP BY user_id) p
+            ON
+                tm.user_id = p.user_id
+        WHERE
+            tm.trip_id = #{tripId}
+    </select>
+
+
+    <!-- 3. [NEW] 특정 여행의 멤버별 총 부담 금액을 계산하는 쿼리 -->
+    <!-- payment_participant 테이블을 활용하여 각 멤버가 실제로 부담해야 할 금액의 총합을 구합니다. -->
+    <select id="getMemberDuesByTripId" resultType="org.scoula.settlement.dto.SettlementDTO$MemberPaymentInfo">
+        SELECT
+            u.nickname,
+            COALESCE(pp.total_due, 0) AS amount
+        FROM
+            trip_member tm
+                JOIN
+            users u ON tm.user_id = u.user_id
+                LEFT JOIN
+            (SELECT pp.user_id, SUM(pp.split_amount) AS total_due
+             FROM payment_participant pp
+                      JOIN payment p ON pp.payment_id = p.payment_id
+             WHERE p.trip_id = #{tripId}
+             GROUP BY pp.user_id) pp
+            ON
+                tm.user_id = pp.user_id
+        WHERE
+            tm.trip_id = #{tripId}
+    </select>
+
+    <!-- 4. 정산 계산에 필요한 모든 원본 데이터를 조회하는 쿼리 -->
+    <!-- payment, payment_participant, users 테이블을 조인하여
+         결제자 닉네임, 참여자 닉네임, 분담액을 가져옵니다. -->
+    <select id="getRawSettlementDataByTripId" resultType="org.scoula.settlement.dto.SettlementDTO$RawSettlementDataDTO">
+        SELECT
+            p.payment_id,
+            payer.nickname AS payer_nickname,
+            participant.nickname AS participant_nickname,
+            pp.split_amount
+        FROM
+            payment p
+                JOIN
+            payment_participant pp ON p.payment_id = pp.payment_id
+                JOIN
+            users payer ON p.user_id = payer.user_id
+                JOIN
+            users participant ON pp.user_id = participant.user_id
+        WHERE
+            p.trip_id = #{tripId}
+    </select>
 </mapper>
