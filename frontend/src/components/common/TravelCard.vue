@@ -24,7 +24,10 @@ function selectTab(tab) {
 
 // 아이콘 클릭 시 차트 페이지로 이동
 function goToChart() {
-  router.push({ name: 'chart' });
+  router.push({
+    name: 'chart',
+    params: { tripId: 1 },
+  });
 }
 </script>
 
