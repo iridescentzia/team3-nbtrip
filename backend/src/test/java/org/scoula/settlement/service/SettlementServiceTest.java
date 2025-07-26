@@ -41,7 +41,7 @@ public class SettlementServiceTest {
     @DisplayName("정산 1단계 요약 정보 조회 테스트")
     public void testGetSettlementSummaryForGapyongTrip() {
         // === GIVEN ===
-        Long tripId = 3L;
+        int tripId = 3;
         log.info("🚀 정산 요약 정보 조회 테스트 시작: tripId = {}", tripId);
 
         // === WHEN ===
@@ -78,7 +78,7 @@ public class SettlementServiceTest {
     @DisplayName("최종 정산 결과 계산 테스트 (가평 여름휴가)")
     public void testCalculateFinalSettlement() {
         // === GIVEN ===
-        Long tripId = 4L;
+        int tripId = 4;
         log.info("🚀 최종 정산 결과 계산 테스트 시작: tripId = {}", tripId);
 
         // === WHEN ===
