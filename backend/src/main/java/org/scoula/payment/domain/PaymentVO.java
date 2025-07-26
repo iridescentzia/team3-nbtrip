@@ -1,19 +1,21 @@
-package org.scoula.payment.dto;
+package org.scoula.payment.domain;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.scoula.payment.domain.PaymentType;
+
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class PaymentDTO {
+public class PaymentVO {
+    private int paymentId;
     private int tripId;
+    private Integer merchantId;
     private int userId;
-    private int merchantId;
+    private LocalDateTime payAt;
     private int amount;
+    private String memo;
     private PaymentType paymentType;
 }

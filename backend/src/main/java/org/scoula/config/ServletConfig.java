@@ -1,5 +1,6 @@
 package org.scoula.config;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -13,6 +14,7 @@ import org.springframework.web.servlet.view.JstlView;
 import java.util.List;
 
 @EnableWebMvc
+
 @ComponentScan(basePackages = {"org.scoula"})
 public class ServletConfig implements WebMvcConfigurer {
     // CORS 설정
