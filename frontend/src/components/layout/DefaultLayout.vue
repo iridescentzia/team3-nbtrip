@@ -3,20 +3,32 @@ import Header from './Header.vue'
 import Footer from './Footer.vue'
 import Button from '../common/Button.vue'
 import TravelCard from '../common/TravelCard.vue'
+
+import {onMounted} from 'vue'
+import {useTripStore} from "@/stores/trip.js";
+import Summary from "@/components/common/Summary.vue";
+
+const tripStore = useTripStore()
+
+// 컴포넌트가 마운트될 때 trip 정보 가져오기
+onMounted(()=>{
+  tripStore.fetchActiveTrip()
+})
 </script>
 
 
 <template>
   <div class="layout-wrapper">
     <div class="layout-container">
-      <Header />
+      <Header title="진행 중인 여행" />
+
       <main class="content">
-        <TravelCard trip-name="서울 우정 여행" start-date="2025-07-22" end-date="2025-07-22" />
+        <slot />
       </main>
       <div class="mid">
 
       </div>
-      <Button />
+<!--      <Button />-->
 
       <Footer />
     </div>
@@ -32,6 +44,7 @@ import TravelCard from '../common/TravelCard.vue'
   background-color: #f9fafb; /* 기존 Tailwind 'bg-gray-50' */
   position: relative;
   overflow: hidden;
+
 }
 
 .content{
@@ -41,6 +54,9 @@ import TravelCard from '../common/TravelCard.vue'
   flex: 1;
   padding: 16px;
   box-sizing: border-box;
+  //display: flex;
+  flex-direction: column;
+  align-items: center; /* 자식 요소들을 가운데 정렬 */
 }
 
 .layout-container {
@@ -49,6 +65,7 @@ import TravelCard from '../common/TravelCard.vue'
   position: relative;
   padding-top: 0px;
   margin-top:0px;
+  //background: lightgray;
 }
 
 .mid{
