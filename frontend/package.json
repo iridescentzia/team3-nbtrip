@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vuepic/vue-datepicker": "^11.0.2",
     "axios": "^1.10.0",
     "lucide-vue-next": "^0.525.0",
     "pinia": "^3.0.3",
@@ -19,9 +20,6 @@
     "@tailwindcss/postcss": "^4.1.11",
     "@vitejs/plugin-vue": "^6.0.0",
     "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.11",
-    "vite": "^6.3.5",
     "vite-plugin-vue-devtools": "^7.7.7"
   }
 }
