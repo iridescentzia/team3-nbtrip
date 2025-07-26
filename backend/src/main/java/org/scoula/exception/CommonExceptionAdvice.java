@@ -30,4 +30,21 @@ public class CommonExceptionAdvice {
         log.error(ex);
         return "/resources/index.html";
     }
+
+//    @ExceptionHandler(Exception.class)
+//    public String except(Exception ex, Model model) {
+//        log.error("Exception......" + ex.getMessage());
+//        model.addAttribute("exception", ex);
+//
+//        return "error_page";
+//    }
+//
+//    @ExceptionHandler(NoHandlerFoundException.class)
+//    @ResponseStatus(HttpStatus.NOT_FOUND)
+//    public String handle404(NoHandlerFoundException ex, HttpServletRequest request, Model model) {
+//        log.error("404 예외 발생 -> ", ex);
+//        model.addAttribute("uri", request.getRequestURI());
+//
+//        return "custom404";
+//    }
 }

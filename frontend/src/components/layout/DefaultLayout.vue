@@ -1,10 +1,9 @@
 <script setup>
-import Header from './Header.vue'
-import Footer from './Footer.vue'
-import Button from '../common/Button.vue'
-import TravelCard from '../common/TravelCard.vue'
+import Header from './Header.vue';
+import Footer from './Footer.vue';
+import Button from '../common/Button.vue';
+import TravelCard from '../common/TravelCard.vue';
 </script>
-
 
 <template>
   <div class="layout-wrapper">
@@ -31,7 +30,7 @@ import TravelCard from '../common/TravelCard.vue'
   overflow: hidden;
 }
 
-.content{
+.content {
   padding-top: 56px;
   width: 100%;
   max-width: 414px;
@@ -45,10 +44,10 @@ import TravelCard from '../common/TravelCard.vue'
   max-width: 414px; /* 모바일 기준 */
   position: relative;
   padding-top: 0px;
-  margin-top:0px;
+  margin-top: 0px;
 }
 
-.mid{
-  height:250px;
+.mid {
+  height: 250px;
 }
 </style>
