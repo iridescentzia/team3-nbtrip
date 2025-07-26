@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { FileChartColumn, Trash2 } from 'lucide-vue-next';
+import { useRouter } from 'vue-router';
 
 const props = defineProps({
   tripName: String,
@@ -20,6 +21,14 @@ const activeTab = ref(tabs[0]);
 function selectTab(tab) {
   activeTab.value = tab;
 }
+
+// 아이콘 클릭 시 차트 페이지로 이동
+function goToChart() {
+  router.push({
+    name: 'chart',
+    params: { tripId: 1 },
+  });
+}
 </script>
 
 <template>
@@ -30,7 +39,7 @@ function selectTab(tab) {
       <div class="title-date">
         <div class="title-row">
           <div class="trip-name">{{ props.tripName }}</div>
-          <FileChartColumn class="icon" />
+          <FileChartColumn class="icon" @click="goToChart" />
         </div>
         <div class="trip-date">{{ formattedDate }}</div>
       </div>
@@ -45,11 +54,11 @@ function selectTab(tab) {
     <!-- 탭 목록 -->
     <div class="tab-list">
       <div
-          v-for="tab in tabs"
-          :key="tab"
-          class="tab-item"
-          :class="{ active: activeTab === tab }"
-          @click="selectTab(tab)"
+        v-for="tab in tabs"
+        :key="tab"
+        class="tab-item"
+        :class="{ active: activeTab === tab }"
+        @click="selectTab(tab)"
       >
         {{ tab }}
       </div>
