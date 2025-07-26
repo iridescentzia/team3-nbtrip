@@ -18,8 +18,13 @@ import javax.sql.DataSource;
 
 @Configuration
 @PropertySource({"classpath:/application.properties"})
-
-@ComponentScan(basePackages = {"org.scoula.security", "org.scoula.member.service", "org.scoula.mypage.service"}, excludeFilters = {
+@ComponentScan(basePackages = {
+      "org.scoula.security", 
+      "org.scoula.member.service", 
+      "org.scoula.mypage.service",
+      "org.scoula.group.service"
+  }, 
+               excludeFilters = {
         @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = Controller.class)
 })
 @MapperScan(basePackages = {
