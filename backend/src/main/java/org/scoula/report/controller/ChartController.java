@@ -5,10 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import org.scoula.report.dto.ChartDTO;
 import org.scoula.report.service.ChartService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,30 +25,21 @@ public class ChartController {
      *   • CLOSED → donutData, lineData 반환
      *   • 그 외   → 준비 중 메시지 반환
      */
-    @GetMapping
-    public ResponseEntity<?> getChart(@RequestParam Long tripId) {
-        log.info("GET /api/chart?tripId={}", tripId);
+    @GetMapping("/{tripId}/donut")
+    public ResponseEntity<List<ChartDTO>> getDonutChart(@PathVariable String tripId) {
+        log.info("GET /api/chart/" +tripId+"/donut");
 
-        // 1) 상태 조회
-        String status = chartService.getTripStatus(tripId);
+        List<ChartDTO> charts = chartService.getDonutChart(tripId);
 
-        // 2) CLOSED면 데이터 조회
-        if ("CLOSED".equals(status)) {
-            List<ChartDTO> donut = chartService.getDonutChart(tripId);
-            List<ChartDTO> line  = chartService.getLineChart(tripId);
-            Map<String,Object> body = new HashMap<>();
-            body.put("tripId",    tripId);
-            body.put("status",    status);
-            body.put("donutData", donut);
-            body.put("lineData",  line);
-            return ResponseEntity.ok(body);
-        }
+        return ResponseEntity.ok(charts);
+    }
 
-        // 3) 준비 중
-        Map<String,Object> body = new HashMap<>();
-        body.put("tripId",  tripId);
-        body.put("status",  status);
-        body.put("message", "차트 준비 중입니다.");
-        return ResponseEntity.ok(body);
+    @GetMapping("/{tripId}/line")
+    public ResponseEntity<List<ChartDTO>> getLineChart(@PathVariable String tripId) {
+        log.info("GET /api/chart/"+tripId+"/line");
+
+        List<ChartDTO> charts = chartService.getDonutChart(tripId);
+
+        return ResponseEntity.ok(charts);
     }
 }

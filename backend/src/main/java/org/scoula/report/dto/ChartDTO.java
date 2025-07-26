@@ -8,23 +8,29 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.scoula.report.domain.ChartVO;
 
+import java.util.Date;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ApiModel(description = "차트 데이터 전송 객체")
 public class ChartDTO {
 
-    @ApiModelProperty(value = "카테고리 이름 (도넛 차트)", example = "식음료")
+
+    private Date payAt;
+    private Integer amount;
+    private Integer tripId;
+
+    private String categoryName;
+    private String categoryId;
+    private String merchantId;
+
     private String category;
 
-    @ApiModelProperty(value = "카테고리별 총 지출 금액 (도넛·라인 차트)", example = "123456.78")
     private Double totalAmount;
 
-    @ApiModelProperty(value = "날짜 (라인 차트, YYYY-MM-DD)", example = "2025-07-10")
     private String date;
 
-    @ApiModelProperty(value = "해당 날짜의 결제 건수 (라인 차트)", example = "5")
     private Long count;
 
     /**
