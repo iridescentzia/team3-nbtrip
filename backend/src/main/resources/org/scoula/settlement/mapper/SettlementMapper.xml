@@ -2,6 +2,62 @@
 <!DOCTYPE mapper
         PUBLIC "--//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="">
+<mapper namespace="org.scoula.settlement.mapper.SettlementMapper">
+    <!-- ResultMap: 컬럼명 <-> SettlementVO 필드명 매핑 -->
+    <resultMap id="settlementMap" type="org.scoula.settlement.domain.SettlementVO">
+        <id column="settlement_id" property="settlementId"/>
+        <result column="trip_id" property="tripId"/>
+        <result column="sender_id" property="senderId"/>
+        <result column="receiver_id" property="receiverId"/>
+        <result column="settlement_status" property="settlementStatus"/>
+        <result column="amount" property="amount"/>
+    </resultMap>
+
+    <!-- 특정 유저가 관련된 정산 내역 조회 -->
+    <select id="getSettlementsByUserId" resultMap="settlementMap">
+        SELECT * FROM settlement
+        WHERE sender_id = #{userId} OR receiver_id = #{userId}
+        ORDER BY settlement_id DESC
+    </select>
+
+    <!-- 특정 여행 내의 정산 내역 조회 -->
+    <select id="getSettlementsByTripId" resultMap="settlementMap">
+        SELECT * FROM settlement
+        WHERE trip_id = #{tripId}
+        ORDER BY settlement_id DESC
+    </select>
+
+    <!-- 단건 정산 조회 (settlement_id 기준) -->
+    <select id="getById" resultMap="settlementMap">
+        SELECT * FROM settlement
+        WHERE settlement_id = #{settlementId}
+    </select>
+
+    <!-- 상태별 정산 조회 (pending, processing, completed) -->
+    <select id="getSettlementsByStatus" resultMap="settlementMap">
+        SELECT * FROM settlement
+        WHERE settlement_status = #{status}
+        ORDER BY settlement_id DESC
+    </select>
+
+    <!-- 완료 여부 확인용 -->
+    <select id="getPendingOrProcessingByTripId" resultMap="settlementMap">
+        SELECT * FROM settlement
+        WHERE trip_id = #{tripId}
+        AND settlement_status IN ('PENDING', 'PROCESSING')
+    </select>
+
+    <!-- 정산 상태 업데이트 -->
+    <update id="updateSettlementStatus">
+        UPDATE settlement
+        SET settlement_status = #{newStatus}
+        WHERE settlement_id = #{settlementId}
+    </update>
+
+    <!-- n빵 분배 db에 insert -->
+    <insert id="insertSettlement">
+        INSERT INTO settlement (trip_id, sender_id, receiver_id, settlement_status, amount)
+        VALUES (#{vo.tripId}, #{vo.senderId}, #{vo.receiverId}, #{vo.settlementStatus}, #{vo.amount})
+    </insert>
 
 </mapper>
