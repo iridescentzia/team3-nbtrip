@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "--//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.scoula.settlement.mapper.SettlementAccountMapper">
+    <!-- 잔액 조회 -->
+    <select id="selectBalance" resultType="int">
+        SELECT
+            balance
+        FROM account
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 조건부 차감: 잔액 충분할 때만-->
+    <update id="debitIfEnough">
+        UPDATE account
+        SET balance = balance - #{amount}
+        WHERE user_id = #{userId}
+            AND balance >= #{amount}
+    </update>
+
+    <!-- 입금 -->
+    <update id="credit">
+        UPDATE account
+        SET balance = balance + #{amount}
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>
