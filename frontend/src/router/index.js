@@ -18,9 +18,10 @@ const router = createRouter({
     //   component: () => import('../views/AboutView.vue'),
     // },
     {
-      path: '/chart',
+      path: '/chart/:tripId',
       name: 'chart',
       component: () => import('../components/report/ChartArea.vue'),
+      props: true,
     },
   ],
 });
