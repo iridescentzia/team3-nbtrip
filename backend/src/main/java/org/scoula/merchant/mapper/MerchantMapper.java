@@ -1,4 +1,15 @@
 package org.scoula.merchant.mapper;
 
-public class MerchantMapper {
+import org.scoula.merchant.domain.MerchantAccountVO;
+import org.scoula.merchant.domain.MerchantCategoryVO;
+import org.scoula.merchant.domain.MerchantVO;
+
+public interface MerchantMapper {
+    MerchantVO getMerchant(int id);
+
+    MerchantCategoryVO getMerchantCategory(int categoryId);
+
+    MerchantAccountVO getMerchantAccount(int id);
+
+    void createMerchant(MerchantVO merchant);
 }

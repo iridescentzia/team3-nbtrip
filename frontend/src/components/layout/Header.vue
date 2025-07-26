@@ -37,9 +37,9 @@ const handleBackClick = () => {
     <!-- 왼쪽 영역 : 뒤로가기 버튼 -->
     <div class="left">
       <button
-          v-if="showBackButton"
-          class="back-button-wrapper"
-          @click="handleBackClick"
+        v-if="showBackButton"
+        class="back-button-wrapper"
+        @click="handleBackClick"
       >
         <ChevronLeft class="back-button" />
       </button>
@@ -48,6 +48,7 @@ const handleBackClick = () => {
     <!-- 중앙 영역 : 제목 -->
     <div class="center">
       <h1 v-if="title">{{ title }}</h1>
+<!--      <h1>{{title}}</h1>-->
     </div>
 
     <!-- 오른쪽 영역 (비어 있음) -->
@@ -57,7 +58,7 @@ const handleBackClick = () => {
 
 <style scoped>
 .header {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
@@ -66,15 +67,16 @@ const handleBackClick = () => {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 375px;
+  /* max-width: 375px; */
+  max-width: 24em;
 
   height: 56px; /* h-14 */
   padding: 0 16px;
   background-color: #f9fafb;
   border-bottom: none; /* slate-200 */
   box-sizing: border-box;
-}
 
+}
 
 .left,
 .right {

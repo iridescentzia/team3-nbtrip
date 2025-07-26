@@ -2,6 +2,55 @@
 <!DOCTYPE mapper
         PUBLIC "--//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="">
+<mapper namespace="org.scoula.account.mapper.AccountMapper">
+    <!-- 계좌 등록 - 회원가입 시 사용 -->
+    <insert id="insertAccount" parameterType="org.scoula.account.dto.AccountRegisterDTO">
+        INSERT INTO account (user_id, account_number, bank_name)
+        VALUES (#{userId}, #{accountNumber}, #{bankName})
+    </insert>
 
+    <!-- 계좌 수정 - 마이페이지 결제 수단 관리 -->
+    <update id="updateAccount" parameterType="org.scoula.account.dto.AccountUpdateDTO">
+        UPDATE account
+        SET account_number = #{accountNumber},
+            bank_name = #{bankName}
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 계좌 상세 조회 - 홈 화면 계좌 잔액 표시용 -->
+    <resultMap id="accountResultMap" type="org.scoula.account.domain.AccountVO">
+        <id property="accountId" column="account_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="accountNumber" column="account_number"/>
+        <result property="bankName" column="bank_name"/>
+        <result property="balance" column="balance"/>
+    </resultMap>
+
+    <select id="selectAccountByUserId" resultMap="accountResultMap">
+        SELECT account_id, user_id, account_number, bank_name, balance
+        FROM account
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 사용자 계좌 잔액 차감 - 송금/결제 시 사용 -->
+    <update id="decreaseUserBalance">
+        UPDATE account
+        SET balance = balance - #{amount}
+        WHERE user_id = #{userId}
+        AND balance >= #{amount}
+    </update>
+
+    <!-- 사용자 계좌 잔액 증가 - 정산 송금 시 사용 -->
+    <update id="increaseUserBalance">
+        UPDATE account
+        SET balance = balance + #{amount}
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 가맹점 사업자 계좌 잔액 증가 -->
+    <update id="increaseMerchantBalance">
+        UPDATE merchant_account
+        SET merchant_balance = merchant_balance + #{amount}
+        WHERE merchant_id = #{merchantId}
+    </update>
 </mapper>
