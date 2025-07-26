@@ -14,7 +14,6 @@ import org.springframework.web.servlet.view.JstlView;
 import java.util.List;
 
 @EnableWebMvc
-
 @ComponentScan(basePackages = {"org.scoula"})
 public class ServletConfig implements WebMvcConfigurer {
     // CORS 설정

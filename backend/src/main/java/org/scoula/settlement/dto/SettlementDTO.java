@@ -32,7 +32,9 @@ public class SettlementDTO {
      */
     @Data
     public static class SettlementResultResponseDto {
+        private String tripName;
         private int totalAmount;
+        private List<String> members; // 멤버 닉네임 리스트
         private List<OptimizedTransaction> transactions;
     }
 
@@ -90,6 +92,17 @@ public class SettlementDTO {
     }
 
     /**
+     * 정산 계산에 필요한 원본 데이터를 담는 DTO.
+     * SettlementMapper.xml의 getRawSettlementDataByTripId 쿼리 결과와 매핑됨.
+     */
+    @Data
+    public static class RawSettlementDataDTO {
+        private Long paymentId;
+        private String payerNickname;
+        private String participantNickname;
+        private int splitAmount;
+    }
+}
      * 송금 처리 응답 DTO
      */
     @Data
