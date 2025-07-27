@@ -8,6 +8,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -33,4 +34,7 @@ public class MemberUpdateDTO {
     @Email(message = "올바른 이메일 형식이 아닙니다.")
     @Size(max = 100, message = "이메일은 100자 이내여야 합니다.")
     private String email;
+
+    // 업데이트 일시
+    private LocalDateTime createdAt;
 }

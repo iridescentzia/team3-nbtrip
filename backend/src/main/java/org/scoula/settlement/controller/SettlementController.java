@@ -56,6 +56,7 @@ public class SettlementController {
 
         // 계산된 결과를 ResponseEntity에 담아 프론트엔드로 반환
         return ResponseEntity.ok(resultDto);
+    }
 
     // ==================== 조회 API ====================
 

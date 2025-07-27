@@ -4,6 +4,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.scoula.security.accounting.domain.MemberVO;
 
+import java.time.LocalDateTime;
+
 @Mapper
 public interface UserDetailsMapper {
     // 사용자 조회(email - 로그인)
@@ -16,5 +18,7 @@ public interface UserDetailsMapper {
     MemberVO getById(int userId);
 
     // FCM 토큰 업데이트
-    void updateFcmToken(@Param("email") String email, @Param("fcmToken") String fcmToken);
+    void updateFcmToken(@Param("email") String email,
+                        @Param("fcmToken") String fcmToken,
+                        @Param("updatedAt")LocalDateTime updatedAt);
 }

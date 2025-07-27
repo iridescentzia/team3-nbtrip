@@ -3,6 +3,8 @@ package org.scoula.member.service;
 import org.scoula.member.dto.*;
 import org.scoula.member.exception.*;
 
+import java.time.LocalDateTime;
+
 public interface MemberService {
     // 회원가입
     ApiResponse registerMember(MemberDTO memberDTO) throws DuplicateEmailException, DuplicateNicknameException;

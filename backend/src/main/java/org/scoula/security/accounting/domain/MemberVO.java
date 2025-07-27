@@ -21,6 +21,7 @@ public class MemberVO {
     private String name;
     private String phoneNumber;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     private List<AuthVO> authList;  // 사용자 권한 목록
 }

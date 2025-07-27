@@ -18,6 +18,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -95,6 +96,7 @@ public class MyPageController {
                 if (updateData.containsKey("phoneNumber")) {
                     updateRequest.setPhoneNumber((String) updateData.get("phoneNumber"));
                 }
+                updateRequest.setUpdatedAt(LocalDateTime.now());
                 boolean updateResult = myPageService.updateUserInfo(userId, updateRequest);
                 if (!updateResult) {
                     return ResponseEntity.badRequest()
@@ -108,29 +110,6 @@ public class MyPageController {
                     .body(ApiResponse.error("회원정보 수정 실패: " + e.getMessage()));
         }
     }
-
-    // FCM 토큰 갱신 - PUT /api/mypage/fcm-token
-//    @PutMapping("/fcm-token")
-//    public ResponseEntity<ApiResponse<String>> updateFcmToken(
-//            @RequestBody FcmTokenRequestDTO requestDTO,
-//            @AuthenticationPrincipal UserDetails userDetails) {
-//        try {
-//            String userEmail = userDetails.getUsername();
-//            log.info("마이페이지 - FCM 토큰 갱신: {}, 토큰: {}", userEmail, requestDTO.getFcmToken());
-//            Integer userId = extractUserIdFromToken();
-//            boolean result = myPageService.updateFcmToken(userId, requestDTO.getFcmToken());
-//            if (result) {
-//                return ResponseEntity.ok(ApiResponse.success("FCM 토큰이 성공적으로 갱신되었습니다."));
-//            } else {
-//                return ResponseEntity.badRequest()
-//                        .body(ApiResponse.error("FCM 토큰 갱신에 실패했습니다."));
-//            }
-//        } catch (Exception e) {
-//            log.error("FCM 토큰 갱신 실패: {}", e.getMessage());
-//            return ResponseEntity.badRequest()
-//                    .body(ApiResponse.error("FCM 토큰 갱신 실패: " + e.getMessage()));
-//        }
-//    }
 
     // JWT에서 userId 추출 메서드
     private Integer extractUserIdFromToken() {

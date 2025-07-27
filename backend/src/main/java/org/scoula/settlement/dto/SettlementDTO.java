@@ -102,7 +102,8 @@ public class SettlementDTO {
         private String participantNickname;
         private int splitAmount;
     }
-}
+
+    /*
      * 송금 처리 응답 DTO
      */
     @Data

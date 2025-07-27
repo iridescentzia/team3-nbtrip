@@ -20,6 +20,7 @@ public class UserInfoDTO {
     private String email;
     private String nickname;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private String name;
     private String phoneNumber;  // 복호화된 휴대폰 번호
     private String maskedPhoneNumber;  // 마스킹된 휴대폰 번호
@@ -56,6 +57,7 @@ public class UserInfoDTO {
                 .phoneNumber(decryptedPhone)  // 실제 휴대폰 번호
                 .maskedPhoneNumber(maskedPhone)  // 마스킹된 휴대폰 번호
                 .createdAt(memberVO.getCreatedAt())
+                .updatedAt(memberVO.getUpdatedAt())
                 .authorities(authorities)
                 .build();
     }
