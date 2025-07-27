@@ -56,6 +56,7 @@ public class MemberServiceImpl implements MemberService {
                     .phoneNumber(memberDTO.getPhoneNumber())
                     .fcmToken(memberDTO.getFcmToken())
                     .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
                     .build();
 
             // 4. MyBatis로 회원 정보 저장
@@ -125,7 +126,7 @@ public class MemberServiceImpl implements MemberService {
             }
 
             // 2. MyBatis로 FCM 토큰 삭제
-            memberMapper.updateFcmToken(userId, null);
+            memberMapper.updateFcmToken(userId, null, LocalDateTime.now());
             log.info("로그아웃 완료 - 회원 ID : {}", userId);
         } catch (UserNotFoundException e) {
             throw e;
@@ -188,6 +189,7 @@ public class MemberServiceImpl implements MemberService {
             }
 
             // 5. MyBatis로 데이터베이스 업데이트 (업데이트 시간 제외)
+            memberVO.setUpdatedAt(LocalDateTime.now());
             memberMapper.updateMember(memberVO);
             log.info("회원 정보 수정 완료 - 회원 ID : {}", userId);
 
@@ -225,7 +227,7 @@ public class MemberServiceImpl implements MemberService {
 
             // 3. 새 비밀번호 암호화 및 MyBatis로 업데이트
             String encodedNewPassword = passwordEncoder.encode(passwordDTO.getNewPassword());
-            memberMapper.updatePassword(userId, encodedNewPassword);
+            memberMapper.updatePassword(userId, encodedNewPassword, LocalDateTime.now());
             log.info("비밀번호 변경 완료 - 회원 ID : {}", userId);
         } catch (UserNotFoundException | PasswordMismatchException e) {
             throw e;
@@ -246,7 +248,7 @@ public class MemberServiceImpl implements MemberService {
             }
 
             // 2. MyBatis로 FCM 토큰 업데이트
-            memberMapper.updateFcmToken(userId, fcmTokenDTO.getFcmToken());
+            memberMapper.updateFcmToken(userId, fcmTokenDTO.getFcmToken(), LocalDateTime.now());
             log.info("FCM 토큰 갱신 완료 - 회원 ID : {}", userId);
         } catch (UserNotFoundException e) {
             throw e;

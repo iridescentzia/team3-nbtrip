@@ -25,7 +25,8 @@
             email = #{email},
             nickname = #{nickname},
             name = #{name},
-            phone_number = #{phoneNumber}
+            phone_number = #{phoneNumber},
+            updated_at = #{updatedAt}
         WHERE user_id = #{userId}
     </update>
 
@@ -39,7 +40,8 @@
     <!-- 사용자 비밀번호 업데이트(PUT /api/users/{userId}/password) -->
     <update id="updateUserPassword" parameterType="map">
         UPDATE users
-        SET password = #{password}
+        SET password = #{password},
+            updated_at = #{updatedAt}
         WHERE user_id = #{userId}
     </update>
 
@@ -62,7 +64,8 @@
     <!-- FCM 토큰 업데이트(PUT /api/users/fcm-token) -->
     <update id="updateFcmToken" parameterType="map">
         UPDATE users
-        SET fcm_token = #{fcmToken}
+        SET fcm_token = #{fcmToken},
+            updated_at = #{updatedAt}
         WHERE user_id = #{userId}
     </update>
 

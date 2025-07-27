@@ -13,24 +13,25 @@
         <result property="phoneNumber" column="phone_number" />
         <result property="fcmToken" column="fcm_token" />
         <result property="createdAt" column="created_at" />
+        <result property="updatedAt" column="updated_at" />
     </resultMap>
 
     <!-- 회원 정보 저장 -->
     <insert id="insertMember" parameterType="org.scoula.member.domain.MemberVO" useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO users (email, password, nickname, name, phone_number, fcm_token, created_at)
-        VALUES (#{email}, #{password}, #{nickname}, #{name}, #{phoneNumber}, #{fcmToken}, #{createdAt})
+        INSERT INTO users (email, password, nickname, name, phone_number, fcm_token, created_at, updated_at)
+        VALUES (#{email}, #{password}, #{nickname}, #{name}, #{phoneNumber}, #{fcmToken}, #{createdAt}, #{updatedAt})
     </insert>
 
     <!-- email로 회원 조회 -->
     <select id="findByEmail" parameterType="string" resultMap="memberResultMap">
-        SELECT user_id, email, password, nickname, name, phone_number, fcm_token, created_at
+        SELECT user_id, email, password, nickname, name, phone_number, fcm_token, created_at, updated_at
         FROM users
         WHERE email = #{email}
     </select>
 
     <!-- userId로 회원 조회 -->
     <select id="findById" parameterType="int" resultMap="memberResultMap">
-        SELECT user_id, email, password, nickname, name, phone_number, fcm_token, created_at
+        SELECT user_id, email, password, nickname, name, phone_number, fcm_token, created_at, updated_at
         FROM users
         WHERE user_id = #{userId}
     </select>
@@ -69,21 +70,24 @@
         SET
             nickname = #{nickname},
             name = #{name},
-            phone_number = #{phoneNumber}
+            phone_number = #{phoneNumber},
+            updated_at = #{updatedAt}
         WHERE user_id = #{userId}
     </update>
 
     <!-- 비밀번호 변경 -->
     <update id="updatePassword">
         UPDATE users
-        SET password = #{password}
+        SET password = #{password},
+            updated_at = #{updatedAt}
         WHERE user_id = #{userId}
     </update>
 
     <!-- FCM 토큰 업데이트 -->
     <update id="updateFcmToken">
         UPDATE users
-        SET fcm_token = #{fcmToken}
+        SET fcm_token = #{fcmToken},
+            updated_at = #{updatedAt}
         WHERE user_id = #{userId}
     </update>
 </mapper>

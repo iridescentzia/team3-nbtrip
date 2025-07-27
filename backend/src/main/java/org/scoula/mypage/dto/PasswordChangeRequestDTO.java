@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -24,4 +25,6 @@ public class PasswordChangeRequestDTO {
 
     @NotBlank(message = "새 비밀번호 확인을 입력해주세요.")
     private String newPasswordConfirm;
+
+    private LocalDateTime updatedAt;
 }
