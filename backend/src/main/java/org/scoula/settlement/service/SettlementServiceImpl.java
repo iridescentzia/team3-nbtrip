@@ -1,9 +1,9 @@
 package org.scoula.settlement.service;
 
 import lombok.RequiredArgsConstructor;
-import org.scoula.trip.mapper.TripMapper;
+import org.scoula.group.mapper.GroupMapper;
 import lombok.extern.log4j.Log4j2;
-import org.scoula.trip.service.TripService;
+import org.scoula.group.service.GroupService;
 import org.scoula.member.mapper.MemberMapper;
 import org.scoula.settlement.domain.SettlementVO;
 import org.scoula.settlement.dto.SettlementDTO;
@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 public class SettlementServiceImpl implements SettlementService {
     private final SettlementMapper mapper;
     private final SettlementAccountMapper settlementAccountMapper;
-    private final TripService tripService;
-    private final TripMapper tripMapper;
+    private final GroupService groupService;
+    private final GroupMapper groupMapper;
     private final MemberMapper memberMapper;
     private final SettlementCalculator settlementCalculator; // n빵 계산 서비스
     private final IndividualTransferProcessor individualTransferProcessor;
@@ -136,7 +136,7 @@ public class SettlementServiceImpl implements SettlementService {
         try {
             // n빵 계산 서비스 호출
             List<SettlementDTO.RawSettlementDataDTO> rawData = mapper.getRawSettlementDataByTripId(tripId);
-            List<String> members = tripMapper.findNicknamesByTripId(tripId);
+            List<String> members = groupMapper.findNicknamesByTripId(tripId);
 
             // 데이터 유효성 검증
             if(rawData.isEmpty()) {
@@ -192,7 +192,7 @@ public class SettlementServiceImpl implements SettlementService {
     public boolean canRequestSettlement(int userId, int tripId) {
         try {
             // 실제 그룹장 권한 체크
-            return tripService.isOwner(tripId, userId);
+            return groupService.isOwner(tripId, userId);
         } catch (Exception e) {
             log.error("그룹장 권한 체크 실패 - userId: {}, tripId: {}", userId, tripId, e);
             return false;
@@ -423,7 +423,7 @@ public class SettlementServiceImpl implements SettlementService {
             }
 
             // 2. 멤버 존재 여부 체크
-            List<String> members = tripMapper.findNicknamesByTripId(tripId);
+            List<String> members = groupMapper.findNicknamesByTripId(tripId);
             if(members.isEmpty()) {
                 log.warn("정산 불가 - 멤버 없음. tripId: {}" + tripId);
                 return false;
@@ -479,7 +479,7 @@ public class SettlementServiceImpl implements SettlementService {
         List<SettlementDTO.RawSettlementDataDTO> rawData = mapper.getRawSettlementDataByTripId(tripId);
 
         // 2. 해당 여행의 전체 멤버 닉네임 목록 조회
-        List<String> members = tripMapper.findNicknamesByTripId(tripId);
+        List<String> members = groupMapper.findNicknamesByTripId(tripId);
 
         // 3. 계산기에 데이터를 넘겨 최종 송금 목록 계산 요청
         List<SettlementDTO.OptimizedTransaction> transactions = settlementCalculator.calculate(rawData, members);
