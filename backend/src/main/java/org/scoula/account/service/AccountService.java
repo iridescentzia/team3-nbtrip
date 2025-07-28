@@ -18,9 +18,9 @@ public interface AccountService {
     // 사용자 계좌 잔액 차감
     boolean decreaseUserBalance(int userId, int amount);
 
+    // 사용자 계좌 잔액 확인
+    int getBalanceByUserId(int userId);
+
     // 사용자 계좌 잔액 증가
     boolean increaseUserBalance(int userId, int amount);
-
-    // 사업자 계좌 잔액 증가
-    boolean increaseMerchantBalance(int merchantId, int amount);
 }

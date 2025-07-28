@@ -37,8 +37,15 @@
         UPDATE account
         SET balance = balance - #{amount}
         WHERE user_id = #{userId}
-        AND balance >= #{amount}
+          AND balance >= #{amount}
     </update>
+
+    <!-- 사용자 계좌 잔액 차감 확인 -->
+    <select id="selectBalanceByUserId" resultType="int" parameterType="int">
+        SELECT balance
+        FROM account
+        WHERE user_id = #{userId}
+    </select>
 
     <!-- 사용자 계좌 잔액 증가 - 정산 송금 시 사용 -->
     <update id="increaseUserBalance">
