@@ -12,6 +12,7 @@ import org.springframework.context.annotation.*;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.sql.DataSource;
 
@@ -27,7 +28,7 @@ import javax.sql.DataSource;
         "org.scoula.member.mapper", 
         "org.scoula.mypage.mapper",
         "org.scoula.member.mapper",
-        "org.scoula.trip.mapper",
+        "org.scoula.group.mapper",
         "org.scoula.settlement.mapper",
         "org.scoula.payment.mapper",
         "org.scoula.notification.mapper",
