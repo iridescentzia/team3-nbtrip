@@ -143,6 +143,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
 
                 // 인증 불필요(공개 API)
+<<<<<<< Updated upstream
                 .antMatchers(HttpMethod.POST, "/api/auth/login").permitAll()  // 로그인
                 .antMatchers(HttpMethod.POST, "/api/auth/register").permitAll()  // 회원가입
                 .antMatchers(HttpMethod.GET, "/api/merchants/**").permitAll()  // 가맹점 조회
@@ -156,6 +157,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/settlements/**").permitAll()  // 정산 관리
                 .antMatchers("/api/accounts/**").permitAll()  // 계좌 관리
                 .antMatchers("/api/notifications/**").permitAll()  // 알림 관리
+=======
+//                .antMatchers(HttpMethod.POST, "/api/auth/login").permitAll()  // 로그인
+//                .antMatchers(HttpMethod.POST, "/api/auth/register").permitAll()  // 회원가입
+//                .antMatchers(HttpMethod.GET, "/api/merchants/**").permitAll()  // 가맹점 조회
+//
+//                // 인증 필요(보호된 API)
+//                .antMatchers("/api/auth/logout").authenticated()  // 인증 관련
+//                .antMatchers("/api/users/**").authenticated()  // 사용자 관리
+//                .antMatchers("/api/groups/**").authenticated()  // 그룹 관리
+//                .antMatchers(HttpMethod.POST, "/api/merchants").authenticated()  // 가맹점 등록
+//                .antMatchers("/api/transactions/**").authenticated()  // 거래 관리
+//                .antMatchers("/api/settlements/**").authenticated()  // 정산 관리
+//                .antMatchers("/api/accounts/**").authenticated()  // 계좌 관리
+//                .antMatchers("/api/notifications/**").authenticated()  // 알림 관리
+>>>>>>> Stashed changes
                 .anyRequest().permitAll();
     }
 

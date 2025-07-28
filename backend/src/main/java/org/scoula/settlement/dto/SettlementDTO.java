@@ -99,9 +99,11 @@ public class SettlementDTO {
      */
     @Data
     public static class RawSettlementDataDTO {
-        private Long paymentId;
-        private String payerNickname;
-        private String participantNickname;
+        private int paymentId;
+        // String payerNickname -> Long payerId
+        private int payerId;
+        // String participantNickname -> Long participantId
+        private int participantId;
         private int splitAmount;
     }
 
