@@ -88,10 +88,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(
+                // 프론트엔드 SPA 진입점 허용
+                "/",
+                "/index.html",
+
+                // 정적 파일 확장자별 전역 허용
+                "/**/*.js",
+                "/**/*.css",
+                "/**/*.png",
+                "/**/*.jpg",
+                "/**/*.svg",
+
                 // 정적 리소스
                 "/assets/**",
                 "/favicon.ico",
                 "/robots.txt",
+                "/static/**",
+                "/public/**",
 
                 // 시스템 모니터링
                 "/api/health",
