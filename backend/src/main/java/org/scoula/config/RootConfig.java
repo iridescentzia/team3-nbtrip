@@ -18,14 +18,23 @@ import javax.sql.DataSource;
 
 @Configuration
 @PropertySource({"classpath:/application.properties"})
-@ComponentScan(basePackages = {"org.scoula"}, 
+@ComponentScan(basePackages = {"org.scoula.member.service",
+        "org.scoula.group.service",
+        "org.scoula.settlement.service",
+        "org.scoula.payment.service",
+        "org.scoula.mypage.service",
+        "org.scoula.merchant.service",
+        "org.scoula.account.service",
+        "org.scoula.notification.service",
+        "org.scoula.report.service",
+        "org.scoula.security"}, // security 관련 Component 스캔},
         excludeFilters = {
-        @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = Controller.class)
-})
+                @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = Controller.class)
+        })
 @MapperScan(basePackages = {
         "org.scoula.merchant.mapper",
-        "org.scoula.security.accounting.mapper", 
-        "org.scoula.member.mapper", 
+        "org.scoula.security.accounting.mapper",
+        "org.scoula.member.mapper",
         "org.scoula.mypage.mapper",
         "org.scoula.member.mapper",
         "org.scoula.group.mapper",
@@ -34,7 +43,7 @@ import javax.sql.DataSource;
         "org.scoula.notification.mapper",
         "org.scoula.account.mapper",
         "org.scoula.report.mapper"
-  })
+})
 @EnableTransactionManagement
 public class RootConfig {
     @Value("${jdbc.driver}") String driver;
