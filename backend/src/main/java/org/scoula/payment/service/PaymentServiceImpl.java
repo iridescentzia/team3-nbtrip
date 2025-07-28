@@ -38,12 +38,12 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("결제 실패: 존재하지 않는 사용자이거나 잔액 부족");
         }
 
-        // 가맹점 계좌에 금액 증가
-        boolean increased = accountService.increaseMerchantBalance(paymentDTO.getMerchantId(), paymentDTO.getAmount());
-        if(!increased) {
-            log.error("가맹점 정산 실패 - 가맹점 ID: {}", paymentDTO.getMerchantId());
-            throw new RuntimeException("가맹점 정산 실패");
-        }
+//        // 가맹점 계좌에 금액 증가
+//        boolean increased = accountService.increaseMerchantBalance(paymentDTO.getMerchantId(), paymentDTO.getAmount());
+//        if(!increased) {
+//            log.error("가맹점 정산 실패 - 가맹점 ID: {}", paymentDTO.getMerchantId());
+//            throw new RuntimeException("가맹점 정산 실패");
+//        }
 
         // 결제 내역 저장
         PaymentVO paymentVO = new PaymentVO();

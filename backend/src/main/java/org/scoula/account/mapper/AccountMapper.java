@@ -21,7 +21,4 @@ public interface AccountMapper {
 
     // 사용자 계좌 잔액 증가 - 정산 송금 시 사용
     int increaseUserBalance(@Param("userId") int userId, @Param("amount") int amount);
-
-    // 가맹점 사업자 계좌 잔액 증가 - QR 결제 시 사용
-    int increaseMerchantBalance(@Param("merchantId") int merchantId, @Param("amount") int amount);
 }
