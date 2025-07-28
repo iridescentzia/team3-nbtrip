@@ -171,53 +171,17 @@ public class SettlementController {
 
     /**
      * 7. 실제 그룹원 간 송금 처리 (시나리오 5번 첫번째 단계)
-     * 정산 상태: PENDING -> PROCESSING 전환 + 잔액 차감/입금 수행
+     * 정산 상태: PENDING -> COMPLETED 전환 + 잔액 차감/입금 수행
      */
-    @PostMapping("/{settlementId}/transfer")
-    public ResponseEntity<SettlementDTO.TransferResponseDto> transferToUser(
-            @PathVariable int settlementId,
+    @PostMapping("/transfer")
+    public ResponseEntity<SettlementDTO.TransferResponseDto> transferToUsers(
+            @RequestBody SettlementDTO.TransferRequestDto request,
             Principal principal
     ) {
-        log.info("🟢POST /api/settlements/settlementId={}/transfer", settlementId);
         int loginUserId = extractUserId(principal);
+        SettlementDTO.TransferResponseDto response = settlementService.transferToUsers(request.getSettlementIds(), loginUserId);
 
-        SettlementDTO.TransferResponseDto response = settlementService.transferToUser(settlementId, loginUserId);
-
-        if (!response.isSuccess()) {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 8. 송금 완료 처리 (시나리오 5번 두번째 단계)
-     * 프론트: 송금 완료 버튼 -> 호출
-     * 내부: 현재 상태가 PROCESSING인지 확인 후 COMPLETED로 변경
-     */
-    @PostMapping("/{settlementId}/complete")
-    public ResponseEntity<SettlementDTO.CompleteSettlementResponseDto> completeSettlement(
-            @PathVariable int settlementId,
-            Principal principal
-    ) {
-        log.info("🟢POST /api/settlements/settlementId={}/complete", settlementId);
-        int loginUserId = extractUserId(principal);
-
-        SettlementDTO.CompleteSettlementResponseDto response = settlementService.markAsCompleted(settlementId, loginUserId);
-
-        if (!response.isSuccess()) {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        // TODO: 팀원 머지 후 주석 해제 - 정산 완료 알림 발송
-        // try {
-        //     SettlementVO vo = settlementService.getById(settlementId);
-        //     sendSettlementNotification(loginUserId, vo.getTripId(), "COMPLETED");
-        // } catch (Exception e) {
-        //     log.warn("정산 완료 알림 발송 실패", e);
-        // }
-
-        return ResponseEntity.ok(response);
+        return response.isSuccess() ? ResponseEntity.ok(response) : ResponseEntity.badRequest().body(response);
     }
 
     // ==================== 내부 헬퍼 메서드들 ====================

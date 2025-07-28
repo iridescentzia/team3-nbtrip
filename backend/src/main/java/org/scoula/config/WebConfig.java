@@ -1,6 +1,7 @@
 package org.scoula.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.scoula.security.config.SecurityConfig;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.WebApplicationInitializer;
@@ -28,7 +29,7 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
 
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        return new Class[] { RootConfig.class, ServletConfig.class };
+        return new Class[] { RootConfig.class, SecurityConfig.class };
     }
 
     @Override
