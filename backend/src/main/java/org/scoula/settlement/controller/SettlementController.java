@@ -34,7 +34,7 @@ public class SettlementController {
      */
     // FIX: API 경로를 프론트엔드 요청과 일치하도록 수정.
     @GetMapping("/{tripId}/summary")
-    public ResponseEntity<SettlementDTO.SettlementSummaryResponseDto> getSettlementSummary(@PathVariable Long tripId) {
+    public ResponseEntity<SettlementDTO.SettlementSummaryResponseDto> getSettlementSummary(@PathVariable int tripId) {
         // SettlementService를 호출하여 비즈니스 로직을 수행
         SettlementDTO.SettlementSummaryResponseDto summaryDto = settlementService.getSettlementSummary(tripId);
 
@@ -50,13 +50,13 @@ public class SettlementController {
      * @return ResponseEntity<SettlementResultResponseDto> 최종 송금 목록을 담은 DTO
      */
     @GetMapping("/{tripId}/calculate")
-    public ResponseEntity<SettlementDTO.SettlementResultResponseDto> calculateFinalSettlement(@PathVariable Long tripId) {
+    public ResponseEntity<SettlementDTO.SettlementResultResponseDto> calculateFinalSettlement(@PathVariable int tripId) {
         // SettlementService를 호출하여 최종 정산 결과를 계산
         SettlementDTO.SettlementResultResponseDto resultDto = settlementService.calculateFinalSettlement(tripId);
 
         // 계산된 결과를 ResponseEntity에 담아 프론트엔드로 반환
         return ResponseEntity.ok(resultDto);
-
+    }
     // ==================== 조회 API ====================
 
     /**
