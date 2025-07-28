@@ -18,16 +18,7 @@ import javax.sql.DataSource;
 
 @Configuration
 @PropertySource({"classpath:/application.properties"})
-@ComponentScan(basePackages = {"org.scoula.member.service",
-        "org.scoula.group.service",
-        "org.scoula.settlement.service",
-        "org.scoula.payment.service",
-        "org.scoula.mypage.service",
-        "org.scoula.merchant.service",
-        "org.scoula.account.service",
-        "org.scoula.notification.service",
-        "org.scoula.report.service",
-        "org.scoula.security"}, // security 관련 Component 스캔},
+@ComponentScan(basePackages = {"org.scoula"}, // security 관련 Component 스캔},
         excludeFilters = {
                 @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = Controller.class)
         })
@@ -48,8 +39,10 @@ import javax.sql.DataSource;
 public class RootConfig {
     @Value("${jdbc.driver}") String driver;
     @Value("${jdbc.url}") String url;
-    @Value("${jdbc.username}") String username;
-    @Value("${jdbc.password}") String password;
+    @Value("scoula") String username;
+    @Value("1234") String password;
+    @Autowired
+    ApplicationContext applicationContext;
 
     @Bean
     public DataSource dataSource() {
@@ -63,9 +56,6 @@ public class RootConfig {
         HikariDataSource dataSource = new HikariDataSource(config);
         return dataSource;
     }
-
-    @Autowired
-    ApplicationContext applicationContext;
 
     @Bean
     public SqlSessionFactory sqlSessionFactory() throws Exception {
