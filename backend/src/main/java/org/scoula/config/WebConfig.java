@@ -17,11 +17,7 @@ import javax.servlet.*;
 @Configuration
 @EnableWebMvc
 @ComponentScan(basePackages = {
-        "org.scoula.member.controller",
-        "org.scoula.mypage.controller",
-        "org.scoula.security.accounting.controller",
-        "org.scoula.settlement.controller", // 이 패키지를 추가
-        "org.scoula.notification.controller"
+        "org.scoula"
 })
 @Slf4j
 public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitializer implements WebMvcConfigurer {
@@ -32,12 +28,12 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
 
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        return new Class[] { RootConfig.class };
+        return new Class[] { RootConfig.class, ServletConfig.class };
     }
 
     @Override
     protected Class<?>[] getServletConfigClasses() {
-        return new Class[] { WebConfig.class, ServletConfig.class };
+        return new Class[] { ServletConfig.class };
     }
 
     @Override
