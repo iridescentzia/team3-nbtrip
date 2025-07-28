@@ -1,9 +1,9 @@
 import api from '@/api'
-const BASE_URL = '/api/groups'
+const BASE_URL = '/api/trips'
 
 export default {
-    async getGroupDetail(groupId){
-        const { data } = await api.get(`${BASE_URL}/${groupId}`);
+    async getTripDetail(tripId){
+        const { data } = await api.get(`${BASE_URL}/${tripId}`);
         console.log("data:" + JSON.stringify(data));
         return data
     },

@@ -1,9 +1,9 @@
 package org.scoula.settlement.service;
 
 import lombok.RequiredArgsConstructor;
-import org.scoula.group.mapper.GroupMapper;
+import org.scoula.trip.mapper.TripMapper;
 import lombok.extern.log4j.Log4j2;
-import org.scoula.group.service.GroupService;
+import org.scoula.trip.service.TripService;
 import org.scoula.member.mapper.MemberMapper;
 import org.scoula.settlement.domain.SettlementVO;
 import org.scoula.settlement.dto.SettlementDTO;
@@ -11,6 +11,8 @@ import org.scoula.settlement.mapper.SettlementAccountMapper;
 import org.scoula.settlement.mapper.SettlementMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -22,23 +24,24 @@ import java.util.stream.Collectors;
 public class SettlementServiceImpl implements SettlementService {
     private final SettlementMapper mapper;
     private final SettlementAccountMapper settlementAccountMapper;
-    // private final GroupService groupService;
-    private final GroupMapper groupMapper;
-    // private final MemberMapper memberMapper;
+    private final TripService tripService;
+    private final TripMapper tripMapper;
+    private final MemberMapper memberMapper;
     private final SettlementCalculator settlementCalculator; // n빵 계산 서비스
+    private final IndividualTransferProcessor individualTransferProcessor;
 
     // ==================== 조회 관련 ====================
 
     @Override
     public List<SettlementVO> getSettlementsByUserId(int userId) {
         log.info("🟢 getSettlementsByUserId 의 userId: " + userId);
-        return mapper.getSettlementsByUserId(userId);
+        return mapper.getSettlementsWithNicknamesByUserId(userId);
     }
 
     @Override
     public List<SettlementVO> getSettlementsByTripId(int tripId) {
         log.info("🟢 getSettlementsByTripId 의 tripId: " + tripId);
-        return mapper.getSettlementsByTripId(tripId);
+        return mapper.getSettlementsWithNicknamesByTripId(tripId);
     }
 
     @Override
@@ -50,7 +53,7 @@ public class SettlementServiceImpl implements SettlementService {
     @Override
     public SettlementVO getById(int settlementId) {
         log.info("🟢 getById 의 settlementId: " + settlementId);
-        return Optional.ofNullable(mapper.getById(settlementId))
+        return Optional.ofNullable(mapper.getByIdWithNicknames(settlementId))
                 .orElseThrow(() -> new NoSuchElementException("해당 정산 내역이 존재하지 않습니다."));
     }
 
@@ -58,7 +61,7 @@ public class SettlementServiceImpl implements SettlementService {
     public SettlementDTO.PersonalSettlementResponseDto getMySettlements(int userId, int tripId) {
         log.info("🟢 getMySettlements - userId: {}, tripId: {}", userId, tripId);
 
-        List<SettlementVO> allMySettlements = mapper.getSettlementsByUserId(userId)
+        List<SettlementVO> allMySettlements = mapper.getSettlementsWithNicknamesByUserId(userId)
                 .stream()
                 .filter(vo -> vo.getTripId().equals(tripId))
                 .collect(Collectors.toList());
@@ -88,14 +91,14 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     public List<SettlementVO> getMyOutgoingSettlements(int userId, int tripId) {
-        return mapper.getSettlementsByUserId(userId).stream()
+        return mapper.getSettlementsWithNicknamesByUserId(userId).stream()
                 .filter(vo -> vo.getSenderId().equals(userId) && vo.getTripId().equals(tripId))
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<SettlementVO> getMyIncomingSettlements(int userId, int tripId) {
-        return mapper.getSettlementsByUserId(userId).stream()
+        return mapper.getSettlementsWithNicknamesByUserId(userId).stream()
                 .filter(vo -> vo.getReceiverId().equals(userId) && vo.getTripId().equals(tripId))
                 .collect(Collectors.toList());
     }
@@ -108,6 +111,13 @@ public class SettlementServiceImpl implements SettlementService {
         log.info("🟢 createSettlementRequest - userId: {}, tripId: {}", userId, tripId);
 
         SettlementDTO.CreateSettlementResponseDto response = new SettlementDTO.CreateSettlementResponseDto();
+
+        // n빵 계산 가능 여부 확인
+        if (!canCalculateSettlement(tripId)) {
+            response.setSuccess(false);
+            response.setMessage("정산 계산이 불가능한 상태입니다.");
+            return response;
+        }
 
         // 그룹장 권한 체크
         if (!canRequestSettlement(userId, tripId)) {
@@ -125,10 +135,30 @@ public class SettlementServiceImpl implements SettlementService {
 
         try {
             // n빵 계산 서비스 호출
-            // List<SettlementDTO.OptimizedTransaction> results = settlementCalculator.calculate(tripId);
+            List<SettlementDTO.RawSettlementDataDTO> rawData = mapper.getRawSettlementDataByTripId(tripId);
+            List<String> members = tripMapper.findNicknamesByTripId(tripId);
 
-            // 테스트용
-            List<SettlementDTO.OptimizedTransaction> results = getDummyCalculationResults();
+            // 데이터 유효성 검증
+            if(rawData.isEmpty()) {
+                response.setSuccess(false);
+                response.setMessage("정산할 결제 내역이 없습니다.");
+                return response;
+            }
+
+            if(members.isEmpty()) {
+                response.setSuccess(false);
+                response.setMessage("여행 멤버 정보를 찾을 수 없습니다.");
+                return response;
+            }
+
+            // n빵 계산 실행
+            List<SettlementDTO.OptimizedTransaction> results = settlementCalculator.calculate(rawData, members);
+
+            if(results.isEmpty()) {
+                response.setSuccess(false);
+                response.setMessage("정산알 내역이 없습니다. (모든 멤버의 지출이 동일)");
+                return response;
+            }
 
             // 계산 결과를 DB에 저장
             saveCalculatedResults(results, tripId);
@@ -140,9 +170,9 @@ public class SettlementServiceImpl implements SettlementService {
 
             return response;
         } catch (Exception e) {
-            log.error("정산 요청 생성 실패", e);
+            log.error("정산 요청 생성 실패 - tripId: {}", tripId, e);
             response.setSuccess(false);
-            response.setMessage("정산 요청 생성 중 오류가 발생했습니다.");
+            response.setMessage("정산 요청 생성 중 오류가 발생했습니다: " + e.getMessage());
             return response;
         }
     }
@@ -160,12 +190,13 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     public boolean canRequestSettlement(int userId, int tripId) {
-        // 실제 그룹장 권한 체크
-        // return groupService.isOwner(tripId, userId);
-
-        // 테스트 : 항상 true 반환
-        log.info("그룹장 권한 체크 건너뜀 (머지 후 활성화) - userId: {}, tripId: {}", userId, tripId);
-        return true;
+        try {
+            // 실제 그룹장 권한 체크
+            return tripService.isOwner(tripId, userId);
+        } catch (Exception e) {
+            log.error("그룹장 권한 체크 실패 - userId: {}, tripId: {}", userId, tripId, e);
+            return false;
+        }
     }
 
     // ==================== 상태 업데이트 관련 ====================
@@ -176,140 +207,63 @@ public class SettlementServiceImpl implements SettlementService {
         return mapper.updateSettlementStatus(settlementId, newStatus);
     }
 
-    @Transactional
-    @Override
-    public SettlementDTO.CompleteSettlementResponseDto markAsCompleted(int settlementId, int userId) {
-        log.info("🟢 markAsCompleted - settlementId: {}, userId: {}", settlementId, userId);
-
-        SettlementDTO.CompleteSettlementResponseDto response = new SettlementDTO.CompleteSettlementResponseDto();
-
-        try {
-            SettlementVO vo = mapper.getById(settlementId);
-            if (vo == null) {
-                response.setSuccess(false);
-                response.setMessage("정산 내역을 찾을 수 없습니다.");
-                return response;
-            }
-
-            // 권한 체크
-            if (!vo.getSenderId().equals(userId)) {
-                response.setSuccess(false);
-                response.setMessage("정산 완료 권한이 없습니다.");
-                return response;
-            }
-
-            // 상태 체크
-            if (!"PROCESSING".equalsIgnoreCase(vo.getSettlementStatus())) {
-                response.setSuccess(false);
-                response.setMessage("PROCESSING 상태에서만 완료 처리 가능합니다.");
-                return response;
-            }
-
-            int updated = mapper.updateSettlementStatus(settlementId, "COMPLETED");
-            if (updated == 1) {
-                response.setSuccess(true);
-                response.setMessage("정산이 완료되었습니다.");
-                response.setNewStatus("COMPLETED");
-            } else {
-                response.setSuccess(false);
-                response.setMessage("정산 완료 처리 실패");
-            }
-
-            return response;
-        } catch (Exception e) {
-            log.error("정산 완료 처리 실패", e);
-            response.setSuccess(false);
-            response.setMessage("정산 완료 처리 중 오류가 발생했습니다.");
-            return response;
-        }
-    }
-
-    @Override
-    public boolean canStartTransfer(int settlementId, int userId) {
-        try {
-            SettlementVO vo = mapper.getById(settlementId);
-            return vo != null &&
-                    vo.getSenderId().equals(userId) &&
-                    "PENDING".equalsIgnoreCase(vo.getSettlementStatus());
-        } catch (Exception e) {
-            log.error("송금 시작 권한 체크 실패", e);
-            return false;
-        }
-    }
-
     // ==================== 송금 처리 ====================
 
-    @Transactional
-    @Override
-    public SettlementDTO.TransferResponseDto transferToUser(int settlementId, int userId) {
-        log.info("🟢 송금 요청 - settlementId: {}, userId: {}", settlementId, userId);
+    @Override  // @Transactional 제거 - 건별 독립 트랜잭션 사용
+    public SettlementDTO.TransferResponseDto transferToUsers(List<Integer> settlementIds, int userId) {
+        log.info("🟢 다중 송금 요청 - 총 {}건, userId: {}", settlementIds.size(), userId);
+
+        List<SettlementDTO.TransferDetail> details = new ArrayList<>();
+        List<Integer> remainingIds = new ArrayList<>();
+        int successCount = 0, failCount = 0;
+
+        for (int settlementId : settlementIds) {
+            // 각 건별로 완전히 독립적인 트랜잭션 처리
+            SettlementDTO.TransferDetail detail = individualTransferProcessor.processTransfer(settlementId, userId);
+            details.add(detail);
+
+            if (detail.isSuccess()) {
+                successCount++;
+                log.info("✅ 송금 성공 - ID: {}, 수신자: {}, 금액: {}",
+                        settlementId, detail.getReceiverNickname(), detail.getAmount());
+            } else {
+                failCount++;
+                remainingIds.add(settlementId);
+                log.warn("❌ 송금 실패 - ID: {}, 사유: {}", settlementId, detail.getFailureReason());
+            }
+        }
+
+        // 송금 후 최종 잔액 조회
+        Integer senderBalance = settlementAccountMapper.selectBalance(userId);
+
+        // 응답 구성
+        return buildTransferResponse(details, successCount, failCount, remainingIds, senderBalance);
+    }
+
+    private SettlementDTO.TransferResponseDto buildTransferResponse(
+            List<SettlementDTO.TransferDetail> details,
+            int successCount, int failCount,
+            List<Integer> remainingIds, Integer senderBalance) {
 
         SettlementDTO.TransferResponseDto response = new SettlementDTO.TransferResponseDto();
+        response.setSuccess(successCount > 0);
+        response.setTotalCount(details.size());
+        response.setSuccessCount(successCount);
+        response.setFailedCount(failCount);
+        response.setDetails(details);
+        response.setRemainingSettlementIds(remainingIds);
+        response.setSenderBalance(senderBalance != null ? senderBalance : 0);
 
-        try {
-            // 정산 내역 조회
-            SettlementVO vo = mapper.getById(settlementId);
-            if (vo == null) {
-                response.setSuccess(false);
-                response.setMessage("정산 정보를 찾을 수 없습니다.");
-                return response;
-            }
-
-            // 권한 체크
-            if (!vo.getSenderId().equals(userId)) {
-                response.setSuccess(false);
-                response.setMessage("송금 권한이 없습니다.");
-                return response;
-            }
-
-            // 상태 체크
-            if (!"PENDING".equalsIgnoreCase(vo.getSettlementStatus())) {
-                response.setSuccess(false);
-                response.setMessage("PENDING 상태에서만 송금이 가능합니다.");
-                return response;
-            }
-
-            int senderId = vo.getSenderId();
-            int receiverId = vo.getReceiverId();
-            int amount = vo.getAmount();
-
-            // 송금자 계좌 잔액 차감
-            int debitResult = settlementAccountMapper.debitIfEnough(senderId, amount);
-            if (debitResult == 0) {
-                response.setSuccess(false);
-                response.setMessage("잔액이 부족합니다.");
-                return response;
-            }
-
-            // 수신자 계좌에 입금
-            int creditResult = settlementAccountMapper.credit(receiverId, amount);
-            if (creditResult == 0) {
-                throw new IllegalStateException("입금 실패. 롤백합니다.");
-            }
-
-            // 정산 상태 업데이트
-            int updated = mapper.updateSettlementStatus(settlementId, "PROCESSING");
-            if (updated == 0) {
-                throw new IllegalStateException("정산 상태 업데이트 실패. 롤백합니다.");
-            }
-
-            // 송금 후 잔액 조회
-            Integer senderBalance = settlementAccountMapper.selectBalance(senderId);
-
-            response.setSuccess(true);
-            response.setMessage("송금이 완료되었습니다.");
-            response.setNewStatus("PROCESSING");
-            response.setSenderBalance(senderBalance != null ? senderBalance : 0);
-
-            log.info("🟢 송금 성공 - {} -> {}, 금액: {}", senderId, receiverId, amount);
-            return response;
-
-        } catch (Exception e) {
-            log.error("송금 처리 실패", e);
-            response.setSuccess(false);
-            response.setMessage("송금 처리 중 오류가 발생했습니다.");
-            return response;
+        // 상황별 메시지 구성
+        if (failCount == 0) {
+            response.setMessage(String.format("모든 송금 완료 (%d건)", successCount));
+        } else if (successCount == 0) {
+            response.setMessage(String.format("모든 송금 실패 (%d건)", failCount));
+        } else {
+            response.setMessage(String.format("부분 송금 완료: %d건 성공, %d건 실패 (미정산)", successCount, failCount));
         }
+
+        return response;
     }
 
     // ==================== 상태 확인 ====================
@@ -322,7 +276,7 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     public SettlementDTO.MySettlementStatusResponseDto getMyOverallSettlementStatus(int userId) {
-        List<SettlementVO> list = mapper.getSettlementsByUserId(userId);
+        List<SettlementVO> list = mapper.getSettlementsWithNicknamesByUserId(userId);
 
         SettlementDTO.MySettlementStatusResponseDto response = new SettlementDTO.MySettlementStatusResponseDto();
 
@@ -382,7 +336,7 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     public SettlementDTO.RemainingSettlementResponseDto getRemainingSettlements(int tripId) {
-        List<SettlementVO> allSettlements = mapper.getSettlementsByTripId(tripId);
+        List<SettlementVO> allSettlements = mapper.getSettlementsWithNicknamesByTripId(tripId);
 
         SettlementDTO.RemainingSettlementResponseDto response = new SettlementDTO.RemainingSettlementResponseDto();
 
@@ -422,8 +376,8 @@ public class SettlementServiceImpl implements SettlementService {
     private SettlementDTO.OptimizedTransaction toOptimizedTransaction(SettlementVO vo) {
         SettlementDTO.OptimizedTransaction dto = new SettlementDTO.OptimizedTransaction();
         dto.setSettlementId(vo.getSettlementId());
-        dto.setSenderNickname(resolveNickname(vo.getSenderId()));
-        dto.setReceiverNickname(resolveNickname(vo.getReceiverId()));
+        dto.setSenderNickname(vo.getSenderNickname());    // JOIN으로 조회된 값 사용
+        dto.setReceiverNickname(vo.getReceiverNickname()); // JOIN으로 조회된 값 사용
         dto.setAmount(vo.getAmount());
         dto.setStatus(vo.getSettlementStatus());
         return dto;
@@ -447,75 +401,59 @@ public class SettlementServiceImpl implements SettlementService {
 
     private int resolveUserId(String nickname) {
         // MemberMapper 연동
-        // Integer userId = memberMapper.findUserIdByNickname(nickname);
-        // if(userId == null) {
-        //     throw new IllegalArgumentException("존재하지 않는 닉네임: " + nickname);
-        // }
-        // return userId;
-
-        // 테스트용
-        switch (nickname) {
-            case "김민수": return 1;
-            case "이건우": return 2;
-            case "최정훈": return 3;
-            case "권준호": return 4;
-            case "앨리스": return 5;
-            case "밥": return 6;
-            case "찰리": return 7;
-            case "다이애나": return 8;
-            // 기존 테스트 데이터도 호환
-            case "A": return 1;
-            case "B": return 2;
-            case "C": return 3;
-            default: throw new IllegalArgumentException("지원되지 않는 닉네임 (머지 후 해결 예정): " + nickname);
+        try {
+            Integer userId = memberMapper.findUserIdByNickname(nickname);
+            if(userId == null) {
+                throw new IllegalArgumentException("존재하지 않는 닉네임: " + nickname);
+            }
+            return userId;
+        } catch (Exception e) {
+            log.error("닉네임 -> 사용자 ID 변환 실패: {}", nickname, e);
+            throw new IllegalArgumentException("사용자 정보 조회 실패: " + nickname);
         }
     }
 
-    private String resolveNickname(int userId) {
-        // MemberMapper 연동
-        // return memberMapper.findNicknameByUserId(userId);
+    private boolean canCalculateSettlement(int tripId) {
+        try {
+            // 1. 결제 내역 존재 여부 체크
+            Integer totalAmount = mapper.getTotalAmountByTripId(tripId);
+            if (totalAmount == null || totalAmount <= 0) {
+                log.warn("정산 불가 - 결제 내역 없음. tripId: {}" + tripId);
+                return false;
+            }
 
-        // 테스트용
-        switch (userId) {
-            case 1: return "김민수";
-            case 2: return "이건우";
-            case 3: return "최정훈";
-            case 4: return "권준호";
-            case 5: return "앨리스";
-            case 6: return "밥";
-            case 7: return "찰리";
-            case 8: return "다이애나";
-            default: return "Unknown-" + userId;
+            // 2. 멤버 존재 여부 체크
+            List<String> members = tripMapper.findNicknamesByTripId(tripId);
+            if(members.isEmpty()) {
+                log.warn("정산 불가 - 멤버 없음. tripId: {}" + tripId);
+                return false;
+            }
+
+            // 3. 정산 데이터 존재 여부 체크
+            List<SettlementDTO.RawSettlementDataDTO> rawData = mapper.getRawSettlementDataByTripId(tripId);
+            if (rawData.isEmpty()) {
+                log.warn("정산 불가 - 원본 데이터 없음. tripId: {}" + tripId);
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("정산 가능 여부 체크 실패 - tripId: {}" + tripId, e);
+            return false;
         }
-    }
-
-    private List<SettlementDTO.OptimizedTransaction> getDummyCalculationResults() {
-        // 테스트용 더미 데이터
-        SettlementDTO.OptimizedTransaction tx1 = new SettlementDTO.OptimizedTransaction();
-        tx1.setSenderNickname("김민수");
-        tx1.setReceiverNickname("이건우");
-        tx1.setAmount(10000);
-
-        SettlementDTO.OptimizedTransaction tx2 = new SettlementDTO.OptimizedTransaction();
-        tx2.setSenderNickname("최정훈");
-        tx2.setReceiverNickname("이건우");
-        tx2.setAmount(5000);
-
-        return List.of(tx1, tx2);
     }
   
     /* 정산하기 1 페이지에 필요한 요약 정보를 추출 */    @Override
-    public SettlementDTO.SettlementSummaryResponseDto getSettlementSummary(Long tripId) {
+    public SettlementDTO.SettlementSummaryResponseDto getSettlementSummary(int tripId) {
 
         // 1. Mapper를 통해 DB에서 총 사용 금액 조회
         // 만약 결제 내역이 없어 null이 반환될 경우, 0으로 처리
-        Integer totalAmount = settlementMapper.getTotalAmountByTripId(tripId);
+        Integer totalAmount = mapper.getTotalAmountByTripId(tripId);
         if (totalAmount == null) {
             totalAmount = 0;
         }
 
         // 2. Mapper를 통해 DB에서 멤버별 총 결제 금액 목록 조회
-        List<SettlementDTO.MemberPaymentInfo> memberPayments = settlementMapper.getMemberPaymentsByTripId(tripId);
+        List<SettlementDTO.MemberPaymentInfo> memberPayments = mapper.getMemberPaymentsByTripId(tripId);
 
         // 3. 조회된 데이터들을 DTO에 담아서 반환
         SettlementDTO.SettlementSummaryResponseDto summaryDto = new SettlementDTO.SettlementSummaryResponseDto();
@@ -536,12 +474,12 @@ public class SettlementServiceImpl implements SettlementService {
      * @return 상계 처리가 완료된 최종 송금 목록을 담은 DTO
      */
     @Override
-    public SettlementDTO.SettlementResultResponseDto calculateFinalSettlement(Long tripId) {
+    public SettlementDTO.SettlementResultResponseDto calculateFinalSettlement(int tripId) {
         // 1. DB에서 정산 계산에 필요한 원본 데이터 조회
-        List<SettlementDTO.RawSettlementDataDTO> rawData = settlementMapper.getRawSettlementDataByTripId(tripId);
+        List<SettlementDTO.RawSettlementDataDTO> rawData = mapper.getRawSettlementDataByTripId(tripId);
 
         // 2. 해당 여행의 전체 멤버 닉네임 목록 조회
-        List<String> members = groupMapper.findNicknamesByTripId(tripId);
+        List<String> members = tripMapper.findNicknamesByTripId(tripId);
 
         // 3. 계산기에 데이터를 넘겨 최종 송금 목록 계산 요청
         List<SettlementDTO.OptimizedTransaction> transactions = settlementCalculator.calculate(rawData, members);
@@ -549,7 +487,7 @@ public class SettlementServiceImpl implements SettlementService {
         // 4. DTO에 담아 Controller로 반환
         SettlementDTO.SettlementResultResponseDto resultDto = new SettlementDTO.SettlementResultResponseDto();
 
-        Integer totalAmount = settlementMapper.getTotalAmountByTripId(tripId);
+        Integer totalAmount = mapper.getTotalAmountByTripId(tripId);
         resultDto.setTotalAmount(totalAmount != null ? totalAmount : 0);
         resultDto.setMembers(members);
         resultDto.setTransactions(transactions);

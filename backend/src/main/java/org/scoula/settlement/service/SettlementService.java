@@ -11,10 +11,10 @@ import java.util.List;
 public interface SettlementService {
   
     /* 정산 1단계에 필요한 요약 정보를 조회함. */
-    SettlementDTO.SettlementSummaryResponseDto getSettlementSummary(Long tripId);
+    SettlementDTO.SettlementSummaryResponseDto getSettlementSummary(int tripId);
 
     /* 정산 2단계: 최종 정산 결과를 계산하여 반환함. */
-    SettlementDTO.SettlementResultResponseDto calculateFinalSettlement(Long tripId);
+    SettlementDTO.SettlementResultResponseDto calculateFinalSettlement(int tripId);
 
     // ==================== 조회 관련 ====================
 
@@ -79,24 +79,13 @@ public interface SettlementService {
      */
     int updateSettlementStatus(int settlementId, String newStatus);
 
-    /**
-     * 송금 완료 처리 (시나리오 5번 두번째 단계)
-     * PROCESSING → COMPLETED 상태 변경
-     */
-    SettlementDTO.CompleteSettlementResponseDto markAsCompleted(int settlementId, int userId);
-
-    /**
-     * 송금 시작 권한 체크
-     */
-    boolean canStartTransfer(int settlementId, int userId);
-
     // ==================== 송금 처리 ====================
 
     /**
-     * 그룹원 간 송금 처리 (시나리오 5번 첫번째 단계)
-     * PENDING → PROCESSING 상태 변경 + 실제 잔액 이동
+     * 그룹원 간 송금 처리 (시나리오 5번)
+     * PENDING → COMPLETED 상태 변경 + 실제 잔액 이동
      */
-    SettlementDTO.TransferResponseDto transferToUser(int settlementId, int userId);
+    SettlementDTO.TransferResponseDto transferToUsers(List<Integer> settlementIds, int userId);
 
     // ==================== 상태 확인 ====================
 

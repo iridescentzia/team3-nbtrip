@@ -1,4 +1,5 @@
 package org.scoula.settlement.dto;
+
 import lombok.Data;
 import java.util.List;
 
@@ -6,6 +7,7 @@ import java.util.List;
  * 정산 관련 데이터를 전송하는 데 사용되는 DTO(Data Transfer Object) 클래스들을 포함함.
  */
 public class SettlementDTO {
+
     /**
      * 정산 요약 정보 DTO (1단계 페이지용)
      * 여행의 총 사용 금액과 멤버별 총 결제액 정보를 담음.
@@ -103,25 +105,37 @@ public class SettlementDTO {
         private int splitAmount;
     }
 
-    /*
+    @Data
+    public static class TransferRequestDto {
+        private List<Integer> settlementIds; // 송금할 정산 ID 목록
+    }
+
+    /**
      * 송금 처리 응답 DTO
      */
     @Data
     public static class TransferResponseDto {
-        private boolean success;
-        private String message;
-        private String newStatus;
-        private int senderBalance; // 송금 후 잔액
+        private List<Integer> settlementIds;        // 송금할 정산 ID 목록
+        private boolean success;                    // 전체 성공 여부 (1건이라도 성공하면 true)
+        private String message;                     // 요약 메시지
+        private int senderBalance;                  // 송금 후 잔액
+
+        // 상세 결과 정보
+        private int totalCount;                     // 총 시도 건수
+        private int successCount;                   // 성공 건수
+        private int failedCount;                    // 실패 건수
+        private List<TransferDetail> details;       // 건별 상세 정보
+        private List<Integer> remainingSettlementIds; // 미정산 ID 목록
     }
 
-    /**
-     * 송금 완료 처리 응답 DTO
-     */
     @Data
-    public static class CompleteSettlementResponseDto {
+    public static class TransferDetail {
+        private Integer settlementId;
         private boolean success;
-        private String message;
-        private String newStatus;
+        private String receiverNickname;
+        private int amount;
+        private String failureReason;              // "잔액부족", "권한없음", "상태오류"
+        private String currentStatus;              // 처리 후 상태 (PENDING/PROCESSING)
     }
 
     /**

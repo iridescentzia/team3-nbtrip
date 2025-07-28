@@ -1,4 +1,4 @@
-package org.scoula.group.domain;
+package org.scoula.trip.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GroupMemberVO {
+public class TripMemberVO {
     private int memberId;
     private int userId;
-    private int groupId;
-    private GroupMemberStatus memberStatus;
+    private int tripId;
+    private TripMemberStatus memberStatus;
 }

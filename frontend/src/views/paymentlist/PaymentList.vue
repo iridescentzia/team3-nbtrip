@@ -13,7 +13,7 @@
 
 <!--      <TravelCard-->
 <!--          v-if="tripStore.trip"-->
-<!--          :trip-name="tripStore.trip.groupName"-->
+<!--          :trip-name="tripStore.trip.tripName"-->
 <!--          :start-date="tripStore.trip.startDate"-->
 <!--          :end-date="tripStore.trip.endDate"-->
 <!--      />-->
