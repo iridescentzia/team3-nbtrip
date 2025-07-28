@@ -1,4 +1,4 @@
-package org.scoula.group.domain;
+package org.scoula.trip.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,13 +12,13 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GroupVO {
-    private int groupId;
+public class TripVO {
+    private int tripId;
     private int ownerId;
-    private String groupName;
+    private String tripName;
     private Date startDate;
     private Date endDate;
     private int budget;
-    private GroupStatus groupStatus;
-    private List<GroupMemberVO> members;
+    private TripStatus tripStatus;
+    private List<TripMemberVO> members;
 }
