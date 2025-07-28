@@ -2,9 +2,6 @@ package org.scoula.settlement.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.scoula.group.service.GroupService;
-import org.scoula.notification.dto.NotificationDTO;
-import org.scoula.notification.service.NotificationService;
 import org.scoula.settlement.domain.SettlementVO;
 import org.scoula.settlement.dto.SettlementDTO;
 import org.scoula.settlement.service.SettlementService;
