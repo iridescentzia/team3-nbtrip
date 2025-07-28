@@ -14,7 +14,7 @@ public interface GroupMapper {
      * @param tripId 조회할 여행의 ID
      * @return 해당 여행의 멤버 닉네임 리스트
      */
-    List<String> findNicknamesByTripId(Long tripId);
+    List<String> findNicknamesByTripId(int tripId);
     GroupVO getGroupsDetail(int groupId);
     List<GroupMemberVO> getGroupMembers(int groupId);
     List<GroupVO> getJoinedGroups(int userId);

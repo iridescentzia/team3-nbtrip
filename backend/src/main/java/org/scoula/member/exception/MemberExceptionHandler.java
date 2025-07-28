@@ -29,7 +29,7 @@ public class MemberExceptionHandler {
     }
 
     // nickname 중복 예외 처리
-    @ExceptionHandler(DuplicateEmailException.class)
+    @ExceptionHandler(DuplicateNicknameException.class)
     public ResponseEntity<ApiResponse> handleDuplicateNickname(DuplicateNicknameException e) {
         log.warn("중복된 닉네임입니다. : {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(false, e.getMessage()));
