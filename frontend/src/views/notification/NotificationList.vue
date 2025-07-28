@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { ChevronDown, ChevronRight } from 'lucide-vue-next'
 
-const userId = 4
+const userId = 1
 const notifications = ref([])
 const showDropdown = ref(false)
 const selectedLabel = ref('전체')
