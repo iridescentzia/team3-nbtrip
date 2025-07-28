@@ -119,6 +119,10 @@
         WHERE settlement_id = #{settlementId}
     </update>
 
+
+<!--    /** [NEW] 여러 정산 내역을 한 번에 DB에 삽입 (배치 처리) */-->
+<!--    int insertSettlementList(@Param("list") List<SettlementVO> settlementList);-->
+<!--    // 내역을 하나씩 insert 하는거보다 정산 내역 List를 만들어서 한번에 insert하는게 속도 측면에서 더 좋데요!-->
     <!-- n빵 분배 db에 insert -->
     <insert id="insertSettlement">
         INSERT INTO settlement (trip_id, sender_id, receiver_id, settlement_status, amount)
@@ -182,6 +186,7 @@
     <!-- 4. 정산 계산에 필요한 모든 원본 데이터를 조회하는 쿼리 -->
     <!-- payment, payment_participant, users 테이블을 조인하여
          결제자 닉네임, 참여자 닉네임, 분담액을 가져옵니다. -->
+    <!-- SettlementMapper.xml -->
     <select id="getRawSettlementDataByTripId" resultType="org.scoula.settlement.dto.SettlementDTO$RawSettlementDataDTO">
         SELECT
             p.payment_id,
@@ -195,4 +200,23 @@
         WHERE
             p.trip_id = #{tripId}
     </select>
+
+    <!-- [NEW] 저장된 정산 내역을 조회하는 쿼리 -->
+    <!-- 닉네임을 가져오기 위해 users 테이블과 두 번 JOIN -->
+    <select id="getNicknameSettlementsByTripId" resultType="org.scoula.settlement.dto.SettlementDTO$OptimizedNicknameTransaction">
+        SELECT
+            s.settlement_id AS settlementId,
+            s.amount,
+            sender.nickname AS senderNickname,
+            receiver.nickname AS receiverNickname
+        FROM
+            settlement s
+                JOIN
+            users sender ON s.sender_id = sender.user_id
+                JOIN
+            users receiver ON s.receiver_id = receiver.user_id
+        WHERE
+            s.trip_id = #{tripId}
+    </select>
+
 </mapper>

@@ -136,7 +136,7 @@ public class SettlementServiceImpl implements SettlementService {
         try {
             // n빵 계산 서비스 호출
             List<SettlementDTO.RawSettlementDataDTO> rawData = mapper.getRawSettlementDataByTripId(tripId);
-            List<String> members = groupMapper.findNicknamesByTripId(tripId);
+            List<Integer> members = groupMapper.findUserIdsByTripId(tripId);
 
             // 데이터 유효성 검증
             if(rawData.isEmpty()) {
@@ -181,8 +181,8 @@ public class SettlementServiceImpl implements SettlementService {
     @Override
     public void saveCalculatedResults(List<SettlementDTO.OptimizedTransaction> results, int tripId) {
         for (SettlementDTO.OptimizedTransaction dto : results) {
-            int senderId = resolveUserId(dto.getSenderNickname());
-            int receiverId = resolveUserId(dto.getReceiverNickname());
+            int senderId = dto.getSenderId();
+            int receiverId = dto.getReceiverId();
             SettlementVO vo = toVO(dto, senderId, receiverId, tripId);
             mapper.insertSettlement(vo);
         }
@@ -376,8 +376,8 @@ public class SettlementServiceImpl implements SettlementService {
     private SettlementDTO.OptimizedTransaction toOptimizedTransaction(SettlementVO vo) {
         SettlementDTO.OptimizedTransaction dto = new SettlementDTO.OptimizedTransaction();
         dto.setSettlementId(vo.getSettlementId());
-        dto.setSenderNickname(vo.getSenderNickname());    // JOIN으로 조회된 값 사용
-        dto.setReceiverNickname(vo.getReceiverNickname()); // JOIN으로 조회된 값 사용
+        dto.setSenderId(vo.getSenderId());    // JOIN으로 조회된 값 사용
+        dto.setReceiverId(vo.getReceiverId()); // JOIN으로 조회된 값 사용
         dto.setAmount(vo.getAmount());
         dto.setStatus(vo.getSettlementStatus());
         return dto;
@@ -423,7 +423,7 @@ public class SettlementServiceImpl implements SettlementService {
             }
 
             // 2. 멤버 존재 여부 체크
-            List<String> members = groupMapper.findNicknamesByTripId(tripId);
+            List<Integer> members = groupMapper.findUserIdsByTripId(tripId);
             if(members.isEmpty()) {
                 log.warn("정산 불가 - 멤버 없음. tripId: {}" + tripId);
                 return false;
@@ -475,14 +475,13 @@ public class SettlementServiceImpl implements SettlementService {
      */
     @Override
     public SettlementDTO.SettlementResultResponseDto calculateFinalSettlement(int tripId) {
-        // 1. DB에서 정산 계산에 필요한 원본 데이터 조회
-        List<SettlementDTO.RawSettlementDataDTO> rawData = mapper.getRawSettlementDataByTripId(tripId);
 
-        // 2. 해당 여행의 전체 멤버 닉네임 목록 조회
+
+        // 1. 해당 여행의 전체 멤버 닉네임 목록 조회
         List<String> members = groupMapper.findNicknamesByTripId(tripId);
 
         // 3. 계산기에 데이터를 넘겨 최종 송금 목록 계산 요청
-        List<SettlementDTO.OptimizedTransaction> transactions = settlementCalculator.calculate(rawData, members);
+        List<SettlementDTO.OptimizedNicknameTransaction> transactions = mapper.getNicknameSettlementsByTripId(tripId);
 
         // 4. DTO에 담아 Controller로 반환
         SettlementDTO.SettlementResultResponseDto resultDto = new SettlementDTO.SettlementResultResponseDto();

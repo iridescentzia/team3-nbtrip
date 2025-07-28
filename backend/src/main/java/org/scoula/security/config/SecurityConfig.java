@@ -143,7 +143,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
 
                 // 인증 불필요(공개 API)
-<<<<<<< Updated upstream
+
                 .antMatchers(HttpMethod.POST, "/api/auth/login").permitAll()  // 로그인
                 .antMatchers(HttpMethod.POST, "/api/auth/register").permitAll()  // 회원가입
                 .antMatchers(HttpMethod.GET, "/api/merchants/**").permitAll()  // 가맹점 조회
@@ -157,7 +157,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/settlements/**").permitAll()  // 정산 관리
                 .antMatchers("/api/accounts/**").permitAll()  // 계좌 관리
                 .antMatchers("/api/notifications/**").permitAll()  // 알림 관리
-=======
 //                .antMatchers(HttpMethod.POST, "/api/auth/login").permitAll()  // 로그인
 //                .antMatchers(HttpMethod.POST, "/api/auth/register").permitAll()  // 회원가입
 //                .antMatchers(HttpMethod.GET, "/api/merchants/**").permitAll()  // 가맹점 조회
@@ -171,7 +170,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //                .antMatchers("/api/settlements/**").authenticated()  // 정산 관리
 //                .antMatchers("/api/accounts/**").authenticated()  // 계좌 관리
 //                .antMatchers("/api/notifications/**").authenticated()  // 알림 관리
->>>>>>> Stashed changes
+
                 .anyRequest().permitAll();
     }
 

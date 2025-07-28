@@ -53,6 +53,12 @@
               AND owner_id = #{userId}
         )
     </select>
+    <select id="findUserIdsByTripId" resultType="int">
+        SELECT user_id
+        FROM trip_member
+        WHERE trip_id = #{tripId} AND member_status = 'JOINED'
+    </select>
+
     <select id="findNicknamesByTripId" resultType="string">
         SELECT u.nickname
         FROM trip_member tm

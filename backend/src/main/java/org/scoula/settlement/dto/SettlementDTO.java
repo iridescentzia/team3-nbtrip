@@ -37,20 +37,32 @@ public class SettlementDTO {
         private String tripName;
         private int totalAmount;
         private List<String> members; // 멤버 닉네임 리스트
-        private List<OptimizedTransaction> transactions;
+        private List<OptimizedNicknameTransaction> transactions;
     }
 
     /**
-     * 최적화된 개별 송금 거래 DTO
-     * "누가 누구에게 얼마를 보내야 하는지"에 대한 정보를 담음.
+     * 개별 송금 거래 DTO
+     * "누가 누구에게 얼마를 보내야 하는지"에 대한 정보를 담음.(userId)
      */
     @Data
     public static class OptimizedTransaction {
         private Integer settlementId;
+        private Integer senderId;
+        private Integer receiverId;
+        private int amount;
+        private String status; // PENDING, PROCESSING, COMPLETED
+    }
+
+    /**
+     * 화면에 출력하기에 최적화된 개별 송금 거래 DTO
+     * "누가 누구에게 얼마를 보내야 하는지"에 대한 정보를 담음.(Nickname)
+     */
+    @Data
+    public static class OptimizedNicknameTransaction {
+        private Integer settlementId;
         private String senderNickname;
         private String receiverNickname;
         private int amount;
-        private String status; // PENDING, PROCESSING, COMPLETED
     }
 
     /**
@@ -142,6 +154,11 @@ public class SettlementDTO {
 
     /**
      * 개인 정산 상태 조회 응답 DTO
+     *
+     *
+     *
+     *
+     *
      */
     @Data
     public static class MySettlementStatusResponseDto {
