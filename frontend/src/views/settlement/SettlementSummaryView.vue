@@ -31,7 +31,19 @@ onMounted(async () => {
     // --- 수정된 부분 끝 ---
   } catch (err) {
     console.error('정산 요약 정보 로딩 실패:', err);
-    error.value = '데이터를 불러오는 데 실패했습니다.';
+
+    if(err.response?.status === 403) {
+      error.value = '그룹장만 정산을 요청할 수 있습니다.';
+
+      // 3초 후 여행 상세 페이지로 리다이렉트
+      setTimeout(() => {
+        router.push(`/trip/${tripId}`);
+      }, 3000);
+    } else if (err.response?.status === 404) {
+      error.value = '여행 정보를 찾을 수 없습니다.';
+    } else {
+      error.value = '데이터를 불러오는 데 실패했습니다.';
+    }
   } finally {
     // try/catch 블록이 모두 끝난 후에 로딩 상태를 해제
     isLoading.value = false;
