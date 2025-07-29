@@ -37,6 +37,13 @@ public class NotificationController {
         return ResponseEntity.ok().build();
     }
 
+    //알림 읽음 처리
+    @PutMapping("/{notificationId}/read")
+    public ResponseEntity<Void> readNotification(@PathVariable Integer notificationId) {
+        notificationService.readNotification(notificationId);
+        return ResponseEntity.ok().build();
+    }
+
     // JWT 인증된 유저의 알림 조회 (userId 파라미터 없이)
 //    @GetMapping
 //    public ResponseEntity<List<NotificationDTO>> getNotifications(

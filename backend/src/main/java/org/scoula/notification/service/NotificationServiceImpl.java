@@ -52,4 +52,9 @@ public class NotificationServiceImpl implements NotificationService {
         log.info("Create Notification: {}", dto);
         mapper.insertNotification(dto.toVO());
     }
+
+    @Override
+    public void readNotification(Integer notificationId) {
+        mapper.readNotification(notificationId);
+    }
 }

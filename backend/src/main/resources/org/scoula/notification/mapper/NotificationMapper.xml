@@ -87,4 +87,11 @@
         VALUES (#{userId}, #{fromUserId}, #{tripId}, #{paymentId}, #{notificationType}, NOW())
     </insert>
 
+    <!-- 알림 읽음 표시 -->
+    <update id="readNotification" parameterType="int">
+        update notification
+        set is_read = true
+        where notification_id = #{notificationId}
+    </update>
+
 </mapper>

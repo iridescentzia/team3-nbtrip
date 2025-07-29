@@ -20,6 +20,7 @@ public class NotificationVO {
     private Integer paymentId; // 결제 ID
     private String notificationType; // 알림 타입
     private Timestamp sendAt; // 발송 시간
+    private Boolean isRead; // 알림 읽음 여부
 
     // join으로 가져오는 값
     private Integer amount;         // 결제 금액

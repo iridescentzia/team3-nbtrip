@@ -25,4 +25,7 @@ public interface NotificationMapper {
     // 알림 생성
     int insertNotification(NotificationVO vo);
 
+    //알림 읽음 처리
+    int readNotification(@Param("notificationId") Integer notificationId);
+
 }

@@ -13,4 +13,7 @@ public interface NotificationService {
     List<NotificationDTO> getNotificationsByCategory(Integer userId, String category);
     // 알림 생성
     void createNotification(NotificationDTO dto);
+    // 알림 읽음 처리
+    void readNotification(Integer notificationId);
+
 }
