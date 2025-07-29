@@ -19,6 +19,11 @@ const route = useRoute();
 const router = useRouter();
 const tripId = route.params.tripId;
 
+// --- 뒤로가기 ---
+const goBackToSummary = () => {
+  router.push(`/settlement/${tripId}`);
+};
+
 // --- 데이터 로딩 ---
 onMounted(async () => {
   const minLoadingTime = new Promise((resolve) => setTimeout(resolve, 700));
@@ -53,7 +58,6 @@ onMounted(async () => {
       if (s.receiverNickname) membersSet.add(s.receiverNickname);
     });
 
-    // 나머지 코드...
     settlementData.value = {
       settlements: settlements,
       members: Array.from(membersSet),
@@ -82,7 +86,6 @@ onMounted(async () => {
 
 
 // --- 계산된 속성 (Computed Properties) ---
-// 기존 computed 속성들을 교체
 const toReceiveList = computed(() => {
   if (!settlementData.value?.settlements) return [];
   return settlementData.value.settlements.filter(
@@ -115,7 +118,7 @@ const handleRequestSettlement = async () => {
 <template>
   <div class="view-wrapper">
     <div class="settlement-view">
-      <Header title="정산하기" />
+      <Header title="정산하기" :back-action="goBackToSummary"/>
 
       <main v-if="isLoading" class="content-container loading">
         <p>최종 정산 결과를 계산하는 중...</p>
