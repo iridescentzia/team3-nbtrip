@@ -87,4 +87,34 @@ public interface SettlementMapper {
      * @return 해당 사용자가 관련된 정산 내역 리스트
      */
     List<SettlementVO> getMySettlementsByTripId(@Param("userId") int userId, @Param("tripId") int tripId);
+
+    /**
+     * 특정 사용자가 특정 여행에서 보내야 할 정산들만 조회
+     * @param userId 사용자 ID
+     * @param tripId 여행 ID
+     * @return 송금해야 할 정산 리스트
+     */
+    List<SettlementVO> getMyOutgoingSettlementsByTripId(@Param("userId") int userId, @Param("tripId") int tripId);
+
+    /**
+     * 특정 사용자가 특정 여행에서 받아야 할 정산들만 조회
+     * @param userId 사용자 ID
+     * @param tripId 여행 ID
+     * @return 받아야 할 정산 리스트
+     */
+    List<SettlementVO> getMyIncomingSettlementsByTripId(@Param("userId") int userId, @Param("tripId") int tripId);
+
+    /**
+     * 사용자별 정산 상태 통계 조회
+     * @param userId 사용자 ID
+     * @return 상태별 카운트가 포함된 DTO
+     */
+    SettlementDTO.MySettlementStatusResponseDto getMySettlementStatusCounts(@Param("userId") int userId);
+
+    /**
+     * 여행별 정산 상태 통계 조회
+     * @param tripId 여행 ID
+     * @return 상태별 카운트가 포함된 DTO
+     */
+    SettlementDTO.RemainingSettlementResponseDto getRemainingSettlementCounts(@Param("tripId") int tripId);
 }
