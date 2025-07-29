@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "--//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.scoula.trip.mapper.TripMapper">
+    <insert id="createTrip">
+        insert into trip (owner_id, trip_name, start_date, end_date, budget, trip_status)
+        values (#{ownerId}, #{tripName}, #{startDate}, #{endDate}, #{budget}, #{tripStatus})
+        <selectKey resultType="int" keyProperty="tripId" keyColumn="trip_id" order="AFTER">
+        SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+    <insert id="inviteTrip">
+        insert into trip_member (user_id, trip_id, member_status) values (#{userId}, #{tripId}, 'INVITED')
+    </insert>
+
+    <update id="changeMemberStatus">
+        UPDATE trip_member
+        SET member_status = 'LEFT'
+        WHERE trip_id = #{tripId} AND user_id = #{userId}
+    </update>
+
+    <update id="joinTrip">
+        UPDATE trip_member
+        SET member_status = 'JOINED'
+        WHERE trip_id = #{tripId} AND user_id = #{userId}
+    </update>
+    <update id="changeTripStatus">
+        UPDATE trip
+        SET trip_status = 'CLOSED'
+        WHERE trip_id =#{tripId}
+    </update>
+
+    <select id="getTripDetail" resultMap="tripMap">
+        SELECT *
+        FROM trip t
+                 JOIN trip_member tm ON t.trip_id = tm.trip_id
+        WHERE tm.trip_id = #{tripId}
+    </select>
+    <select id="getTripMembers" resultMap="memberMap">
+        SELECT * FROM trip_member WHERE trip_id = #{tripId} AND member_status = 'JOINED';
+    </select>
+    <select id="getJoinedTrips" resultMap="joinedTripsMap">
+        SELECT t.* FROM trip_member tm
+            LEFT OUTER JOIN nbtrip.trip t
+                ON tm.trip_id = t.trip_id
+                   WHERE tm.user_id = #{userId};
+    </select>
+    <select id="isOwner" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1 FROM trip
+            WHERE trip_id = #{tripId}
+              AND owner_id = #{userId}
+        )
+    </select>
+    <select id="findNicknamesByTripId" resultType="string">
+        SELECT u.nickname
+        FROM trip_member tm
+                 JOIN users u ON tm.user_id = u.user_id
+        WHERE tm.trip_id = #{tripId} AND tm.member_status = 'JOINED'
+    </select>
+    <resultMap id="tripMap" type="org.scoula.trip.domain.TripVO">
+        <id property="tripId" column="trip_id" />
+        <result property="ownerId" column="owner_id" />
+        <result property="tripName" column="trip_name" />
+        <result property="startDate" column="start_date" />
+        <result property="endDate" column="end_date" />
+        <result property="budget" column="budget" />
+        <result property="tripStatus" column="trip_status" />
+        <collection property="members" resultMap="memberMap" />
+    </resultMap>
+
+    <resultMap id="memberMap" type="org.scoula.trip.domain.TripMemberVO">
+        <id property="memberId" column="member_id"/>
+        <result property="tripId" column="trip_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="memberStatus" column="member_status"/>
+    </resultMap>
+
+    <resultMap id="joinedTripsMap" type="org.scoula.trip.domain.TripVO">
+        <id property="tripId" column="trip_id" />
+        <result property="ownerId" column="owner_id" />
+        <result property="tripName" column="trip_name" />
+        <result property="startDate" column="start_date" />
+        <result property="endDate" column="end_date" />
+        <result property="budget" column="budget" />
+        <result property="tripStatus" column="trip_status" />
+    </resultMap>
+</mapper>

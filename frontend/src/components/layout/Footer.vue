@@ -16,10 +16,10 @@ const navItems = [
     path: '/home',
   },
   {
-    name: 'group',
+    name: 'trip',
     label: '여행',
     icon: Plane,
-    path: '/group',
+    path: '/trip',
   },
   {
     name: 'payment',

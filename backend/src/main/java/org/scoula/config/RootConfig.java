@@ -8,23 +8,40 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 
 @Configuration
 @PropertySource({"classpath:/application.properties"})
+@ComponentScan(basePackages = {"org.scoula"}, // security 관련 Component 스캔},
+        excludeFilters = {
+        @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = Controller.class)
+})
+@MapperScan(basePackages = {
+        "org.scoula.merchant.mapper",
+        "org.scoula.security.accounting.mapper", 
+        "org.scoula.member.mapper", 
+        "org.scoula.mypage.mapper",
+        "org.scoula.member.mapper",
+        "org.scoula.trip.mapper",
+        "org.scoula.settlement.mapper",
+        "org.scoula.payment.mapper",
+        "org.scoula.notification.mapper",
+        "org.scoula.account.mapper",
+        "org.scoula.report.mapper"
+  })
 @EnableTransactionManagement
-@MapperScan(basePackages = {"org.scoula.payment.mapper", "org.scoula.account.mapper"})
 public class RootConfig {
     @Value("${jdbc.driver}") String driver;
     @Value("${jdbc.url}") String url;
-    @Value("${jdbc.username}") String username;
-    @Value("${jdbc.password}") String password;
+    @Value("scoula") String username;
+    @Value("1234") String password;
+    @Autowired
+    ApplicationContext applicationContext;
 
     @Bean
     public DataSource dataSource() {
@@ -38,9 +55,6 @@ public class RootConfig {
         HikariDataSource dataSource = new HikariDataSource(config);
         return dataSource;
     }
-
-    @Autowired
-    ApplicationContext applicationContext;
 
     @Bean
     public SqlSessionFactory sqlSessionFactory() throws Exception {
