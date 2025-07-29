@@ -213,4 +213,17 @@
         WHERE
             s.trip_id = #{tripId}
     </select>
+
+    <select id="getMySettlementsByTripId" resultMap="settlementWithNicknamesMap">
+        SELECT s.settlement_id, s.trip_id, s.sender_id, s.receiver_id,
+               s.settlement_status, s.amount,
+               sender.nickname AS senderNickname,
+               receiver.nickname AS receiverNickname
+        FROM settlement s
+                 JOIN users sender ON s.sender_id = sender.user_id
+                 JOIN users receiver ON s.receiver_id = receiver.user_id
+        WHERE s.trip_id = #{tripId}
+          AND (s.sender_id = #{userId} OR s.receiver_id = #{userId})
+        ORDER BY s.settlement_id
+    </select>
 </mapper>

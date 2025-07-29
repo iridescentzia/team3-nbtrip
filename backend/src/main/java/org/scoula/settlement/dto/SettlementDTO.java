@@ -59,7 +59,18 @@ public class SettlementDTO {
         private String senderNickname;
         private String receiverNickname;
         private int amount;
+    }
 
+    @Data
+    public static class OptimizedTransactionWithNickname {
+        private Integer settlementId;
+        private Integer senderId;
+        private Integer receiverId;
+        private int amount;
+        private String status; // PENDING, PROCESSING, COMPLETED
+        // ✅ 닉네임 필드 추가
+        private String senderNickname;
+        private String receiverNickname;
     }
 
     /**
@@ -68,8 +79,8 @@ public class SettlementDTO {
      */
     @Data
     public static class PersonalSettlementResponseDto {
-        private List<OptimizedTransaction> toReceive;
-        private List<OptimizedTransaction> toSend;
+        private List<OptimizedTransactionWithNickname> toReceive;
+        private List<OptimizedTransactionWithNickname> toSend;
         private String overallStatus; // PENDING, PROCESSING, COMPLETED
     }
 

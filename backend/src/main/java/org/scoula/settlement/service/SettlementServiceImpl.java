@@ -61,21 +61,19 @@ public class SettlementServiceImpl implements SettlementService {
     public SettlementDTO.PersonalSettlementResponseDto getMySettlements(int userId, int tripId) {
         log.info("🟢 getMySettlements - userId: {}, tripId: {}", userId, tripId);
 
-        List<SettlementVO> allMySettlements = mapper.getSettlementsWithNicknamesByUserId(userId)
-                .stream()
-                .filter(vo -> vo.getTripId().equals(tripId))
-                .collect(Collectors.toList());
+        // DB에서 바로 특정 여행의 정산만 조회
+        List<SettlementVO> allMySettlements = mapper.getMySettlementsByTripId(userId, tripId);
 
         // 내가 보내야 할 정산들
-        List<SettlementDTO.OptimizedTransaction> toSend = allMySettlements.stream()
+        List<SettlementDTO.OptimizedTransactionWithNickname> toSend = allMySettlements.stream()
                 .filter(vo -> vo.getSenderId().equals(userId))
-                .map(this::toOptimizedTransaction)
+                .map(this::toOptimizedTransactionWithNickname)
                 .collect(Collectors.toList());
 
         // 내가 받아야 할 정산들
-        List<SettlementDTO.OptimizedTransaction> toReceive = allMySettlements.stream()
+        List<SettlementDTO.OptimizedTransactionWithNickname> toReceive = allMySettlements.stream()
                 .filter(vo -> vo.getReceiverId().equals(userId))
-                .map(this::toOptimizedTransaction)
+                .map(this::toOptimizedTransactionWithNickname)
                 .collect(Collectors.toList());
 
         // 전체 상태 계산
@@ -380,6 +378,19 @@ public class SettlementServiceImpl implements SettlementService {
         dto.setReceiverId(vo.getReceiverId()); // JOIN으로 조회된 값 사용
         dto.setAmount(vo.getAmount());
         dto.setStatus(vo.getSettlementStatus());
+        return dto;
+    }
+
+    private SettlementDTO.OptimizedTransactionWithNickname toOptimizedTransactionWithNickname(SettlementVO vo) {
+        SettlementDTO.OptimizedTransactionWithNickname dto = new SettlementDTO.OptimizedTransactionWithNickname();
+        dto.setSettlementId(vo.getSettlementId());
+        dto.setSenderId(vo.getSenderId());
+        dto.setReceiverId(vo.getReceiverId());
+        dto.setAmount(vo.getAmount());
+        dto.setStatus(vo.getSettlementStatus());
+        // ✅ 닉네임 설정
+        dto.setSenderNickname(vo.getSenderNickname());
+        dto.setReceiverNickname(vo.getReceiverNickname());
         return dto;
     }
 

@@ -2,7 +2,8 @@
 import { ref, onMounted, computed } from 'vue';
 import Header from '../../components/layout/Header.vue';
 import {
-  calculateFinalSettlement,
+  getSettlementsByTripId,
+  getSettlementSummary,
   requestSettlement,
 } from '@/api/settlementApi';
 import { useRoute, useRouter } from 'vue-router';
@@ -23,41 +24,76 @@ onMounted(async () => {
   const minLoadingTime = new Promise((resolve) => setTimeout(resolve, 700));
 
   try {
-    const [response] = await Promise.all([
-      calculateFinalSettlement(tripId),
+    const [settlementsResponse, summaryResponse] = await Promise.all([
+      getSettlementsByTripId(tripId),
+      getSettlementSummary(tripId),
       minLoadingTime,
     ]);
-    settlementData.value = response.data;
 
-    if (
-      response.data &&
-      response.data.members &&
-      response.data.members.length > 0
-    ) {
-      selectedMember.value = response.data.members[0]; // 첫 번째 멤버를 기본값으로 설정
+    // ✅ 안전한 데이터 처리
+    const settlements = settlementsResponse.data || [];  // null 방어
+    const summary = summaryResponse.data;
+
+    // ✅ 빈 배열 체크 추가
+    if (!Array.isArray(settlements)) {
+      console.error('settlements is not an array:', settlements);
+      error.value = '정산 데이터 형식이 올바르지 않습니다.';
+      return;
     }
+
+    if (settlements.length === 0) {
+      error.value = '아직 정산이 생성되지 않았습니다. 정산을 먼저 생성해주세요.';
+      return;
+    }
+
+    // 멤버 목록 추출
+    const membersSet = new Set();
+    settlements.forEach(s => {
+      if (s.senderNickname) membersSet.add(s.senderNickname);
+      if (s.receiverNickname) membersSet.add(s.receiverNickname);
+    });
+
+    // 나머지 코드...
+    settlementData.value = {
+      settlements: settlements,
+      members: Array.from(membersSet),
+      tripName: summary.tripName,
+      totalAmount: summary.totalAmount,
+      transactions: settlements
+    };
+
+    if (Array.from(membersSet).length > 0) {
+      selectedMember.value = Array.from(membersSet)[0];
+    }
+
   } catch (err) {
-    console.error('최종 정산 정보 로딩 실패:', err);
-    error.value = '데이터를 불러오는 데 실패했습니다.';
+    console.error('정산 정보 로딩 실패:', err);
+    console.error('에러 상세:', err.response?.data);  // ✅ 디버깅 추가
+
+    if (err.response?.status === 403) {
+      error.value = '그룹장만 정산을 조회할 수 있습니다.';
+    } else {
+      error.value = '데이터를 불러오는 데 실패했습니다.';
+    }
   } finally {
     isLoading.value = false;
   }
 });
 
+
 // --- 계산된 속성 (Computed Properties) ---
-// 선택된 멤버가 받아야 할 돈 목록
+// 기존 computed 속성들을 교체
 const toReceiveList = computed(() => {
-  if (!settlementData.value || !selectedMember.value) return [];
-  return settlementData.value.transactions.filter(
-    (tx) => tx.receiverNickname === selectedMember.value
+  if (!settlementData.value?.settlements) return [];
+  return settlementData.value.settlements.filter(
+      (tx) => tx.receiverNickname === selectedMember.value
   );
 });
 
-// 선택된 멤버가 보내야 할 돈 목록
 const toSendList = computed(() => {
-  if (!settlementData.value || !selectedMember.value) return [];
-  return settlementData.value.transactions.filter(
-    (tx) => tx.senderNickname === selectedMember.value
+  if (!settlementData.value?.settlements) return [];
+  return settlementData.value.settlements.filter(
+      (tx) => tx.senderNickname === selectedMember.value
   );
 });
 
