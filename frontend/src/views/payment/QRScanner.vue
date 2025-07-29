@@ -1,6 +1,7 @@
 <script setup>
 import merchantApi from '@/api/merchantApi';
 import paymentApi from '@/api/paymentApi';
+import tripApi from '@/api/tripApi';
 import { ref } from 'vue';
 import { QrcodeStream } from 'vue-qrcode-reader';
 
@@ -10,6 +11,11 @@ const merchantName = ref('');
 
 const payment = ref('');
 const reason = ref('');
+
+const trip = ref(null);
+const tripName = ref('');
+
+const participantsId = ref([]);
 
 const isModalVisible = ref(false);
 const ModalType = ref(1);
@@ -24,6 +30,12 @@ async function onDetect(result) {
     merchantID.value = parsed.merchantID;
     merchant.value = await merchantApi.get(merchantID.value);
     merchantName.value = merchant.value.merchantName;
+
+    trip.value = await tripApi.getTripDetail(1); // 임시 tripId, 실제로는 tripId를 받아와야 함
+    tripName.value = trip.value.tripName;
+
+    participantsId.value = trip.value.members.map((p) => p.userId);
+
     isModalVisible.value = true;
   } catch (error) {
     console.error('QR 내용 파싱 오류:', error);
@@ -84,7 +96,7 @@ async function submitPayment() {
         <h3>‘{{ tripName }}’ 중</h3>
 
         <div class="input-group">
-          <label for="merchant">가맹점</label>
+          <label for="merchant">가게 이름</label>
           <input id="merchant" :value="merchantName" type="text" readonly />
         </div>
 
@@ -101,23 +113,23 @@ async function submitPayment() {
         <div class="input-group">
           <label>결제에 참여하는 사람들</label>
           <div class="checkbox">
-            <input
+            <!-- <input
               type="checkbox"
               id="selectAll"
               v-model="selectAll"
               @change="toggleSelectAll"
             />
-            <label for="selectAll">전체 선택</label>
+            <label for="selectAll">전체 선택</label> -->
           </div>
           <div
-            v-for="(person, index) in participants"
+            v-for="(person, index) in participantsId"
             :key="index"
             class="checkbox"
           >
             <input
               type="checkbox"
               :id="'person-' + index"
-              v-model="selectedParticipants"
+              v-model="participantsId"
               :value="person"
             />
             <label :for="'person-' + index">{{ person }}</label>
