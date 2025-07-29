@@ -89,16 +89,12 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     public List<SettlementVO> getMyOutgoingSettlements(int userId, int tripId) {
-        return mapper.getSettlementsWithNicknamesByUserId(userId).stream()
-                .filter(vo -> vo.getSenderId().equals(userId) && vo.getTripId().equals(tripId))
-                .collect(Collectors.toList());
+        return mapper.getMyOutgoingSettlementsByTripId(userId, tripId);
     }
 
     @Override
     public List<SettlementVO> getMyIncomingSettlements(int userId, int tripId) {
-        return mapper.getSettlementsWithNicknamesByUserId(userId).stream()
-                .filter(vo -> vo.getReceiverId().equals(userId) && vo.getTripId().equals(tripId))
-                .collect(Collectors.toList());
+        return mapper.getMyIncomingSettlementsByTripId(userId, tripId);
     }
 
     // ==================== 정산 요청 생성 ====================
@@ -274,89 +270,22 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     public SettlementDTO.MySettlementStatusResponseDto getMyOverallSettlementStatus(int userId) {
-        List<SettlementVO> list = mapper.getSettlementsWithNicknamesByUserId(userId);
-
-        SettlementDTO.MySettlementStatusResponseDto response = new SettlementDTO.MySettlementStatusResponseDto();
-
-        // 보내야 할 정산들 상태별 카운트
-
-        // 보낼 돈 중 pending 상태 건수
-        int pendingToSend = (int) list.stream()
-                .filter(vo -> userId == vo.getSenderId()) // 내가 송금자
-                .filter(vo -> "PENDING".equalsIgnoreCase(vo.getSettlementStatus())) // 상태 pending
-                .count();
-
-        // 보낼 돈 중 processing 상태 건수
-        int processingToSend = (int) list.stream()
-                .filter(vo -> userId == vo.getSenderId())
-                .filter(vo -> "PROCESSING".equalsIgnoreCase(vo.getSettlementStatus()))
-                .count();
-
-        // 받아야 할 정산들 상태별 카운트
-
-        // 받을 돈 중 pending 상태 건수
-        int pendingToReceive = (int) list.stream()
-                .filter(vo -> userId == vo.getReceiverId()) // 내가 수신자
-                .filter(vo -> "PENDING".equalsIgnoreCase(vo.getSettlementStatus()))
-                .count();
-
-        // 받을 돈 중 processing 상태 건수
-        int processingToReceive = (int) list.stream()
-                .filter(vo -> userId == vo.getReceiverId())
-                .filter(vo -> "PROCESSING".equalsIgnoreCase(vo.getSettlementStatus()))
-                .count();
-
-        // 완료된 건수 : 송금자/수신자 여부와 상관없이 상태가 completed인 모든 건수 계산
-        int completed = (int) list.stream()
-                .filter(vo -> "COMPLETED".equalsIgnoreCase(vo.getSettlementStatus()))
-                .count();
+        // ✅ DB에서 한 번에 모든 통계 계산
+        SettlementDTO.MySettlementStatusResponseDto response = mapper.getMySettlementStatusCounts(userId);
 
         // 전체 상태 결정
-        // 보낼 돈, 받을 돈 중 pending 또는 processing 상태의 건이 0개라면 -> 전체 정산 상태를 completed로 판단
-        // 하나라도 pending 또는 processing이 있으면 -> 전체 상태는 processing으로 판단
-        String overallStatus;
-        if (pendingToSend + processingToSend + pendingToReceive + processingToReceive == 0) {
-            overallStatus = "COMPLETED";
-        } else {
-            overallStatus = "PROCESSING";
-        }
+        int totalPending = response.getPendingToSendCount() + response.getPendingToReceiveCount() +
+                response.getProcessingToSendCount() + response.getProcessingToReceiveCount();
 
-        // DTO에 값 세팅 -> 사용자의 현재 정산 진행 상황을 상세하게 반환
-        response.setOverallStatus(overallStatus);
-        response.setPendingToSendCount(pendingToSend); // 내가 아직 안 보낸 돈
-        response.setProcessingToSendCount(processingToSend);
-        response.setPendingToReceiveCount(pendingToReceive); // 내가 아직 못 받은 돈
-        response.setProcessingToReceiveCount(processingToReceive);
-        response.setCompletedCount(completed);
+        response.setOverallStatus(totalPending == 0 ? "COMPLETED" : "PROCESSING");
 
         return response;
     }
 
     @Override
     public SettlementDTO.RemainingSettlementResponseDto getRemainingSettlements(int tripId) {
-        List<SettlementVO> allSettlements = mapper.getSettlementsWithNicknamesByTripId(tripId);
-
-        SettlementDTO.RemainingSettlementResponseDto response = new SettlementDTO.RemainingSettlementResponseDto();
-
-        int pendingCount = (int) allSettlements.stream()
-                .filter(vo -> "PENDING".equalsIgnoreCase(vo.getSettlementStatus()))
-                .count();
-
-        int processingCount = (int) allSettlements.stream()
-                .filter(vo -> "PROCESSING".equalsIgnoreCase(vo.getSettlementStatus()))
-                .count();
-
-        int completedCount = (int) allSettlements.stream()
-                .filter(vo -> "COMPLETED".equalsIgnoreCase(vo.getSettlementStatus()))
-                .count();
-
-        response.setHasRemaining(pendingCount + processingCount > 0);
-        response.setTotalCount(allSettlements.size());
-        response.setPendingCount(pendingCount);
-        response.setProcessingCount(processingCount);
-        response.setCompletedCount(completedCount);
-
-        return response;
+        // ✅ DB에서 한 번에 모든 통계 계산
+        return mapper.getRemainingSettlementCounts(tripId);
     }
 
     // ==================== 내부 메서드들 ====================
