@@ -20,8 +20,9 @@ public class NotificationDTO {
     private Integer paymentId;
     private String notificationType;
     private String sendAt;
+    private Boolean isRead;
 
-    private String groupName;
+    private String tripName;
     private String merchantName;
     private String fromUserNickname;
     private Integer amount;
@@ -35,8 +36,9 @@ public class NotificationDTO {
                 .tripId(vo.getTripId())
                 .paymentId(vo.getPaymentId())
                 .notificationType(vo.getNotificationType())
+                .isRead(vo.getIsRead())
                 .sendAt(vo.getSendAt() != null ? vo.getSendAt().toString() : "")
-                .groupName(vo.getGroupName())
+                .tripName(vo.getTripName())
                 .merchantName(vo.getMerchantName())
                 .fromUserNickname(vo.getFromUserNickname())
                 .amount(vo.getAmount())
@@ -52,8 +54,13 @@ public class NotificationDTO {
                 .tripId(tripId)
                 .paymentId(paymentId)
                 .notificationType(notificationType)
+                .isRead(isRead)
                 .memberStatus(memberStatus)
                // .sendAt(java.sql.Timestamp.valueOf(sendAt))
+                .tripName(tripName)
+                .merchantName(merchantName)
+                .fromUserNickname(fromUserNickname)
+                .amount(amount)
                 .build();
     }
 }
