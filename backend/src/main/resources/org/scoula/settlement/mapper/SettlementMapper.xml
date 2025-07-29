@@ -199,4 +199,22 @@
         WHERE
             p.trip_id = #{tripId}
     </select>
+
+    <!-- [NEW] 저장된 정산 내역을 조회하는 쿼리 -->
+    <!-- 닉네임을 가져오기 위해 users 테이블과 두 번 JOIN -->
+    <select id="getNicknameSettlementsByTripId" resultType="org.scoula.settlement.dto.SettlementDTO$OptimizedNicknameTransaction">
+        SELECT
+            s.settlement_id AS settlementId,
+            s.amount,
+            sender.nickname AS senderNickname,
+            receiver.nickname AS receiverNickname
+        FROM
+            settlement s
+                JOIN
+            users sender ON s.sender_id = sender.user_id
+                JOIN
+            users receiver ON s.receiver_id = receiver.user_id
+        WHERE
+            s.trip_id = #{tripId}
+    </select>
 </mapper>
