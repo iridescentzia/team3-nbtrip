@@ -79,4 +79,12 @@ public interface SettlementMapper {
      * @return 최종 송금 거래 DTO 리스트
      */
     List<SettlementDTO.OptimizedNicknameTransaction> getNicknameSettlementsByTripId(int tripId);
+
+    /**
+     * 특정 사용자의 특정 여행 정산 내역 조회 (송금/수신 모두 포함)
+     * @param userId 사용자 ID
+     * @param tripId 여행 ID
+     * @return 해당 사용자가 관련된 정산 내역 리스트
+     */
+    List<SettlementVO> getMySettlementsByTripId(@Param("userId") int userId, @Param("tripId") int tripId);
 }
