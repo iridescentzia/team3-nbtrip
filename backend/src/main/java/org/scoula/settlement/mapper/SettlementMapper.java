@@ -72,4 +72,11 @@ public interface SettlementMapper {
      * @return 각 결제 참여 건에 대한 상세 정보(결제자 닉네임, 참여자 닉네임, 분담액) 목록
      */
     List<SettlementDTO.RawSettlementDataDTO> getRawSettlementDataByTripId(@Param("tripId") int tripId);
+
+    /**
+     * [NEW] 특정 여행의 settlement 테이블에 저장된 모든 정산 내역을 조회함.
+     * @param tripId 조회할 여행의 ID
+     * @return 최종 송금 거래 DTO 리스트
+     */
+    List<SettlementDTO.OptimizedNicknameTransaction> getNicknameSettlementsByTripId(int tripId);
 }
