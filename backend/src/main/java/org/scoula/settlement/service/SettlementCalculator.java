@@ -17,24 +17,24 @@ import java.util.Map;
 @Log4j2
 public class SettlementCalculator {
 
-    public List<SettlementDTO.OptimizedTransaction> calculate(List<RawSettlementDataDTO> rawData, List<String> members) {
+    public List<SettlementDTO.OptimizedTransaction> calculate(List<RawSettlementDataDTO> rawData, List<Integer> memberIds) {
 
         // 1. 채무 매트릭스 생성
-        Map<String, Map<String, Double>> debts = new HashMap<>();
-        for (String member : members) {
-            debts.put(member, new HashMap<>());
+        Map<Integer, Map<Integer, Double>> debts = new HashMap<>();
+        for (Integer memberId : memberIds) {
+            debts.put(memberId, new HashMap<>());
         }
-        log.info("1. 채무 매트릭스 초기화 완료. 멤버: {}", members);
+        log.info("1. 채무 매트릭스 초기화 완료. 멤버: {}", memberIds);
 
         // 2. 각 결제 건별로 채무 관계 분석 및 기록
         for (RawSettlementDataDTO data : rawData) {
-            String payer = data.getPayerNickname();
-            String participant = data.getParticipantNickname();
+            Integer payerId = data.getPayerId();
+            Integer participantId = data.getParticipantId();
             double splitAmount = data.getSplitAmount();
 
-            if (!payer.equals(participant)) {
-                Map<String, Double> participantDebts = debts.get(participant);
-                participantDebts.put(payer, participantDebts.getOrDefault(payer, 0.0) + splitAmount);
+            if (!payerId.equals(participantId)) {
+                Map<Integer, Double> participantDebts = debts.get(participantId);
+                participantDebts.put(payerId, participantDebts.getOrDefault(payerId, 0.0) + splitAmount);
             }
         }
         log.info("2. 상계 전 채무 기록 완료 (총 채무 매트릭스):");
@@ -45,11 +45,11 @@ public class SettlementCalculator {
         });
 
         // 3. 두 사람 간의 채무를 '상계(Netting)' 처리
-        List<String> memberList = new ArrayList<>(members);
+        List<Integer> memberList = new ArrayList<>(memberIds);
         for (int i = 0; i < memberList.size(); i++) {
             for (int j = i + 1; j < memberList.size(); j++) {
-                String personA = memberList.get(i);
-                String personB = memberList.get(j);
+                Integer personA = memberList.get(i);
+                Integer personB = memberList.get(j);
 
                 double aToBDebt = debts.get(personA).getOrDefault(personB, 0.0);
                 double bToADebt = debts.get(personB).getOrDefault(personA, 0.0);
@@ -72,12 +72,12 @@ public class SettlementCalculator {
 
         // 4. 최종 송금 목록 생성
         List<SettlementDTO.OptimizedTransaction> finalTransactions = new ArrayList<>();
-        debts.forEach((sender, receivers) -> {
-            receivers.forEach((receiver, amount) -> {
+        debts.forEach((senderId, receivers) -> {
+            receivers.forEach((receiverId, amount) -> {
                 if (amount > 0) {
                     SettlementDTO.OptimizedTransaction tx = new SettlementDTO.OptimizedTransaction();
-                    tx.setSenderNickname(sender);
-                    tx.setReceiverNickname(receiver);
+                    tx.setSenderId(senderId);
+                    tx.setReceiverId(receiverId);
                     tx.setAmount((int) Math.round(amount));
                     finalTransactions.add(tx);
                 }

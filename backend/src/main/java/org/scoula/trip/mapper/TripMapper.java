@@ -14,6 +14,7 @@ public interface TripMapper {
      * @param tripId 조회할 여행의 ID
      * @return 해당 여행의 멤버 닉네임 리스트
      */
+    List<Integer> findUserIdsByTripId(int tripId);
     List<String> findNicknamesByTripId(int tripId);
     TripVO getTripDetail(int tripId);
     List<TripMemberVO> getTripMembers(int tripId);

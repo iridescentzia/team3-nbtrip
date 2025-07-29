@@ -37,7 +37,7 @@ public class SettlementDTO {
         private String tripName;
         private int totalAmount;
         private List<String> members; // 멤버 닉네임 리스트
-        private List<OptimizedTransaction> transactions;
+        private List<OptimizedNicknameTransaction> transactions;
     }
 
     /**
@@ -47,10 +47,19 @@ public class SettlementDTO {
     @Data
     public static class OptimizedTransaction {
         private Integer settlementId;
+        private Integer senderId;
+        private Integer receiverId;
+        private int amount;
+        private String status; // PENDING, PROCESSING, COMPLETED
+    }
+
+    @Data
+    public static class OptimizedNicknameTransaction {
+        private Integer settlementId;
         private String senderNickname;
         private String receiverNickname;
         private int amount;
-        private String status; // PENDING, PROCESSING, COMPLETED
+
     }
 
     /**
@@ -99,9 +108,9 @@ public class SettlementDTO {
      */
     @Data
     public static class RawSettlementDataDTO {
-        private Long paymentId;
-        private String payerNickname;
-        private String participantNickname;
+        private int paymentId;
+        private int payerId;
+        private int participantId;
         private int splitAmount;
     }
 
