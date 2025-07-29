@@ -1,202 +1,237 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import { ChevronDown, ChevronRight } from 'lucide-vue-next'
+import { ref, onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useNotificationStore } from '@/stores/notificationStore';
+import { ChevronDown, ChevronRight } from 'lucide-vue-next';
+import Header from '@/components/layout/Header.vue';
 
-const userId = 1
-const notifications = ref([])
-const showDropdown = ref(false)
-const selectedLabel = ref('전체')
+const userId = 1; // TODO: 로그인한 사용자 ID로 변경
+const notificationStore = useNotificationStore();
+const { notifications } = storeToRefs(notificationStore);
+
+const showDropdown = ref(false);
+const selectedLabel = ref('전체');
 
 const tabs = [
   { label: '전체', value: 'ALL' },
   { label: '결제', value: 'TRANSACTION' },
   { label: '정산', value: 'SETTLEMENT' },
   { label: '그룹', value: 'INVITE' }
-]
+];
 
 const toggleDropdown = () => {
-  showDropdown.value = !showDropdown.value
-}
+  showDropdown.value = !showDropdown.value;
+};
 
 const selectCategory = (tab) => {
-  selectedLabel.value = tab.label
-  showDropdown.value = false
-  fetchNotifications(tab.value)
-}
+  selectedLabel.value = tab.label;
+  showDropdown.value = false;
 
-const fetchNotifications = async (category = 'ALL') => {
-  try {
-    const categoryQuery = category === 'ALL' ? '' : `?category=${category}`
-    const { data } = await axios.get(`/api/notifications/${userId}${categoryQuery}`)
-    notifications.value = data
-  } catch (e) {
-    console.error('알림 조회 실패:', e)
-  }
-}
+  notificationStore.getNotifications(userId, tab.value);
+};
+
+const handleCardClick = (n) => {
+  notificationStore.readNotification(n.notificationId);
+};
+
+onMounted(() => {
+  notificationStore.getNotifications(userId);
+});
 
 const getMessage = (n) => {
-    const user = n.fromUserNickname || '누군가'
-    const place = n.merchantName || '알 수 없는 장소'
+  const user = n.fromUserNickname || '누군가';
+  const place = n.merchantName || '알 수 없는 장소';
 
-    switch (n.notificationType) {
-        case 'TRANSACTION':
-            return `${user}님이 ${place}에서 ${n.amount}원을 결제했습니다.`
-        case 'SETTLEMENT':
-            return `${user}님이 정산 요청을 보냈습니다.\n정산을 확인하시겠습니까?`
-        case 'INVITE':
-            if(n.memberStatus === "JOINED"){
-                return `${user}님이 ${n.groupName} 그룹에 들어왔습니다.`
-            } else if(n.memberStatus === 'LEFT'){
-                return `${user}님이 ${n.groupName} 그룹에서 나갔습니다.`
-            }
-            return `${user}님이 "${n.groupName}" 그룹에 초대하셨습니다.\n여행에 참여하시겠습니까?`
-        case 'REMINDER':
-            return `${user}님이 정산 알림을 보냈습니다.`
-        case 'COMPLETED':
-            return `${user}님이 정산을 완료했습니다.`
-        default:
-            return `${user}님이 새로운 알림을 보냈습니다.`
-    }
-}
+  switch (n.notificationType) {
+    case 'TRANSACTION':
+      return `${user}님이 ${place}에서 ${n.amount}원을 결제했습니다.`;
 
-onMounted(fetchNotifications)
+    case 'SETTLEMENT':
+      return `${user}님이 정산 요청을 보냈습니다.\n정산을 확인하시겠습니까?`;
+
+    case 'INVITE':
+      return `${user}님이 "${n.tripName}" 그룹에 초대하셨습니다.\n여행에 참여하시겠습니까?`;
+    
+    case 'GROUP_EVENT':
+      if(n.memberStatus === 'JOINED'){
+        return `${user}님이 ${n.tripName} 그룹에 들어왔습니다.`;
+      } else if (n.memberStatus === 'LEFT') {
+        return `${user}님이 ${n.tripName} 그룹에서 나갔습니다.`;
+      }
+      return `${user}님의 그룹 상태가 변경되었습니다.`;
+    case 'REMINDER':
+      return `${user}님이 정산 알림을 보냈습니다.`;
+
+    case 'COMPLETED':
+      return `${user}님이 정산을 완료했습니다.`;
+      
+    default:
+      return `${user}님이 새로운 알림을 보냈습니다.`;
+  }
+};
 </script>
 
 <template>
-  <div class="notification-wrapper">
-    <br>
-    <!-- 드롭다운 -->
+  <div class="layout-wrapper">
+    <Header title="알림"/>
+    <!-- 드롭다운 고정 -->
     <div class="dropdown sticky-category">
       <button class="dropdown-btn" @click="toggleDropdown">
         {{ selectedLabel }}
         <ChevronDown class="dropdown-icon" />
-    </button>
+      </button>
       <ul v-if="showDropdown" class="dropdown-menu">
         <li v-for="tab in tabs" :key="tab.value" @click="selectCategory(tab)">
           {{ tab.label }}
         </li>
       </ul>
-      <hr>
+      <hr />
     </div>
     <br>
-    <br>
-    <br>
-    <!-- 알림 카드 -->
-    <div class="notification-card" 
-                v-for="n in notifications" 
-                :key="n.notificationId"
-                @click="handleCardClick">
-      <div class="card-content">
-            <p class="card-title" v-if="n.notificationType !== 'INVITE'">[{{ n.groupName }}]</p>
-            <p class="card-body">{{ getMessage(n) }}</p>
-            <p class="card-time">{{ n.sendAt.split('.')[0].substring(0,16) }}</p>
+    <!-- 카드 리스트 스크롤 영역 -->
+    <main class="scroll-area">
+      <div class="notification-card"
+           v-for="n in notifications"
+           :key="n.notificationId"
+           :class="{'read': n.isRead}"
+           @click="handleCardClick(n)">
+        <div class="card-content">
+          <p class="card-title" v-if="n.notificationType !== 'INVITE'">
+            [{{ n.tripName }}]
+          </p>
+          <p class="card-body">{{ getMessage(n) }}</p>
+          <p class="card-time">{{ n.sendAt.split('.')[0].substring(0, 16) }}</p>
+        </div>
+        <ChevronRight class="card-arrow" />
       </div>
-      <ChevronRight class="card-arrow" />
-    </div>
+    </main>
   </div>
 </template>
 
-
 <style scoped>
-.notification-wrapper {
-    padding: 16px;
+/* 전체 레이아웃 */
+.layout-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f9fafb;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
 }
 
-.dropdown {
-    position: relative;
-    margin-bottom: 16px;
-}
-.sticky-category{
-    box-sizing: border-box;
-    position: fixed;
-    top: 56px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 32px);
-    max-width: 414px;
-    background: #f9fafb;
-    z-index: 100;
-    padding: 8px 23px;
-    box-sizing: border-box;
+/* 드롭다운 고정 */
+.sticky-category {
+  position: fixed;
+  top: 56px; /* 헤더 높이 */
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 414px;
+  background: #f9fafb;
+  z-index: 150;
+  padding: 8px 23px;
+  box-sizing: border-box;
 }
 
+/* 카드 스크롤 영역 */
+.scroll-area {
+  overflow-y: auto;
+  width: 100%;
+  max-width: 414px;
+  padding: 120px 16px 16px; /* 헤더(56px) + 드롭다운 높이 확보 */
+  box-sizing: border-box;
+  flex: 1;
+}
+
+/* 드롭다운 스타일 */
 .dropdown-btn {
-    font-size: 14px;
-    width: 100%;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 15px;
-    background-color: #f9fafb;
-    text-align: left;
-    cursor: pointer;
-    display: flex; 
-    justify-content: space-between;
-    align-items: center
+  font-size: 14px;
+  width: 100%;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 15px;
+  background-color: #f9fafb;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
+
 .dropdown-icon {
-    width: 18px;
-    height: 18px;
+  width: 18px;
+  height: 18px;
 }
 
 .dropdown-menu {
-    font-size: 14px;
-    position: absolute;
-    top: 60%;
-    width: 40%;
-    text-align: center;
-    border: 1px solid #ddd;
-    border-radius: 15px;
-    background: #fff;
-    list-style: none;
-    margin: 4px 0 0;
-    padding: 0;
+  font-size: 14px;
+  position: absolute;
+  top: 60%;
+  width: 40%;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  background: #fff;
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
 }
 
 .dropdown-menu li {
-    padding: 10px;
-    cursor: pointer;
+  padding: 10px;
+  cursor: pointer;
 }
 
 .dropdown-menu li:hover {
-    background-color: #f0f0f0;
+  background-color: #f0f0f0;
 }
 
+/* 카드 스타일 */
 .notification-card {
-    background: #C2DCFF;
-    padding: 12px;
-    border-radius: 20px;
-    margin-bottom: 12px;
-    display: flex;                  /* 텍스트와 아이콘 나란히 */
-    justify-content: space-between; /* 텍스트 왼쪽, 아이콘 오른쪽 */
-    align-items: center;
-    cursor: pointer;
+  background: #C2DCFF;
+  padding: 12px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
 }
+
+.notification-card.read {
+  background: #E5E7EB;
+  opacity: 0.7;
+}
+
 .card-content {
-    display: flex;
-    justify-content: space-between;  /* 텍스트는 왼쪽, 화살표는 오른쪽 */
-    flex-direction: column;
-    flex: 1;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
+
 .card-arrow {
-    width: 20px;
-    height: 20px;
-    color: #555;
+  width: 20px;
+  height: 20px;
+  color: #555;
 }
+
 .notification-card p {
-    margin: 3px;
+  margin: 3px;
 }
+
 .card-title {
-    font-size: 13px;
+  font-size: 13px;
 }
 
 .card-body {
-    font-size: 13px;
-    white-space: pre-line;  /* \n 줄바꿈 처리 */
+  font-size: 13px;
+  white-space: pre-line;
 }
 
 .card-time {
-    font-size: 11px;
-    color: gray;
+  font-size: 11px;
+  color: gray;
 }
 </style>
+
