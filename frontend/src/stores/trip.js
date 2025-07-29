@@ -7,14 +7,14 @@ export const useTripStore = defineStore('trip', ()=>{
 
     const fetchActiveTrip = async () =>{
         try{
-            const res = await axios.get('/api/groups')
-            const groups = res.data
+            const res = await axios.get('/api/trips')
+            const trips = res.data
 
-            if(Array.isArray(groups) && groups.length > 0){
+            if(Array.isArray(trips) && trips.length > 0){
                 const now = new Date()
 
-                const activeTrips = groups
-                    .filter(g => g.groupStatus === 'ACTIVE' && new Date(g.startDate) >= now)
+                const activeTrips = trips
+                    .filter(t => t.tripStatus === 'ACTIVE' && new Date(t.startDate) >= now)
                     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
 
                 trip.value = activeTrips[0] || null

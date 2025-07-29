@@ -1,13 +1,13 @@
 <script setup>
-import groupApi from "@/api/groupApi.js";
+import tripApi from "@/api/tripApi.js";
 import {computed, ref} from 'vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
-import { travelCreateStore } from "@/stores/groupStore.js"
+import { travelCreateStore } from "@/stores/tripStore.js"
 const date = ref({});
 const disableDates = ref();
 const load = async () => {
-  disableDates.value=await groupApi.getDiabledDates();
+  disableDates.value=await tripApi.getDiabledDates();
 }
 load();
 const store = travelCreateStore()
