@@ -9,4 +9,7 @@ public interface MerchantService {
     MerchantCategoryDTO getMerchantCategory(int categoryId);
 
     void createMerchant(MerchantDTO merchantDTO);
+
+    // 사업자 매출 증가
+    void increaseSales(int merchantId, int amount);
 }
