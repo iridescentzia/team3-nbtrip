@@ -20,4 +20,9 @@ export default [
     name: 'settlementRequest',
     component: () => import('@/views/settlement/SettlementRequestView.vue'),
   },
+  {
+    path: '/settlement/:tripId/detail',
+    name: 'settlementDetail',
+    component: () => import('@/views/settlement/SettlementDetailView.vue'),
+  },
 ];

@@ -185,17 +185,13 @@
     <select id="getRawSettlementDataByTripId" resultType="org.scoula.settlement.dto.SettlementDTO$RawSettlementDataDTO">
         SELECT
             p.payment_id,
-            payer.nickname AS payer_nickname,
-            participant.nickname AS participant_nickname,
+            p.user_id AS payer_id,
+            pp.user_id AS participant_id,
             pp.split_amount
         FROM
             payment p
                 JOIN
             payment_participant pp ON p.payment_id = pp.payment_id
-                JOIN
-            users payer ON p.user_id = payer.user_id
-                JOIN
-            users participant ON pp.user_id = participant.user_id
         WHERE
             p.trip_id = #{tripId}
     </select>
