@@ -31,8 +31,9 @@ export const requestSettlement = (payload) => {
 /**
  * 개인별 정산 내역 조회 API
  * @param {number} tripId - 여행 ID
+ * @return {Promise} - Axios Promise
  */
-export const getMySettlements = (tripId) => {
+export const getMySettlementDetails = (tripId) => {
   return apiClient.get(`/settlements/my/${tripId}`);
 };
 
@@ -46,7 +47,7 @@ export const getSettlementsByTripId = (tripId) => {
 
 /**
  * 송금 처리 API
- * @param {object} payload - { settlementIds: [1,2,3] }
+ * @param {object} payload - { settlementIds: [...] }
  */
 export const transferMoney = (payload) => {
   return apiClient.post('/settlements/transfer', payload);

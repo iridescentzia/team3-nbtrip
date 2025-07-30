@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 // 1. Header.vue 컴포넌트를 import 합니다.
-import Header from '../../components/layout/Header.vue';
+import Header from '../../components/layout/Header2.vue';
 // 2. 실제 API 호출 함수와 라우터를 import 합니다.
 import { getSettlementSummary, requestSettlement } from '@/api/settlementApi';
 import { useRoute, useRouter } from 'vue-router';
@@ -100,9 +100,9 @@ const goToNextStep = async () => {
           <h3 class="card-title">멤버별 결제 내역</h3>
           <div class="member-list">
             <div
-              v-for="member in summaryData.memberPayments"
-              :key="member.nickname"
-              class="member-item"
+                v-for="member in summaryData.memberPayments"
+                :key="member.nickname"
+                class="member-item"
             >
               <div class="member-info">
                 <div class="member-avatar">

@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import Header from '../../components/layout/Header.vue';
+import Header from '../../components/layout/Header2.vue';
 import { getMySettlementDetails, transferMoney } from '@/api/settlementApi';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 // --- 상태 관리 ---
 const settlementData = ref(null);
@@ -11,13 +11,14 @@ const error = ref(null);
 
 // --- 라우터 ---
 const route = useRoute();
+const router = useRouter();
 const tripId = route.params.tripId;
 // userId는 JWT 토큰을 통해 서버에서 자동으로 인식하므로, 프론트에서 보낼 필요 X
 
 // --- 데이터 로딩 ---
 onMounted(async () => {
   try {
-    const response = await getMySettlementDetails(tripId, userId);
+    const response = await getMySettlementDetails(tripId);
     settlementData.value = response.data;
   } catch (err) {
     console.error('개인 정산 정보 로딩 실패:', err);
@@ -55,12 +56,25 @@ const handleTransfer = async () => {
     const settlementIdsToSend = settlementData.value.toSend.map(
       (tx) => tx.settlementId
     );
-    // await transferMoney({ settlementIds: settlementIdsToSend });
-    alert('송금이 완료되었습니다!');
-    // To-do: 송금 완료 후 화면 갱신 또는 홈으로 이동 로직
+
+    // API 응답 받기
+    const response = await transferMoney({settlementIds: settlementIdsToSend});
+    const transferResult = response.data;
+
+    // 송금 결과에 따른 페이지 이동
+    if(transferResult.failedCount == 0) {
+      // 모든 송금 성공
+      alert('모든 송금이 완료되었습니다.');
+      router.push(`/settlement/${tripId}/pending`);
+    } else {
+      // 1건이라도 실패
+      alert(`송금 실패: ${transferResult.successCount}건 성공, ${transferResult.failedCount}건 실패`);
+      router.push(`/settlement/${tripId}/failure`);
+    }
   } catch (err) {
     console.error('송금 실패:', err);
     alert('송금 중 오류가 발생했습니다.');
+    router.push(`/settlement/${tripId}/failure`);
   }
 };
 </script>
@@ -87,7 +101,7 @@ const handleTransfer = async () => {
 
         <!-- 받을 돈 카드 -->
         <div class="settlement-card">
-          <p class="card-title text-theme-text">💸 받을 돈</p>
+          <p class="card-title text-theme-text">받을 돈</p>
           <div class="transaction-list">
             <div
               v-if="
@@ -103,9 +117,7 @@ const handleTransfer = async () => {
                   <div class="avatar">
                     <span>{{ tx.senderNickname.substring(0, 1) }}</span>
                   </div>
-                  <span class="font-semibold text-sm text-theme-text">{{
-                    tx.senderNickname
-                  }}</span>
+                  <span class="font-semibold text-sm text-theme-text">{{tx.senderNickname }}</span>
                 </div>
                 <span class="amount text-theme-text"
                   >{{ tx.amount.toLocaleString() }}원</span
@@ -120,7 +132,7 @@ const handleTransfer = async () => {
 
         <!-- 보낼 돈 카드 -->
         <div class="settlement-card">
-          <p class="card-title">💌 보낼 돈</p>
+          <p class="card-title">보낼 돈</p>
           <div class="transaction-list">
             <div
               v-if="settlementData.toSend && settlementData.toSend.length > 0"
@@ -143,23 +155,6 @@ const handleTransfer = async () => {
             </div>
             <p v-else class="empty-message">보낼 돈이 없습니다.</p>
           </div>
-        </div>
-
-        <!-- 최종 요약 -->
-        <div class="summary-card">
-          <p v-if="netBalance > 0" class="text-theme-text">
-            총
-            <span class="font-bold text-lg text-theme-blue"
-              >{{ netBalance.toLocaleString() }}원</span
-            >을 받으면 정산 완료!
-          </p>
-          <p v-else-if="netBalance < 0" class="text-theme-text">
-            총
-            <span class="font-bold text-lg text-theme-red"
-              >{{ Math.abs(netBalance).toLocaleString() }}원</span
-            >을 보내면 정산 완료!
-          </p>
-          <p v-else class="font-bold text-theme-text">정산이 완료되었습니다!</p>
         </div>
       </main>
 

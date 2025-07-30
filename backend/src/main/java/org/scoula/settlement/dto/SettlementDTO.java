@@ -82,6 +82,9 @@ public class SettlementDTO {
         private List<OptimizedTransactionWithNickname> toReceive;
         private List<OptimizedTransactionWithNickname> toSend;
         private String overallStatus; // PENDING, PROCESSING, COMPLETED
+
+        private String tripName;
+        private Integer totalAmount;
     }
 
     /**
