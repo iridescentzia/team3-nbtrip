@@ -11,7 +11,23 @@ const password = ref('')
 const passwordConfirm = ref('')
 const bankCode = ref('')
 const accountNumber = ref('')
-const fcmToken = ref('')  // firebase 연동 시
+const fcmToken = ref('dummy-token')  // 임시 토큰(firebase 연동 전)
+// const fcmToken = ref('')  // firebase 연동 후
+
+// FCM 토큰 받아오기(firebase 연동 후)
+// onMounted(async () => {
+//   try {
+//     const token = await getFcmToken()
+//     if (token) {
+//       fcmToken.value = token
+//       console.log('FCM 토큰 발급 성공:', token)
+//     } else {
+//       console.warn('FCM 토큰을 가져오지 못했습니다.')
+//     }
+//   } catch (err) {
+//     console.error('FCM 토큰 발급 오류:', err)
+//   }
+// })
 
 // 닉네임 중복 확인 상태
 const isNicknameChecked = ref(false)
@@ -27,9 +43,12 @@ const bankCodes = ref([
   { code: '004', name: '국민은행' },
   { code: '011', name: '농협은행' },
   { code: '020', name: '우리은행' },
+  { code: '023', name: 'SC제일은행' },
+  { code: '027', name: '한국시티은행' },
   { code: '081', name: '하나은행' },
   { code: '088', name: '신한은행' },
-  { code: '090', name: '카카오뱅크' }
+  { code: '090', name: '카카오뱅크' },
+  { code: '092', name: '토스뱅크' }
 ])
 
 // 닉네임 중복 확인(POST /api/users/check-nickname)
@@ -53,27 +72,6 @@ const checkNickname = async () => {
 }
 
 // 회원가입(POST /api/auth/register)
-const checkNickname = async () => {
-  if (!nickname.value.trim()) {
-    alert('닉네임을 입력해주세요.')
-    return
-  }
-
-  try {
-    const res = await axios.post('/api/users/check-nickname', {
-      nickname: nickname.value
-    })
-    nicknameValid.value = true
-    nicknameMessage.value = res.data.message || '사용 가능한 닉네임입니다.'
-    isNicknameChecked.value = true
-  } catch (err) {
-    nicknameValid.value = false
-    isNicknameChecked.value = false
-    nicknameMessage.value = err.response?.data?.message || '이미 사용 중인 닉네임입니다.'
-  }
-}
-
-// 회원가입 요청(POST /api/auth/register)
 const submitForm = async () => {
   if (!nickname.value || !name.value || !phoneNumber.value ||
       !email.value || !password.value || !passwordConfirm.value ||
@@ -81,17 +79,14 @@ const submitForm = async () => {
     alert('모든 항목을 입력해주세요.')
     return
   }
-
   if (!isNicknameChecked.value || !nicknameValid.value) {
     alert('닉네임 중복 확인을 해주세요.')
     return
   }
-
   if (!isPasswordMatch.value) {
     alert('비밀번호가 일치하지 않습니다.')
     return
   }
-
   try {
     const res = await axios.post('/api/auth/register', {
       email: email.value,
@@ -100,11 +95,11 @@ const submitForm = async () => {
       nickname: nickname.value,
       name: name.value,
       phoneNumber: phoneNumber.value,
-      fcmToken: fcmToken.value
+      fcmToken: fcmToken.value  // 임시로 dummy-token 사용 중
     })
     if (res.data.success) {
       alert('회원가입이 완료되었습니다!')
-      // router.push('/login')
+      router.push('/login')  // 로그인 페이지로 이동
     }
   } catch (err) {
     alert(err.response?.data?.message || '회원가입 실패')
