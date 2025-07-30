@@ -1,8 +1,10 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import tripApi from "@/api/tripApi.js";
 import {useTravelCreateStore} from "@/stores/tripStore.js";
 import Button from "@/components/common/Button.vue";
+import Header from "@/components/layout/Header.vue";
+import { Lightbulb } from 'lucide-vue-next';
 
 const store = useTravelCreateStore();
 const inputValue = ref('');
@@ -42,10 +44,15 @@ function onInput(e) {
 }
 
 function onButtonClick(option) {
-  if (!addedItems.value.includes(option)) {
+  // 나중에 로그인된 id로 변경
+  console.log(option);
+  const alreadyAdded = addedItems.value.some(
+      (item) => item.userId === option.userId
+  );
+  if (!alreadyAdded && option.userId !== 1) {
     addedItems.value.push(option);
   }
-  inputValue.value = ''; // ✅ 추가 후 입력창 초기화
+  inputValue.value = '';
   showList.value = false;
   options.value = [];
 }
@@ -66,13 +73,13 @@ async function createTrip() {
   try {
     console.log(store.tripName);
     const payload = {
-      ownerId: 1,
+      ownerId: 1, //
       tripName: store.tripName,
-      startDate: store.startDate,   // 'YYYY-MM-DD' 형태
+      startDate: store.startDate,
       endDate: store.endDate,
       budget: store.budget,
       tripStatus: 'READY',
-      members: addedItems.value     // [{id, nickname}, ...]
+      members: addedItems.value     // [{id, nickname}, ...] 배열 형태로 전달
     };
 
     const response = await tripApi.createTrip(payload);
@@ -93,43 +100,120 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <h1>{{store.tripName}}</h1>
-  <div class="autocomplete" ref="wrapper" style="position: relative;">
-    <input
-        v-bind:value="inputValue"
-        @input="onInput"
-        @focus="showList = true"
-        type="text"
-        placeholder="이름 입력..."
-    />
-    <div
-        v-if="showList && options.length"
-        class="autocomplete-list"
-    >
-      <div
-          class="autocomplete-item"
-          v-for="(option, index) in options"
-          :key="index"
-      >
-        {{ option }}
-        <button @click.stop="onButtonClick(option)">+</button>
+  <div class="view-wrapper">
+    <div class="tripinvite-view">
+      <Header title="멤버 초대하기"/>
+      <div class="content-container">
+        <div class="info-box">
+          <p class="trip_title">{{store.tripName}}</p>
+          <p class="guide">친구들을 초대하고</p>
+          <p class="guide">함께 여행을 계획하세요!</p>
+          <div class="tip-box">
+            <p class="tip-text"><Lightbulb :size="12" />모든 것을 완벽하게 하려고 하기보다</p>
+            <p class="tip-text">예기치 못한 상황을 즐겨보세요!</p>
+          </div>
+        </div>
+        <div class="autocomplete" ref="wrapper" style="position: relative">
+          <label>회원 검색</label>
+          <input
+              class="input-box"
+              v-bind:value="inputValue"
+              @input="onInput"
+              @focus="showList = true"
+              type="text"
+              placeholder="이름 입력..."
+          />
+          <div
+              v-if="showList && options.length"
+              class="autocomplete-list"
+          >
+            <div
+                class="autocomplete-item"
+                v-for="(option, index) in options"
+                :key="index"
+            >
+              {{ option.nickname }}
+              <button @click.stop="onButtonClick(option)">추가하기</button>
+            </div>
+          </div>
+
+          <div v-if="addedItems.length" class="added-list">
+            <h4>추가된 사용자</h4>
+            <ul>
+              <li v-for="(item, idx) in addedItems" :key="idx">
+                <div class="added-item">
+                  {{ item.nickname }}
+                  <button @click="removeItem(idx)">x</button>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <Button class="next-btn" @click="createTrip" label="다음"></Button>
       </div>
     </div>
-
-    <div v-if="addedItems.length" class="added-list">
-      <h4>추가된 사용자</h4>
-      <ul>
-        <li v-for="(item, idx) in addedItems" :key="idx">
-          {{ item }}
-          <button @click="removeItem(idx)">x</button>
-        </li>
-      </ul>
-    </div>
-    <Button @click="createTrip"/>
   </div>
 </template>
 
 <style scoped>
+
+p{
+  margin: 0;
+}
+label{
+  color: var(--theme-text);
+}
+
+.tripinvite-view {
+  --theme-primary: rgba(255, 209, 102, 0.65);
+  --theme-primary-dark: #e2c05e;
+  --theme-bg: #f8f9fa;
+  --theme-text: #333333;
+  --theme-text-light: #888888;
+}
+
+/* 화면 중앙 정렬을 위한 wrapper 스타일 */
+.view-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 100vh; /* 화면 전체 높이를 차지하도록 */
+  background-color: #ffffff;
+  padding: 2rem 0; /* 위아래 여백 추가 */
+}
+
+/* 전체 레이아웃 */
+.tripinvite-view {
+  z-index: 1;
+  width: 100%;
+  max-width: 24rem; /* 384px */
+  background-color: var(--theme-bg);
+  display: flex;
+  flex-direction: column;
+  border-radius: 1.5rem; /* 둥근 모서리 */
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); /* 그림자 효과 */
+  overflow: hidden; /* 둥근 모서리 적용을 위해 */
+  position: relative; /* Header 컴포넌트의 fixed 포지션 기준점 */
+  height: 844px; /* 특정 스마트폰 높이를 기준으로 고정 */
+  max-height: 90vh; /* 화면 높이의 90%를 넘지 않도록 설정 */
+}
+
+.input-box {
+  width: 100%;
+  padding-right: 50px;
+  height: 40px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  border: 1px solid var(--theme-text-light)
+}
+
+/* 메인 콘텐츠 */
+.content-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: calc(56px) 1.25rem 1.25rem;
+}
+
 .autocomplete-list {
   border: 1px solid #ccc;
   position: absolute;
@@ -149,7 +233,7 @@ onBeforeUnmount(() => {
 }
 
 .autocomplete-item:hover {
-  background-color: #f0f0f0;
+  background-color: var(--theme-bg);
 }
 
 .autocomplete-item button {
@@ -181,5 +265,42 @@ onBeforeUnmount(() => {
   border: none;
   padding: 2px 6px;
   cursor: pointer;
+}
+
+.info-box{
+  margin: 8px 0;
+  background-color: #ffffff;
+  border: 2px solid rgba(136, 136, 136, 0.3);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.trip_title{
+  margin: 2px 0;
+  color: var(--theme-text-light);
+  font-size: 14px;
+}
+.guide{
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--theme-text);
+}
+.tip-box{
+  margin: 4px;
+  background: rgba(136, 136, 136, 0.3);
+  border-radius: 8px;
+  padding: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.tip-text{
+  font-size: 12px;
+}
+
+.added-item{
+  padding: 8px;
+  background: white;
 }
 </style>
