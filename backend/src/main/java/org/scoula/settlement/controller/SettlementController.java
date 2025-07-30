@@ -255,7 +255,7 @@ public class SettlementController {
         //     log.warn("Principal parse 실패 [{}]", principal.getName());
         //     return 1;
         // }
-        return 7; // 테스트용
+        return 4; // 테스트용
     }
 
     /**
