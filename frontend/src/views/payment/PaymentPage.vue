@@ -33,8 +33,11 @@ async function submitPayment() {
     <div class="layout-container">
       <main class="content">
         <div>
-          <h2>QR 스캔</h2>
-          <p>결제할 가게의 QR코드를 인식해주세요.</p>
+          <div style="text-align: center; margin-bottom: 16px">
+            <h2>QR 스캔</h2>
+            <p>결제할 가게의 QR코드를 인식해주세요.</p>
+          </div>
+
           <QRScanner />
 
           <div
@@ -42,7 +45,7 @@ async function submitPayment() {
             class="modal"
           >
             <!-- 결제 입력 모달 -->
-            <h2>'{{ store.tripName }}' 중</h2>
+            <h2 style="text-align: center">'{{ store.tripName }}' 중</h2>
 
             <div class="input-group">
               <label for="merchantName">가게 이름</label><br />
@@ -74,7 +77,7 @@ async function submitPayment() {
                   type="checkbox"
                   :id="`participant-${index}`"
                   :value="participant"
-                  v-model="store.participantsId"
+                  v-model="store.selectedParticipants"
                 />
                 <label :for="`user-${index}`">{{ participant }}</label>
               </div>
@@ -91,7 +94,7 @@ async function submitPayment() {
             class="modal"
           >
             <h3>결제 완료!</h3>
-            <button @click="$router.push('/')">홈으로</button>
+            <button @click="$router.push('/')">홈으로 돌아가기</button>
           </div>
 
           <!-- 결제 실패 모달 -->
@@ -101,7 +104,12 @@ async function submitPayment() {
           >
             <h3>결제에 실패했어요...</h3>
             <p>사유: {{ store.reason }}</p>
-            <button @click="store.resetModal()">닫기</button>
+            <div style="display: flex">
+              <button @click="store.resetModal()" style="margin-right: 8px">
+                취소하기
+              </button>
+              <button @click="submitPayment">다시 시도하기</button>
+            </div>
           </div>
         </div>
       </main>
@@ -111,6 +119,7 @@ async function submitPayment() {
 </template>
 
 <style scoped>
+/* Default Layout */
 .layout-wrapper {
   display: flex;
   justify-content: center;
@@ -143,5 +152,104 @@ async function submitPayment() {
 
 .mid {
   height: 250px;
+}
+
+/* Payment Modal */
+/* 모달 박스 */
+.modal {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 414px;
+  background-color: #ffffff;
+  border-radius: 16px 16px 0 0;
+  padding: 24px 24px 32px 24px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  animation: modalUp 0.25s ease;
+}
+
+@keyframes modalUp {
+  from {
+    bottom: -300px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0;
+    opacity: 1;
+  }
+}
+
+/* 입력 그룹 */
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-group label {
+  font-size: 14px;
+  color: #333333;
+  margin-bottom: 6px;
+}
+
+.input-group input[type='text'],
+.input-group input[type='number'] {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  margin-top: 8px;
+  border-radius: 0.6rem;
+}
+
+/* 체크박스 그룹 */
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.checkbox-group input[type='checkbox'] {
+  appearance: none; /* 기본(네이티브) 모양을 제거 */
+  box-sizing: border-box;
+  background-clip: content-box;
+  width: 16px;
+  height: 16px;
+  border: 1px solid gray;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.checkbox-group input[type='checkbox']:checked {
+  border-color: #ffd166;
+  background-color: #ffd166;
+}
+
+.checkbox-group label {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #333333;
+  cursor: pointer;
+}
+
+/* 버튼 스타일 */
+button {
+  width: 100%;
+  padding: 12px 0;
+  font-size: 16px;
+  color: #ffffff;
+  background-color: #ffd166;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 </style>

@@ -7,6 +7,7 @@ export const usePaymentStore = defineStore('payment', () => {
 
   const tripName = ref('');
   const participantsId = ref([]);
+  const selectedParticipants = ref([]);
 
   const amount = ref(0);
   const reason = ref('');
@@ -43,6 +44,7 @@ export const usePaymentStore = defineStore('payment', () => {
     merchantName,
     tripName,
     participantsId,
+    selectedParticipants,
     isModalVisible,
     modalType,
     amount,
