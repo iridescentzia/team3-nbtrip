@@ -71,17 +71,19 @@ async function submitPayment() {
             <div class="input-group">
               <label>결제에 참여하는 사람들</label>
               <div
-                v-for="(participant, index) in store.participantsId"
-                :key="index"
+                v-for="participant in store.participantsNickname"
+                :key="participant.userId"
                 class="checkbox-group"
               >
                 <input
                   type="checkbox"
-                  :id="`participant-${index}`"
-                  :value="participant"
+                  :id="`participant-${participant.userId}`"
+                  :value="participant.userId"
                   v-model="store.selectedParticipants"
                 />
-                <label :for="`user-${index}`">{{ participant }}</label>
+                <label :for="`participant-${participant.userId}`">{{
+                  participant.nickname
+                }}</label>
               </div>
             </div>
 

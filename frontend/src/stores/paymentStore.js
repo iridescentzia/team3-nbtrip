@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import memberApi from '@/api/memberApi';
 import { ref } from 'vue';
 
 export const usePaymentStore = defineStore('payment', () => {
@@ -7,6 +8,7 @@ export const usePaymentStore = defineStore('payment', () => {
 
   const tripName = ref('');
   const participantsId = ref([]);
+  const participantsNickname = ref([]);
   const selectedParticipants = ref([]);
 
   const amount = ref(0);
@@ -17,7 +19,7 @@ export const usePaymentStore = defineStore('payment', () => {
   const isModalVisible = ref(false);
   const modalType = ref(1);
 
-  function setScannerData({
+  async function setScannerData({
     merchantID: id,
     merchantName: name,
     tripName: trip,
@@ -27,6 +29,12 @@ export const usePaymentStore = defineStore('payment', () => {
     merchantName.value = name;
     tripName.value = trip;
     participantsId.value = participants;
+    participantsNickname.value = await Promise.all(
+      participants.map(async (userId) => {
+        const user = await memberApi.get(userId);
+        return { userId, nickname: user.nickname };
+      })
+    );
     isModalVisible.value = true;
     modalType.value = 1;
   }
@@ -44,6 +52,7 @@ export const usePaymentStore = defineStore('payment', () => {
     merchantName,
     tripName,
     participantsId,
+    participantsNickname,
     selectedParticipants,
     isModalVisible,
     modalType,
