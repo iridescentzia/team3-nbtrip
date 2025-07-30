@@ -210,6 +210,28 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
+    // 비밀번호 검증 요청
+    @Override
+    public boolean verifyPassword(int userId, String password) {
+        log.info("비밀번호 검증 요청 - 회원 ID: {}", userId);
+        try {
+            MemberVO member = memberMapper.findById(userId);
+            if (member == null) {
+                throw new UserNotFoundException("존재하지 않는 회원입니다.");
+            }
+            boolean match = passwordEncoder.matches(password, member.getPassword());
+            if (!match) {
+                throw new PasswordMismatchException("비밀번호가 일치하지 않습니다.");
+            }
+            return true;
+        } catch (UserNotFoundException | PasswordMismatchException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("비밀번호 검증 실패 - 회원 ID: {}, 오류: {}", userId, e.getMessage(), e);
+            throw new RuntimeException("비밀번호 검증 중 오류가 발생했습니다.");
+        }
+    }
+
     // 비밀번호 변경
     @Override
     public void changePassword(int userId, MemberPasswordDTO passwordDTO) {
