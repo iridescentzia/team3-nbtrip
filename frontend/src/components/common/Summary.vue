@@ -6,7 +6,8 @@
     </div>
     <div class="amount-row">
       <div class="amount">{{formattedAmount}}</div>
-      <div class="budget" small >예산: {{formattedBudget}}</div>
+      <Info class="info-icon" />
+<!--      <div class="budget" small >예산: {{formattedBudget}}</div>-->
     </div>
 
     <div class="progress-bar">
@@ -21,6 +22,7 @@
 
 <script setup >
 import {computed} from 'vue'
+import { Info } from 'lucide-vue-next';
 
 // props: amount(사용금액 합계), budget(여행 예산)
 const props = defineProps({
@@ -75,42 +77,53 @@ const isOverBudget = computed(() =>{
   margin: 0 auto; /* 가운데 정렬 */
   box-sizing: border-box;
   font-family: 'IBM Plex Sans KR', sans-serif;
+  box-shadow: 0px 1px 2px #0000000d;
 }
 
 .summary-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  /*margin-bottom: 12px;*/
 }
 
 .label {
   font-size: 14px;
-  color: #666;
+  color: #AAAAAA;
 }
 
 .terminate {
-  background-color: #ff6666;
-  color: white;
+  background-color: #F1F5F9;
+  color: #4A4A4A;
   border: none;
   padding: 6px 12px;
   font-size: 12px;
   border-radius: 5px;
   cursor: pointer;
+  font-weight: 1000;
+  font-family: 'IBM Plex Sans KR', sans-serif;
 }
 
 .amount-row {
   display: flex;
-  justify-content: space-between;
+  /*justify-content: space-between;*/
   align-items: center;
   margin-bottom: 8px;
 }
 
 .amount {
-  font-size: 28px;
-  font-weight: bold;
-  margin-bottom: 8px;
+  font-size: 36px;
+  font-weight: 1000;
+  /*margin-bottom: 8px;*/
+  margin-right: 5px;
 }
+
+.info-icon{
+  color:#AAAAAA;
+  width:18px;
+  padding-bottom:6px;
+}
+
 .budget {
   font-size: 14px;
   color: #666;
@@ -126,7 +139,7 @@ const isOverBudget = computed(() =>{
 
 .progress {
   height: 100%;
-  background-color: #2f6be9;
+  background-color: #5C8EF6;
   border-radius: 4px;
   transition: width 0.3s ease-in-out;
 }
