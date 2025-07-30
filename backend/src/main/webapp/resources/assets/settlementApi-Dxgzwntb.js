@@ -1,0 +1,1 @@
+import{a as e}from"./index-BbKoTsk0.js";const n=t=>e.get(`/settlements/${t}/summary`),r=t=>e.get(`/settlements/${t}/calculate`),a=t=>e.post("/settlements",t),l=t=>e.get(`/settlements/my/${t}`),m=t=>e.post("/settlements/transfer",t);export{l as a,r as c,n as g,a as r,m as t};
