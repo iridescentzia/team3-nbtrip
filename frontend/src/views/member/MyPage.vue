@@ -1,218 +1,222 @@
 <script setup>
-
-import Header from "@/components/layout/Header.vue";
-import Footer from "@/components/layout/Footer.vue";
-import catImage from "@/assets/img/airplane_left.png";
-import {CircleUserRound, Briefcase, BriefcaseConveyorBelt, ChevronRight} from "lucide-vue-next";
-import {useRouter, useRoute} from "vue-router";
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import Footer from '@/components/layout/Footer.vue'
+import { Briefcase, BriefcaseConveyorBelt, CircleUserRound } from 'lucide-vue-next'
+import axios from 'axios'
 
 const router = useRouter()
+const userInfo = ref({ nickname: '', name: '' })
 
-const goTo = (target) => {
-  router.push(`/${target}`)
+// 마운트 시 내 정보 불러오기
+onMounted(async () => {
+  try {
+    const res = await axios.get('/api/mypage', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+      }
+    })
+
+    if (res.data.success) {
+      userInfo.value = res.data.data
+    } else {
+      console.error('유저 정보 조회 실패:', res.data.message)
+    }
+  } catch (err) {
+    console.error('마이페이지 에러:', err)
+  }
+})
+
+// 페이지 이동
+const goTo = (path) => router.push(path)
+
+// 로그아웃
+const logout = async () => {
+  try {
+    await axios.post('/api/auth/logout', {}, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+      }
+    })
+    localStorage.removeItem('accessToken')
+    router.push('/login')
+  } catch (e) {
+    console.error('로그아웃 실패:', e)
+  }
 }
-
-const logout = () => {
-  console.log('로그아웃')
-}
-
 </script>
 
 <template>
-  <Header title="마이페이지" />
+  <div class="mypage-wrapper">
+    <div class="content">
+      <!-- 상단 제목 -->
+      <header class="header"><h1>마이페이지</h1></header>
 
-  <!-- 프로필 -->
-  <div class="profile-section">
-    <img class="profile-img" :src="catImage" alt="프로필">
-    <p class="nickname">김냥이</p>
-  </div>
-
-  <!-- 아이콘 메뉴 -->
-  <div class="icon-menu">
-    <div class="icon-item">
-      <div class="icon-circle">
-        <CircleUserRound size="24" />
+      <!-- 프로필 이미지 + 닉네임 -->
+      <div class="profile-section">
+        <img src="@/assets/img/airplane_left.png" alt="프로필" class="profile-img" />
+        <div class="nickname">{{ userInfo.nickname || '김냥이' }}</div>
       </div>
-      <p>회원 정보</p>
-    </div>
-    <div class="icon-item">
-      <div class="icon-circle">
-        <Briefcase size="24" />
+
+      <!-- 아이콘 -->
+      <div class="icon-section">
+        <div class="icon-wrapper" @click="goTo('/my/info')">
+          <div class="icon-button"><CircleUserRound size="28" /></div>
+          <span>회원 정보</span>
+        </div>
+        <!--      <div class="icon-wrapper" @click="goTo('/trips?status=ready')">-->
+        <div class="icon-wrapper">
+          <div class="icon-button"><Briefcase size="28" /></div>
+          <span>예정된 여행</span>
+        </div>
+        <!--      <div class="icon-wrapper" @click="goTo('/trips?status=closed')">-->
+        <div class="icon-wrapper">
+          <div class="icon-button"><BriefcaseConveyorBelt size="28" /></div>
+          <span>지난 여행</span>
+        </div>
       </div>
-      <p>예정된 여행</p>
-    </div>
-    <div class="icon-item">
-      <div class="icon-circle">
-        <BriefcaseConveyorBelt size="24" />
+
+      <!-- 메뉴 리스트 -->
+      <div class="menu-list">
+        <div class="menu-item" @click="goTo('/my/payment')">
+          결제 수단 관리 <span class="arrow">›</span>
+        </div>
+        <div class="menu-item" @click="goTo('/faq')">
+          공지사항 및 FAQ <span class="arrow">›</span>
+        </div>
+        <div class="menu-item" @click="goTo('/terms')">
+          이용 약관 <span class="arrow">›</span>
+        </div>
       </div>
-      <p>지난 여행</p>
+
+      <!-- 로그아웃 -->
+      <div class="logout" @click="logout">로그아웃</div>
     </div>
+
+    <!-- 공통 푸터 -->
+    <Footer />
   </div>
-
-  <!-- 카드 형태 메뉴 -->
-  <div class="menu-cards">
-    <div class="menu-card" @click="goTo('payment')">
-      <span>결제 수단 관리</span>
-      <ChevronRight size="20" color="#666" />
-    </div>
-    <div class="menu-card" @click="goTo('faq')">
-      <span>공지사항 및 FAQ</span>
-      <ChevronRight size="20" color="#666" />
-    </div>
-    <div class="menu-card" @click="goTo('terms')">
-      <span>이용 약관</span>
-      <ChevronRight size="20" color="#666" />
-    </div>
-  </div>
-
-  <!-- 로그아웃 -->
-  <p class="logout" @click="logout">로그아웃</p>
-
-  <Footer></Footer>
 </template>
 
 <style scoped>
-.mypage-container {
-  padding: 16px;
-  text-align: center;
+.mypage-wrapper {
+  width: 384px;
+  height: 800px;
+  background: #f8fafc;
+  margin: 0 auto;
+  margin-bottom: 100px;
+  padding: 32px 24px;
+  box-sizing: border-box;
+  border-radius: 24px;
+  outline: 1px solid black;
+  outline-offset: -1px;
+  box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
-.title {
-  font-size: 18px;
-  font-weight: bold;
+.content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding-bottom: 40px;
+}
+
+.header {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 800;
+  color: #4a4a4a;
   margin-bottom: 16px;
 }
 
 .profile-section {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  padding: 20px;
-  position: relative;
-  height: 120px;
+  margin: 16px 0 32px;
 }
 
 .profile-img {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background-color: #FFE4B5;
-  padding: 8px;
-  flex-shrink: 0;
-  position: absolute;
-  left: 60px;
-  top: 50%;
-  transform: translateY(-50%);
+  width: 120px;
+  height: 120px;
   object-fit: contain;
-  box-sizing: border-box;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .nickname {
-  font-size: 20px;
-  font-weight: bold;
-  margin: 0;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  margin-top: 12px;
+  font-size: 24px;
+  font-weight: 800;
+  color: #333;
 }
 
-.icon-menu {
+.icon-section {
   display: flex;
-  justify-content: flex-start;
-  margin: 32px 20px;
-  padding: 0;
-  position: relative;
-  height: 80px;
-  width: calc(100% - 40px);
+  justify-content: space-around;
+  margin: 20px 0;
 }
 
-.icon-item {
-  text-align: center;
-  cursor: pointer;
+.icon-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  position: absolute;
+  font-size: 14px;
+  font-weight: 700;
+  color: #4a4a4a;
+  cursor: pointer;
 }
 
-.icon-item:nth-child(1) {
-  left: 40px;
-}
-
-.icon-item:nth-child(2) {
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.icon-item:nth-child(3) {
-  right: 40px;
-}
-
-.icon-circle {
-  width: 56px;
-  height: 56px;
+.icon-button {
+  background-color: white;
+  border: 1px solid #8d8d8d;
   border-radius: 50%;
-  background-color: #ffffff;
-  border: 1px solid #e9ecef;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  margin-bottom: 6px;
 }
 
-.icon-circle:hover {
-  background-color: #e9ecef;
-}
-
-.icon-item p {
-  font-size: 12px;
-  color: #666;
-  margin: 0;
-}
-
-.menu-cards {
-  margin: 20px;
+.menu-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-bottom: 24px;
 }
 
-.menu-card {
-  background-color: white;
+.menu-item {
+  background: white;
+  padding: 14px 20px;
   border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border: 1px solid #f1f3f4;
-  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  color: #4a4a4a;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
-.menu-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
-}
-
-.menu-card span {
-  font-size: 16px;
-  color: #333;
-  font-weight: 500;
+.arrow {
+  font-size: 20px;
+  color: #888;
 }
 
 .logout {
-  color: #ED7B73;
-  font-weight: 500;
-  margin: 20px;
   text-align: right;
-  cursor: pointer;
+  color: #ed7b73;
   font-size: 14px;
-}
-
-.logout:hover {
-  color: #ff3742;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
 }
 </style>

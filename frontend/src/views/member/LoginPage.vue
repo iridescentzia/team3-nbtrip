@@ -1,9 +1,10 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
-import JoinPage from './JoinPage.vue' // 회원가입 컴포넌트 import
+import JoinPage from './JoinPage.vue'
+import {loginMember} from "@/api/memberApi.js";
+import DefaultLayout from "@/components/layout/DefaultLayout.vue";
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -25,7 +26,8 @@ const isLoginFormValid = computed(() =>
     loginForm.value.email && loginForm.value.password
 )
 
-// FCM 토큰 (Firebase 연동 시 대체)
+// FCM 토큰
+// firebase 연동 전
 const getFcmToken = async () => {
   try {
     return ''
@@ -34,6 +36,26 @@ const getFcmToken = async () => {
     return ''
   }
 }
+
+// firebase 연동 후
+// const getFcmToken = async () => {
+//   try {
+//     const token = await getToken(messaging, {
+//       vapidKey: 'YOUR_PUBLIC_VAPID_KEY'  // Firebase Console에서 발급받은 VAPID 키
+//     })
+//
+//     if (!token) {
+//       console.warn('FCM 토큰을 받아오지 못했습니다.')
+//       return ''
+//     }
+//
+//     console.log('FCM 토큰 발급:', token)
+//     return token
+//   } catch (error) {
+//     console.error('FCM 토큰 발급 중 오류:', error)
+//     return ''
+//   }
+// }
 
 // 로그인 처리 함수
 const handleLogin = async () => {
@@ -46,23 +68,23 @@ const handleLogin = async () => {
     isLoading.value = true
 
     const fcmToken = await getFcmToken()
-    const response = await axios.post('/api/auth/login', {
+    const response = await loginMember({
       email: loginForm.value.email,
       password: loginForm.value.password,
       fcmToken
     })
 
-    const token = response.data.accessToken || response.data.token
-    const user = response.data.user || response.data.member
+    const token = response.accessToken || response.token
+    const user = response.user || response.member
 
     localStorage.setItem('accessToken', token)
     authStore.setToken(token)
     authStore.setUser(user)
 
     alert('로그인 성공!')
-    router.push('/home')  // 메인 홈 화면으로 이동
+    router.push('/')  // 메인 홈 화면으로 이동
   } catch (error) {
-    alert(error.response?.data?.message || '로그인에 실패했습니다.')
+    alert(error.message || '로그인에 실패했습니다.')
     console.error('로그인 오류:', error)
   } finally {
     isLoading.value = false
@@ -72,7 +94,7 @@ const handleLogin = async () => {
 
 <template>
   <!-- 회원가입 모드일 경우 JoinPage 컴포넌트 렌더링 -->
-  <JoinPage v-if="isSignupMode" />
+  <JoinPage v-if="isSignupMode" @signup-complete="isSignupMode = false"/>
 
   <!-- 로그인 화면 -->
   <div v-else class="join-container">
@@ -115,7 +137,7 @@ const handleLogin = async () => {
       <div class="line right-line"></div>
 
       <div class="no-account-text">계정이 없으신가요?</div>
-      <div class="signup-text" @click="isSignupMode = true">회원가입</div>
+      <div class="signup-text" @click="router.push('/agreement')">회원가입</div>
     </div>
   </div>
 </template>
