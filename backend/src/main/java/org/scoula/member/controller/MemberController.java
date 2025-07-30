@@ -106,4 +106,14 @@ public class MemberController {
         if(userId == null) { throw new InvalidTokenException("JWT 토큰에서 사용자 ID를 찾을 수 없습니다."); }
         return userId;
     }
+
+    // 5. 비밀번호 검증(POST /api/users/verify-password)
+    @PostMapping("/users/verify-password")
+    public ResponseEntity<ApiResponse> verifyPassword(
+            @RequestHeader("Authorization") String authHeader,
+            @Valid @RequestBody MemberPasswordDTO dto) {
+        int userId = extractUserIdFromJwt(authHeader);
+        boolean verified = memberService.verifyPassword(userId, dto.getCurrentPassword());
+        return ResponseEntity.ok(new ApiResponse(true, "비밀번호 확인 성공"));
+    }
 }

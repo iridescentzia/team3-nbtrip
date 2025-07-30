@@ -1,4 +1,4 @@
-package org.scoula.settlement.domain;
+package org.scoula.settlement.exception.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

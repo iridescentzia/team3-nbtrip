@@ -2,10 +2,9 @@ package org.scoula.settlement.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.scoula.settlement.domain.SettlementVO;
+import org.scoula.settlement.exception.domain.SettlementVO;
 import org.scoula.settlement.dto.SettlementDTO;
 import java.util.List;
-import java.util.Map;
 
 @Mapper // mybatis 정산 매퍼, SettlementMapper.xml과 연동하여 sql 실행
 public interface SettlementMapper {

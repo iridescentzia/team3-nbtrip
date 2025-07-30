@@ -46,5 +46,19 @@ export default [
         path: '/mypage',
         name: 'MyPage',
         component: () => import('@/views/member/MyPage.vue')
+    },
+
+    // 회원 정보 확인 (비밀번호 입력)
+    {
+        path: '/my/info',
+        name: 'MyInfoPasswordPage',
+        component: () => import('@/views/member/mypage/MyInfoPasswordPage.vue')
+    },
+
+    // 회원 정보 수정
+    {
+        path: '/my/update',
+        name: 'MyInfoUpdatePage',
+        component: () => import('@/views/member/mypage/MyInfoUpdatePage.vue')
     }
 ]

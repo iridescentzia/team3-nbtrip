@@ -5,7 +5,7 @@ import org.scoula.trip.mapper.TripMapper;
 import lombok.extern.log4j.Log4j2;
 import org.scoula.trip.service.TripService;
 import org.scoula.member.mapper.MemberMapper;
-import org.scoula.settlement.domain.SettlementVO;
+import org.scoula.settlement.exception.domain.SettlementVO;
 import org.scoula.settlement.dto.SettlementDTO;
 import org.scoula.settlement.mapper.SettlementAccountMapper;
 import org.scoula.settlement.mapper.SettlementMapper;
