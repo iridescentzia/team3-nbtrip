@@ -87,6 +87,7 @@ public class SettlementController {
     ) {
         log.info("🟢GET /api/settlements/my/tripId={}", tripId);
         int userId = extractUserId(principal);
+        // int userId = 5; // 앨리스 - 임시 데이터
         return ResponseEntity.ok(settlementService.getMySettlements(userId, tripId));
     }
 
