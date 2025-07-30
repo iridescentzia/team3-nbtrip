@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class MerchantServiceImpl implements MerchantService {
     final private MerchantMapper mapper;
+    private final MerchantMapper merchantMapper;
 
     @Override
     public MerchantDTO getMerchant(int merchantId) {
@@ -34,5 +35,19 @@ public class MerchantServiceImpl implements MerchantService {
         MerchantVO merchantVO = merchantDTO.toVO();
 
         mapper.createMerchant(merchantVO);
+    }
+
+    // 사업자 매출 증가
+    @Override
+    public void increaseSales(int merchantId, int amount) {
+        MerchantVO merchatVO = mapper.getMerchant(merchantId);
+        if(merchatVO == null) {
+            throw new RuntimeException("존재하지 않는 가맹점입니다.");
+        }
+
+        int result = merchantMapper.increaseSales(merchantId, amount);
+        if(result == 0) {
+            throw new RuntimeException("결제 오류");
+        }
     }
 }

@@ -14,13 +14,13 @@
             memo,
             payment_type
         ) VALUES (
-            #{tripId},
-            #{merchantId},
-            #{userId},
-            #{payAt},
-            #{amount},
-            #{memo},
-            #{paymentType}
-)
+                     #{tripId},
+                     #{merchantId},
+                     #{userId},
+                     #{payAt},
+                     #{amount},
+                     #{memo},
+                     #{paymentType}
+                 )
     </insert>
 </mapper>

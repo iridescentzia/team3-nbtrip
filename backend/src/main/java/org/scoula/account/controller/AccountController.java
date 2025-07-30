@@ -21,20 +21,15 @@ public class AccountController {
     // 계좌 등록
     @PostMapping
     public ResponseEntity<String> registerAccount(@RequestBody AccountRegisterDTO accountRegisterDTO) {
-        log.info("계좌 등록 요청: {}", accountRegisterDTO);
-        try {
+        return handleRequest(() -> {
             accountService.registerAccount(accountRegisterDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body("계좌 등록 성공");
-        } catch (Exception e) {
-            log.error("계좌 등록 실패: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("계좌 등록 실패: " + e.getMessage());
-        }
+            return "계좌 등록 성공";
+        }, HttpStatus.CREATED);
     }
 
     // 계좌 정보, 잔액 조회
     @GetMapping("/{userId}")
     public ResponseEntity<AccountViewDTO> getAccountByUserId(@PathVariable int userId) {
-        log.info("계좌 조회 요청 - userId: {}", userId);
         try {
             AccountViewDTO accountViewDTO = accountService.getAccountByUserId(userId);
             if (accountViewDTO == null) {
@@ -47,16 +42,29 @@ public class AccountController {
         }
     }
 
+    // 계좌 수정
     @PutMapping("/{userId}")
     public ResponseEntity<String> updateAccount(@PathVariable int userId, @RequestBody AccountUpdateDTO accountUpdateDTO) {
-        log.info("계좌 수정 요청 - userId: {}, DTO: {}", userId, accountUpdateDTO);
-        try {
+        return handleRequest(() -> {
             accountUpdateDTO.setUserId(userId);
             accountService.updateAccount(accountUpdateDTO);
-            return ResponseEntity.ok("계좌 수정 성공");
+            return "계좌 수정 성공";
+        }, HttpStatus.OK);
+    }
+
+    // 예외 처리용
+    private <T> ResponseEntity<T> handleRequest(SupplierWithException<T> supplier, HttpStatus successStatus) {
+        try {
+            T result = supplier.get();
+            return new ResponseEntity<>(result, successStatus);
         } catch (Exception e) {
-            log.error("계좌 수정 실패: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("계좌 수정 실패: " + e.getMessage());
+            log.error("요청 처리 실패: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
+    }
+
+    @FunctionalInterface
+    private interface SupplierWithException<T> {
+        T get() throws Exception;
     }
 }
