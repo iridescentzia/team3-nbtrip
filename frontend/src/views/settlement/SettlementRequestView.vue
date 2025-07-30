@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import Header from '../../components/layout/Header.vue';
+import Header from '../../components/layout/Header2.vue';
 import {
   getSettlementsByTripId,
   getSettlementSummary,
@@ -101,16 +101,17 @@ const toSendList = computed(() => {
 });
 
 // 정산 요청 보내기 함수
+// 정산 요청 보내기 함수 - 단순 이동으로 변경
 const handleRequestSettlement = async () => {
-  if (!confirm('모든 멤버에게 정산 요청을 보낼까요?')) return;
+  if (!confirm('정산 내역을 확인하러 가시겠습니까?')) return;
 
   try {
-    await requestSettlement({ tripId });
-    alert('정산 요청을 성공적으로 보냈습니다!');
-    router.push('/'); // 홈으로 이동
+    // ✅ API 호출하지 않고 바로 detailview로 이동
+    router.push(`/settlement/${tripId}/detail`);
+
   } catch (err) {
-    console.error('정산 요청 실패:', err);
-    alert('정산 요청에 실패했습니다.');
+    console.error('페이지 이동 실패:', err);
+    alert('페이지 이동에 실패했습니다.');
   }
 };
 </script>
@@ -140,9 +141,9 @@ const handleRequestSettlement = async () => {
           <div class="card-header">
             <select v-model="selectedMember" class="member-select">
               <option
-                v-for="member in settlementData.members"
-                :key="member"
-                :value="member"
+                  v-for="member in settlementData.members"
+                  :key="member"
+                  :value="member"
               >
                 {{ member }}
               </option>
@@ -152,9 +153,9 @@ const handleRequestSettlement = async () => {
           <div class="transaction-list">
             <div v-if="toReceiveList.length > 0">
               <div
-                v-for="(tx, index) in toReceiveList"
-                :key="index"
-                class="transaction-item"
+                  v-for="(tx, index) in toReceiveList"
+                  :key="index"
+                  class="transaction-item"
               >
                 <div class="member-info">
                   <div class="avatar bg-theme-secondary">
@@ -174,9 +175,9 @@ const handleRequestSettlement = async () => {
           <div class="card-header">
             <select v-model="selectedMember" class="member-select">
               <option
-                v-for="member in settlementData.members"
-                :key="member"
-                :value="member"
+                  v-for="member in settlementData.members"
+                  :key="member"
+                  :value="member"
               >
                 {{ member }}
               </option>
@@ -186,9 +187,9 @@ const handleRequestSettlement = async () => {
           <div class="transaction-list">
             <div v-if="toSendList.length > 0">
               <div
-                v-for="(tx, index) in toSendList"
-                :key="index"
-                class="transaction-item"
+                  v-for="(tx, index) in toSendList"
+                  :key="index"
+                  class="transaction-item"
               >
                 <div class="member-info">
                   <div class="avatar bg-theme-primary">

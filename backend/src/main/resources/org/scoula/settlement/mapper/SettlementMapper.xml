@@ -217,8 +217,8 @@
     <select id="getMySettlementsByTripId" resultMap="settlementWithNicknamesMap">
         SELECT s.settlement_id, s.trip_id, s.sender_id, s.receiver_id,
                s.settlement_status, s.amount,
-               sender.nickname AS senderNickname,
-               receiver.nickname AS receiverNickname
+               sender.nickname AS sender_nickname,
+               receiver.nickname AS receiver_nickname
         FROM settlement s
                  JOIN users sender ON s.sender_id = sender.user_id
                  JOIN users receiver ON s.receiver_id = receiver.user_id

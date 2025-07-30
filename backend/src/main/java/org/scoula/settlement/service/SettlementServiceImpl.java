@@ -84,6 +84,21 @@ public class SettlementServiceImpl implements SettlementService {
         result.setToReceive(toReceive);
         result.setOverallStatus(overallStatus);
 
+        try {
+            Integer totalAmount = mapper.getTotalAmountByTripId(tripId);
+            result.setTotalAmount(totalAmount != null ? totalAmount : 0);
+
+            String tripName = tripMapper.findTripNameById(tripId);
+            result.setTripName(tripName != null ? tripName : "여행");
+
+            log.info("🔍 조회된 여행 정보 - tripName: {}, totalAmount: {}", tripName, totalAmount);
+
+        } catch (Exception e) {
+            log.warn("여행 정보 조회 실패 - tripId: {}", tripId, e);
+            result.setTotalAmount(0);
+            result.setTripName("여행");
+        }
+
         return result;
     }
 
@@ -339,20 +354,6 @@ public class SettlementServiceImpl implements SettlementService {
         }
     }
 
-    private int resolveUserId(String nickname) {
-        // MemberMapper 연동
-        try {
-            Integer userId = memberMapper.findUserIdByNickname(nickname);
-            if(userId == null) {
-                throw new IllegalArgumentException("존재하지 않는 닉네임: " + nickname);
-            }
-            return userId;
-        } catch (Exception e) {
-            log.error("닉네임 -> 사용자 ID 변환 실패: {}", nickname, e);
-            throw new IllegalArgumentException("사용자 정보 조회 실패: " + nickname);
-        }
-    }
-
     private boolean canCalculateSettlement(int tripId) {
         try {
             // 1. 결제 내역 존재 여부 체크
@@ -398,9 +399,15 @@ public class SettlementServiceImpl implements SettlementService {
         // 3. 조회된 데이터들을 DTO에 담아서 반환
         SettlementDTO.SettlementSummaryResponseDto summaryDto = new SettlementDTO.SettlementSummaryResponseDto();
 
-        // To-do: tripMapper를 사용하여 tripId로 여행 이름을 조회하고 설정해야 함.
-        // summaryDto.setTripName(tripMapper.getTripNameById(tripId));
-        summaryDto.setTripName("서울 우정여행"); // 현재는 임시 데이터 사용
+        try {
+            String tripName = tripMapper.findTripNameById(tripId);
+            summaryDto.setTripName(tripName != null ? tripName : "여행");
+            log.info("🔍 조회된 여행 이름: {}", tripName);
+        } catch (Exception e) {
+            log.warn("여행 이름 조회 실패 - tripId: {}", tripId, e);
+            summaryDto.setTripName("여행");
+        }
+
         summaryDto.setTotalAmount(totalAmount);
         summaryDto.setMemberPayments(memberPayments);
 
@@ -430,10 +437,13 @@ public class SettlementServiceImpl implements SettlementService {
         resultDto.setMembers(members);
         resultDto.setTransactions(transactions);
 
-        // To-do: tripMapper를 사용하여 실제 여행 이름을 조회해야 합니다.
-        // String tripName = tripMapper.findTripNameById(tripId);
-        // resultDto.setTripName(tripName);
-        resultDto.setTripName("서울 우정여행"); // 현재는 임시 데이터 사용
+        try {
+            String tripName = tripMapper.findTripNameById(tripId);
+            resultDto.setTripName(tripName != null ? tripName : "여행");
+        } catch (Exception e) {
+            log.warn("여행 이름 조회 실패 - tripId: {}", tripId, e);
+            resultDto.setTripName("여행");
+        }
 
         return resultDto;
     }
