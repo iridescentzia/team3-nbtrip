@@ -153,26 +153,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
 
                 // OPTIONS 요청 (CORS Preflight) 항상 허용
-                .antMatchers(HttpMethod.OPTIONS).permitAll()
+                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                 // 인증 불필요(공개 API)
                 .antMatchers(HttpMethod.POST, "/auth/login").permitAll()  // 로그인
                 .antMatchers(HttpMethod.POST, "/auth/register").permitAll()  // 회원가입
-                .antMatchers(HttpMethod.GET, "/merchants/**").permitAll()  // 가맹점 조회
+                .antMatchers(HttpMethod.POST, "/auth/logout").permitAll()  // 로그아웃
+                .antMatchers(HttpMethod.POST, "/users/check-nickname").permitAll()  // 닉네임 중복 확인
 
                 // 인증 필요(보호된 API)
-                .antMatchers("/mypage").authenticated()  // 마이페이지
-                .antMatchers("/auth/logout").authenticated()  // 인증 관련
-                .antMatchers("/users/**").authenticated()  // 사용자 관리
-                .antMatchers(HttpMethod.POST, "/api/users/verify-password").permitAll()  //
-                .antMatchers("/trips/**").authenticated()  // 여행 관리
-                .antMatchers(HttpMethod.POST, "/merchants").authenticated()  // 가맹점 등록
-                .antMatchers("/transactions/**").authenticated()  // 거래 관리
-                .antMatchers("/settlements/**").authenticated()  // 정산 관리
-                .antMatchers("/accounts/**").authenticated()  // 계좌 관리
-                .antMatchers("/chart/**").authenticated()  // 차트 관리
-                .antMatchers("/notifications/**").authenticated()  // 알림 관리
-                .antMatchers("/payments/**").authenticated()  // 결제 관리
+                .antMatchers("/users/**").authenticated()  // 사용자 정보
+                .antMatchers("/mypage/**").authenticated()  // 마이페이지
+                .antMatchers("/trips/**").authenticated()  // 여행
+                .antMatchers("/merchants/**").authenticated()  // 가맹점
+                .antMatchers("/transactions/**").authenticated()  // 거래
+                .antMatchers("/settlements/**").authenticated()  // 정산
+                .antMatchers("/accounts/**").authenticated()  // 계좌
+                .antMatchers("/chart/**").authenticated()  // 차트
+                .antMatchers("/notifications/**").authenticated()  // 알림
+                .antMatchers("/payments/**").authenticated()  // 결제
                 .anyRequest().permitAll();
     }
 
