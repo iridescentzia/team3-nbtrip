@@ -103,4 +103,80 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("분배 금액 총합 오류");
         }
     }
+
+
+    /* 선결제/기타 결제 수동 등록 */
+    @Override
+    @Transactional
+    public void registerManualPayment(PaymentDTO paymentDTO) {
+        PaymentType paymentType = paymentDTO.getPaymentType();
+        if(paymentDTO.getAmount() <= 0) {
+            throw new IllegalArgumentException("결제 금액은 0원보다 커야 합니다.");
+        }
+
+        List<ParticipantDTO> participants = paymentDTO.getParticipants();
+        if(participants == null || participants.isEmpty()) {
+            throw new IllegalArgumentException("참여자는 최소 1명 이상이어야 합니다.");
+        }
+
+        // 수동 결제 시 사용자가 날짜/시간 입력하면 병합, 아니면 현재 시간
+        LocalDateTime payAt = (paymentDTO.getPaymentDate() != null && paymentDTO.getPaymentTime() != null)
+                ? LocalDateTime.of(paymentDTO.getPaymentDate(), paymentDTO.getPaymentTime())
+                : LocalDateTime.now();
+
+        PaymentVO paymentVO = new PaymentVO();
+        paymentVO.setTripId(paymentDTO.getTripId());
+        paymentVO.setUserId(paymentDTO.getUserId());
+        paymentVO.setAmount(paymentDTO.getAmount());
+        paymentVO.setPaymentType(paymentType);
+        paymentVO.setPayAt(payAt);
+        paymentVO.setMemo(paymentDTO.getMemo());
+        paymentVO.setMerchantId(null);
+
+        int inserted = paymentMapper.insertPayment(paymentVO);
+        if(inserted == 0) {
+            throw new RuntimeException("결제 내역 등록 실패");
+        }
+
+        // participant 저장 - 금액 분배 (지정 금액 없으면 자동 1/n 분배)
+        boolean allSplitAmountZero = participants.stream()
+                .allMatch(p -> p.getSplitAmount() == 0);
+
+        int participantCount = participants.size();
+        int baseSplitAmount = paymentDTO.getAmount() / participantCount;
+        int remainderAmount = paymentDTO.getAmount() % participantCount;
+
+        List<ParticipantVO> participantVOList = participants.stream()
+                .map(p -> {
+                    // 금액 분배 시 결제자가 잔액 1-2원 더 부담
+                    int splitAmount;
+                    if(allSplitAmountZero) {
+                        splitAmount = baseSplitAmount;
+                        if(Integer.valueOf(p.getUserId()).equals(paymentDTO.getUserId())) {
+                            splitAmount += remainderAmount;
+                        }
+                    } else {
+                        splitAmount = p.getSplitAmount();
+                    }
+                    return ParticipantVO.builder()
+                            .paymentId(paymentVO.getPaymentId())
+                            .userId(p.getUserId())
+                            .splitAmount(splitAmount)
+                            .build();
+                })
+                .toList();
+
+        int totalSplit = participantVOList.stream()
+                .mapToInt(ParticipantVO::getSplitAmount)
+                .sum();
+        if(totalSplit != paymentDTO.getAmount()) {
+            throw new RuntimeException("분배 금액 총합 오류");
+        }
+
+        int result = participantMapper.insertParticipants(participantVOList);
+        if(result != participantCount) {
+            log.error("참여자 저장 실패");
+            throw new RuntimeException("결제 참여자 저장 실패");
+        }
+    }
 }

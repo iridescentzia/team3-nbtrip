@@ -32,4 +32,20 @@ public class PaymentController {
                     .body(e.getMessage());
         }
     }
+
+    // 선결제 등록
+    @PostMapping("/prepaid")
+    public ResponseEntity<Void> registerPrepaidPayment(@RequestBody PaymentDTO paymentDTO) {
+        paymentDTO.setPaymentType(org.scoula.payment.domain.PaymentType.PREPAID);
+        paymentService.registerManualPayment(paymentDTO);
+        return ResponseEntity.ok().build();
+    }
+
+    // 기타 결제 등록
+    @PostMapping("/other")
+    public ResponseEntity<Void> registerOtherPayment(@RequestBody PaymentDTO paymentDTO) {
+        paymentDTO.setPaymentType(org.scoula.payment.domain.PaymentType.OTHER);
+        paymentService.registerManualPayment(paymentDTO);
+        return ResponseEntity.ok().build();
+    }
 }
