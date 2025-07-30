@@ -34,6 +34,11 @@ const handleCardClick = (n) => {
   notificationStore.readNotification(n.notificationId);
 };
 
+const formatAmount = (value) => {
+  if (!value && value !== 0) return '';
+  return new Intl.NumberFormat('ko-KR').format(value);
+};
+
 onMounted(() => {
   notificationStore.getNotifications(userId);
 });
@@ -44,7 +49,7 @@ const getMessage = (n) => {
 
   switch (n.notificationType) {
     case 'TRANSACTION':
-      return `${user}님이 ${place}에서 ${n.amount}원을 결제했습니다.`;
+      return `${user}님이 '${place}'에서 \n${formatAmount(n.amount)}원을 결제했습니다.`;
 
     case 'SETTLEMENT':
       return `${user}님이 정산 요청을 보냈습니다.\n정산을 확인하시겠습니까?`;
@@ -109,6 +114,13 @@ const getMessage = (n) => {
 </template>
 
 <style scoped>
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap');
+
+* {
+  font-family: 'IBM Plex Sans KR', sans-serif;
+}
+
 /* 전체 레이아웃 */
 .layout-wrapper {
   display: flex;
@@ -189,14 +201,14 @@ const getMessage = (n) => {
 
 /* 카드 스타일 */
 .notification-card {
-  background: #C2DCFF;
-  padding: 12px;
-  border-radius: 20px;
-  margin-bottom: 12px;
+  background: #fff;
+  padding: 14px 12px;
+  border-bottom: 1px solid #e5e7eb; /* 리스트 느낌 */
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .notification-card.read {
