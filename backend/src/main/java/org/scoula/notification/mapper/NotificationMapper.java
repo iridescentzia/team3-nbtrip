@@ -20,10 +20,12 @@ public interface NotificationMapper {
     // 그룹 알림 (INVITE, JOINED, LEFT)
     List<NotificationVO> findGroupNotifications(@Param("userId") Integer userId);
 
-    // 알림 생성
+    // 단일 알림 생성
     int createNotification(NotificationVO vo);
+    //trip 맴버 전체에게 completed 알림
     int createCompletedNotification(NotificationVO vo);
-    void createGroupEventNotification(NotificationVO vo);
+    // trip 멤버 전체에게 joined/left 알림
+    int createGroupEventNotification(NotificationVO vo);
 
     // 알림 읽음 처리
     int readNotification(@Param("notificationId") Integer notificationId);

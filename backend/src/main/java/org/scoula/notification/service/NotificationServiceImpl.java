@@ -65,7 +65,7 @@ public class NotificationServiceImpl implements NotificationService {
         NotificationVO vo = NotificationVO.builder()
                 .fromUserId(fromUserId)
                 .tripId(tripId)
-                .notificationType(type) // "JOINED" or "LEFT"
+                .notificationType(type) // JOINED or LEFT
                 .build();
         mapper.createGroupEventNotification(vo);
     }

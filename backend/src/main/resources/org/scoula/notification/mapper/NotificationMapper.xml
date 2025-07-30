@@ -118,7 +118,10 @@
     <!-- GROUP_EVENT 알림 생성 -->
     <insert id="createGroupEventNotification" parameterType="org.scoula.notification.domain.NotificationVO">
         INSERT INTO notification (user_id, from_user_id, trip_id, notification_type, send_at)
-        VALUES (#{userId}, #{fromUserId}, #{tripId}, #{notificationType}, NOW())
+        SELECT tm.user_id, #{fromUserId}, #{tripId}, #{notificationType}, NOW()
+        FROM trip_member tm
+        WHERE tm.trip_id = #{tripId}
+        AND tm.user_id != #{fromUserId};
     </insert>
 
     <!-- COMPLETED 알림: trip의 모든 멤버에게 알림 생성 -->
