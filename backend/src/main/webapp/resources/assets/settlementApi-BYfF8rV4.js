@@ -1,0 +1,1 @@
+import{a as e}from"./index-q_94Ny1N.js";const n=t=>e.get(`/settlements/${t}/summary`),a=t=>e.get(`/settlements/${t}/calculate`),l=t=>e.post("/settlements",t),m=t=>e.get(`/settlements/my/${t}`);export{m as a,a as c,n as g,l as r};
