@@ -1,14 +1,11 @@
-import api from '@/api';
+import axios from 'axios';
 
-const BASE_URL = '/api/chart';
-
-export default {
-  async getDonut(tripId) {
-    const { data } = await api.get(`/api/chart/${tripId}/donut`);
-    return data;
-  },
-  async getLine(tripId) {
-    const { data } = await api.get(`/api/chart/${tripId}/line`);
-    return data;
+const chartApi = {
+  getChart(tripId) {
+    return axios
+      .get(`/api/report/${tripId}`) // 토큰 없음
+      .then((res) => res.data);
   },
 };
+
+export default chartApi;
