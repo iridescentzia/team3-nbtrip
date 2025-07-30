@@ -130,9 +130,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .addFilterBefore(corsFilter(), CsrfFilter.class)
-                .addFilterBefore(authenticationErrorFilter, UsernamePasswordAuthenticationFilter.class);
-//                .addFilterBefore(jwtLoginFilter, UsernamePasswordAuthenticationFilter.class)
-//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(authenticationErrorFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtLoginFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // 기본 인증 방식 비활성화
         http
