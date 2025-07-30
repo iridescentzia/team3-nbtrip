@@ -2,8 +2,11 @@ package org.scoula.trip.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.scoula.member.dto.MemberSearchResponseDTO;
+import org.scoula.trip.domain.TripMemberStatus;
 import org.scoula.trip.domain.TripMemberVO;
 import org.scoula.trip.domain.TripVO;
+import org.scoula.trip.dto.TripCreateDTO;
 import org.scoula.trip.dto.TripDTO;
 import org.scoula.trip.dto.TripMemberDTO;
 import org.scoula.trip.mapper.TripMapper;
@@ -46,10 +49,11 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
-    public TripDTO inviteMember(int tripId, int userId) {
-        mapper.inviteTrip(tripId, userId);
+    public TripDTO inviteMember(int tripId, int userId, TripMemberStatus status) {
+        mapper.inviteTrip(tripId, userId, status);
         return get(tripId);
     }
+
 
     @Override
     public int changeMemberStatus(int tripId, int userId) {
@@ -68,12 +72,12 @@ public class TripServiceImpl implements TripService {
 
     @Transactional
     @Override
-    public TripDTO createTrip(TripDTO tripDTO) {
-        TripVO tripVO = TripDTO.toVO(tripDTO);
+    public TripDTO createTrip(TripCreateDTO tripCreateDTO) {
+        TripVO tripVO = TripCreateDTO.toVO(tripCreateDTO);
         mapper.createTrip(tripVO);
-        List<TripMemberVO> tripMembers = tripVO.getMembers();
-        for (TripMemberVO tripMemberVO : tripMembers) {
-            inviteMember(tripVO.getTripId(), tripMemberVO.getUserId());
+        inviteMember(tripVO.getTripId(),tripVO.getOwnerId(),TripMemberStatus.JOINED);
+        for (MemberSearchResponseDTO memberSearchResponseDTO : tripCreateDTO.getMembers()) {
+            inviteMember(tripVO.getTripId(), memberSearchResponseDTO.getUserId(), TripMemberStatus.INVITED);
         }
         return get(tripVO.getTripId());
     }

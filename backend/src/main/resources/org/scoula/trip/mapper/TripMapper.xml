@@ -11,7 +11,7 @@
         </selectKey>
     </insert>
     <insert id="inviteTrip">
-        insert into trip_member (user_id, trip_id, member_status) values (#{userId}, #{tripId}, 'INVITED')
+        insert into trip_member (user_id, trip_id, member_status) values (#{userId}, #{tripId}, #{status})
     </insert>
 
     <update id="changeMemberStatus">

@@ -2,10 +2,7 @@ package org.scoula.member.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.scoula.member.dto.ApiResponse;
-import org.scoula.member.dto.MemberDTO;
-import org.scoula.member.dto.MemberFcmTokenDTO;
-import org.scoula.member.dto.MemberResponseDTO;
+import org.scoula.member.dto.*;
 import org.scoula.member.exception.DuplicateEmailException;
 import org.scoula.member.exception.DuplicateNicknameException;
 import org.scoula.member.exception.InvalidTokenException;
@@ -18,6 +15,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -83,6 +81,10 @@ public class MemberController {
             log.error("FCM 토큰 갱신 실패", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse(false, "서버 오류"));
         }
+    }
+    @GetMapping("/users/search/{nickname}")
+    public ResponseEntity<List<MemberSearchResponseDTO>> searchUsersByNickname(@PathVariable("nickname") String nickname) {
+        return ResponseEntity.ok(memberService.searchMembersByNickname(nickname));
     }
 
     // JWT 토큰에서 userId 추출 메서드

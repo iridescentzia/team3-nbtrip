@@ -2,6 +2,8 @@ package org.scoula.trip.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.scoula.trip.domain.TripMemberStatus;
+import org.scoula.trip.dto.TripCreateDTO;
 import org.scoula.trip.dto.TripDTO;
 import org.scoula.trip.dto.TripMemberDTO;
 import org.scoula.trip.service.TripService;
@@ -41,7 +43,7 @@ public class TripController {
     //그룹 ID인 그룹에 유저 ID인 유저 초대하기
     @PostMapping("/{tripId}/invite/{userId}")
     public ResponseEntity<TripDTO> joinTripMembers(@PathVariable int userId, @PathVariable int tripId) {
-        return ResponseEntity.ok().body(service.inviteMember(tripId, userId));
+        return ResponseEntity.ok().body(service.inviteMember(tripId, userId, TripMemberStatus.INVITED));
     }
     //그룹 ID인 그룹에 참여하기
     @PutMapping("/{tripId}/join")
@@ -59,7 +61,7 @@ public class TripController {
         return ResponseEntity.ok().body(service.changeTripStatus(tripId));
     }
     @PostMapping("")
-    public ResponseEntity<TripDTO> createTrip(TripDTO tripDTO) {
+    public ResponseEntity<TripDTO> createTrip(@RequestBody TripCreateDTO tripCreateDTO) {
 //        TripDTO testDTO = TripDTO.builder()
 //                .ownerId(2)
 //                .tripName("테스트 여행명")
@@ -69,6 +71,6 @@ public class TripController {
 //                .budget(100000)
 //                .members(service.getTripMembers(2).stream().map(TripMemberDTO::toVO).toList())
 //                .build();
-        return ResponseEntity.ok().body(service.createTrip(tripDTO));
+        return ResponseEntity.ok().body(service.createTrip(tripCreateDTO));
     }
 }

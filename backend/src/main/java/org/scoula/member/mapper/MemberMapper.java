@@ -27,6 +27,9 @@ public interface MemberMapper {
     // nickname 존재 여부 확인
     boolean existsByNickname(@Param("nickname") String nickname);
 
+    // nickname으로 user 검색
+    List<MemberVO> searchUserByNickname(@Param("nickname") String nickname);
+
     // userId 존재 여부 확인
     boolean existsById(@Param("userId") int userId);
 

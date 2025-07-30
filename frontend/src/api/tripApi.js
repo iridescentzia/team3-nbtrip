@@ -1,5 +1,5 @@
 import api from '@/api'
-const BASE_URL = '/api/trips'
+const BASE_URL = '/trips'
 
 export default {
     async getTripDetail(tripId){
@@ -7,11 +7,13 @@ export default {
         console.log("data:" + JSON.stringify(data));
         return data
     },
-    // async create(params) {
-    //
-    // }
-    async getDiabledDates(){
+    async createTrip(params) {
+        console.log("📤 보내는 데이터:", params);
+        await api.post(`${BASE_URL}/`, params);
+    },
+    async getDisabledDates(){
         const { data } = await api.get(`${BASE_URL}/`);
+        console.log("data:" + JSON.stringify(data));
         const period = data.map(item => [item.startDate, item.endDate]);
         const allDates = [];
         period.forEach(([start, end]) => {
@@ -28,5 +30,9 @@ export default {
             date.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })
         ));
         return allDates;
+    },
+    async searchNickname(Nickname){
+        const { data } = await api.get(`/users/search/${Nickname}`);
+        return data;
     }
 }
