@@ -1,6 +1,12 @@
 <script setup>
-import { ref, computed } from 'vue'
-import axios from 'axios'
+import { ref, computed, onMounted, defineEmits } from 'vue'
+import { registerMember, checkNicknameDuplicate } from '@/api/memberApi.js'
+import Button from "@/components/common/Button.vue";
+import {useRouter} from "vue-router";
+import Header from "@/components/layout/Header.vue";
+
+const router = useRouter()
+const emit = defineEmits(['signup-complete'])
 
 // 폼 입력 상태
 const nickname = ref('')
@@ -11,7 +17,9 @@ const password = ref('')
 const passwordConfirm = ref('')
 const bankCode = ref('')
 const accountNumber = ref('')
-const fcmToken = ref('dummy-token')  // 임시 토큰(firebase 연동 전)
+
+// FCM 토큰
+const fcmToken = ref('dummy-token')  // firebase 연동 전(임시 토큰)
 // const fcmToken = ref('')  // firebase 연동 후
 
 // FCM 토큰 받아오기(firebase 연동 후)
@@ -58,16 +66,14 @@ const checkNickname = async () => {
     return
   }
   try {
-    const res = await axios.post('/api/users/check-nickname', {
-      nickname: nickname.value
-    })
+    const res = await checkNicknameDuplicate(nickname.value)
     nicknameValid.value = true
-    nicknameMessage.value = res.data.message || '사용 가능한 닉네임입니다.'
+    nicknameMessage.value = res.message || '사용 가능한 닉네임입니다.'
     isNicknameChecked.value = true
   } catch (err) {
     nicknameValid.value = false
     isNicknameChecked.value = false
-    nicknameMessage.value = err.response?.data?.message || '이미 사용 중인 닉네임입니다.'
+    nicknameMessage.value = err.message || '이미 사용 중인 닉네임입니다.'
   }
 }
 
@@ -88,37 +94,42 @@ const submitForm = async () => {
     return
   }
   try {
-    const res = await axios.post('/api/auth/register', {
+    const res = await registerMember({
       email: email.value,
       password: password.value,
       passwordConfirm: passwordConfirm.value,
       nickname: nickname.value,
       name: name.value,
       phoneNumber: phoneNumber.value,
-      fcmToken: fcmToken.value  // 임시로 dummy-token 사용 중
-    })
-    if (res.data.success) {
+      bankCode: bankCode.value,
+      accountNumber: accountNumber.value,
+      fcmToken: fcmToken.value
+    });
+    if (res.success) {
       alert('회원가입이 완료되었습니다!')
-      router.push('/login')  // 로그인 페이지로 이동
+      emit('signup-complete')
     }
   } catch (err) {
-    alert(err.response?.data?.message || '회원가입 실패')
+    alert(err.message || '회원가입 실패')
   }
 }
 </script>
 
 
 <template>
-  <div class="join-container">
-    <div class="page-title">회원 정보 입력</div>
-    <img src="@/assets/img/sitting_cat.png" alt="로고 이미지" class="top-image" />
+  <div class="join-container"><br/>
+    <Header title="회원 정보 입력" :back-action="() => router.back()" />
 
     <div class="form-area">
+      <div class="title-area">
+        <h1>회원 정보 입력</h1>
+        <img src="@/assets/img/sitting_cat.png" class="cat" />
+      </div>
       <!-- 닉네임 -->
       <label class="label">닉네임</label>
       <div class="nickname-wrapper">
-        <input v-model="nickname" type="text" class="input-box short" />
-        <button class="check-button" @click="checkNickname">중복 확인</button>
+        <input v-model="nickname" type="text" class="nickname-input" />
+        <button class="nickname-check-button" @click="checkNickname">중복 확인</button>
       </div>
       <div v-if="nicknameMessage" class="nickname-check-message">
         <span :class="nicknameValid ? 'success' : 'error'">{{ nicknameMessage }}</span>
@@ -169,62 +180,65 @@ const submitForm = async () => {
       <input v-model="accountNumber" type="text" class="input-box" />
     </div>
 
-    <button class="join-button" @click="submitForm">회원가입</button>
+    <!-- 회원가입 버튼 -->
+    <div class="bottom-fixed">
+      <Button label="회원가입" @click="submitForm" />
+    </div>
   </div>
 </template>
 
 <style scoped>
+/* 전체 컨테이너 */
 .join-container {
   width: 384px;
   height: 800px;
-  position: relative;
+  margin: 0 auto;
   background: #f8fafc;
-  box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
   border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   outline: 1px solid black;
   outline-offset: -1px;
-  margin: 0 auto;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
-/* 상단 텍스트 */
-.page-title {
-  position: absolute;
-  top: 65px;
-  left: 32px;
-  font-size: 28px;
-  font-weight: 400;
-  line-height: 24px;
-}
-
-/* 상단 이미지 */
-.top-image {
-  position: absolute;
-  top: 15px;
-  left: 263px;
-  width: 95px;
-  height: 143px;
-}
-
-/* 폼 영역 */
 .form-area {
-  position: absolute;
-  top: 158px;
-  left: 32px;
-  width: 321px;
-  height: 814px;
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.title-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  margin-bottom: 16px;
+}
+
+.title-area h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.title-area .cat {
+  width: 80px;
+  height: auto;
 }
 
 .label {
   font-size: 14px;
   font-weight: 500;
-  color: #333;
-  margin-top: 12px;
+  margin-top: 16px;
   display: block;
 }
 
 .input-box {
-  width: 320px;
+  width: 100%;
   height: 52px;
   border-radius: 12px;
   border: 2px solid #e2e8f0;
@@ -234,85 +248,56 @@ const submitForm = async () => {
   box-sizing: border-box;
 }
 
-.input-box.short {
-  width: 229px;
-  display: inline-block;
-  margin-right: 8px;
-}
-
 .nickname-wrapper {
   display: flex;
+  gap: 8px;
   align-items: center;
-  margin-bottom: 12px;
 }
 
-.check-button {
+.nickname-input {
+  flex: 1;
+  height: 52px;
+  padding: 0 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  box-sizing: border-box;
+}
+
+.nickname-check-button {
   width: 84px;
   height: 52px;
   background: #fddf99;
+  border: none;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
   color: #2e363a;
-  border: none;
   cursor: pointer;
+}
+
+.nickname-check-message {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.success {
+  color: #61a569;
+}
+
+.error {
+  color: #a76a6a;
 }
 
 .password-rules {
   font-size: 10px;
   color: #9a9595;
-  line-height: 1.5;
   margin-top: 8px;
+  line-height: 1.5;
 }
 
 .password-check {
-  margin-top: 8px;
   font-size: 10px;
-  line-height: 1.5;
-}
-
-.password-check .error {
-  color: #a76a6a;
-}
-
-.password-check .success {
-  color: #61a569;
-}
-
-.select-box {
-  width: 320px;
-  height: 52px;
-  border-radius: 12px;
-  outline: 2px solid #e2e8f0;
-  outline-offset: -2px;
-  background: white;
-  margin-top: 4px;
-  position: relative;
-}
-
-.dropdown-icon {
-  width: 11px;
-  height: 7px;
-  background: #8d8d8d;
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-/* 회원가입 버튼 */
-.join-button {
-  position: absolute;
-  bottom: 45px;
-  left: 32px;
-  width: 320px;
-  height: 56px;
-  background: #fddf99;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 800;
-  color: #2e363a;
-  border: none;
-  cursor: pointer;
+  margin-top: 8px;
 }
 </style>

@@ -2,6 +2,7 @@ import axios from "axios";
 import apiClient from "@/api/index.js";
 
 // ======== Auth API ========
+
 // 회원 가입
 export const registerMember = async (memberData) => {
     try {
@@ -45,6 +46,19 @@ export const logoutMember = async () => {
 };
 
 // ====== Member API =====
+
+// 닉네임 중복 확인
+export const checkNicknameDuplicate = async (nickname) => {
+    try {
+        const response = await apiClient.post('/users/check-nickname', {
+            nickname
+        });
+        return response.data;
+    } catch (error) {
+        throw handleApiError(error, '닉네임 중복 확인');
+    }
+};
+
 // 사용자 정보 조회
 export const getUserInfo = async (userId) => {
     try {
@@ -68,6 +82,7 @@ export const updateFcmToken = async (fcmTokenData) => {
 };
 
 // ===== MyPage API =====
+
 // 내 정보 조회 (JWT 기반)
 export const getMyInfo = async () => {
     try {
@@ -150,12 +165,16 @@ export default {
     registerMember,
     loginMember,
     logoutMember,
+
     // Member
     getUserInfo,
     updateFcmToken,
+    checkNicknameDuplicate,
+
     // MyPage
     getMyInfo,
     updateMyInfo,
+
     // Utils
     isApiSuccess,
     clearTokens,
