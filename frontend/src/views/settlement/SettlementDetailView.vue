@@ -8,12 +8,12 @@ import { useRoute, useRouter } from 'vue-router';
 const settlementData = ref(null);
 const isLoading = ref(true);
 const error = ref(null);
+const showTransferModal = ref(false);  // ✅ 모달 표시 상태 추가
 
 // --- 라우터 ---
 const route = useRoute();
 const router = useRouter();
 const tripId = route.params.tripId;
-// userId는 JWT 토큰을 통해 서버에서 자동으로 인식하므로, 프론트에서 보낼 필요 X
 
 // --- 데이터 로딩 ---
 onMounted(async () => {
@@ -28,7 +28,7 @@ onMounted(async () => {
   }
 });
 
-// --- 계산된 속성 (Computed Properties) ---
+// --- 계산된 속성 ---
 const totalReceiveAmount = computed(() => {
   if (!settlementData.value?.toReceive) return 0;
   return settlementData.value.toReceive.reduce((sum, tx) => sum + tx.amount, 0);
@@ -43,18 +43,27 @@ const netBalance = computed(() => {
   return totalReceiveAmount.value - totalSendAmount.value;
 });
 
-// 송금하기 함수
-const handleTransfer = async () => {
+// ✅ 송금하기 버튼 클릭 - 모달 표시
+const handleTransferClick = () => {
   if (totalSendAmount.value === 0) {
     alert('보낼 돈이 없습니다.');
     return;
   }
-  if (!confirm(`총 ${totalSendAmount.value.toLocaleString()}원을 송금할까요?`))
-    return;
+  showTransferModal.value = true;  // 모달 표시
+};
+
+// ✅ 모달 취소
+const cancelTransfer = () => {
+  showTransferModal.value = false;
+};
+
+// ✅ 실제 송금 실행
+const confirmTransfer = async () => {
+  showTransferModal.value = false;  // 모달 숨김
 
   try {
     const settlementIdsToSend = settlementData.value.toSend.map(
-      (tx) => tx.settlementId
+        (tx) => tx.settlementId
     );
 
     // API 응답 받기
@@ -159,14 +168,43 @@ const handleTransfer = async () => {
       </main>
 
       <footer class="footer">
+        <!-- ✅ 버튼 클릭 시 모달 표시 -->
         <button
-          @click="handleTransfer"
-          class="next-button"
-          :disabled="totalSendAmount === 0"
+            @click="handleTransferClick"
+            class="next-button"
+            :disabled="totalSendAmount === 0"
         >
-          송금하기
+          송금
         </button>
       </footer>
+    </div>
+    <!-- ✅ 송금 확인 모달 -->
+    <div v-if="showTransferModal" class="modal-overlay" @click="cancelTransfer">
+      <div class="transfer-modal" @click.stop>
+        <!-- 아이콘 -->
+        <div class="modal-icon">
+
+        </div>
+
+        <!-- 메인 메시지 -->
+        <h3 class="modal-title">송금하시겠습니까?</h3>
+
+        <!-- 설명 텍스트 -->
+        <p class="modal-description">
+          송금 버튼을 누르면 정산이 완료되며,<br/>
+          되돌릴 수 없습니다.
+        </p>
+
+        <!-- 버튼들 -->
+        <div class="modal-buttons">
+          <button @click="cancelTransfer" class="modal-cancel-btn">
+            취소
+          </button>
+          <button @click="confirmTransfer" class="modal-confirm-btn">
+            확인
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -365,5 +403,157 @@ const handleTransfer = async () => {
 }
 .text-theme-blue {
   color: var(--theme-blue);
+}
+
+/* ✅ 모달 오버레이 - 하단 정렬 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;  /* ✅ 하단 정렬 */
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ✅ 모달 - 전체 너비, 하단에서 올라옴 */
+.transfer-modal {
+  width: 100%;  /* ✅ 전체 너비 */
+  max-width: 325px;
+  height: auto;
+  min-height: 230px;
+  background: white;
+  border-radius: 1.5rem;
+  box-shadow: 0px -4px 32px rgba(0, 0, 0, 0.24);  /* ✅ 위쪽 그림자 */
+  padding: 28px 40px 36px 40px;  /* 하단 패딩 추가 */
+  position: relative;
+  animation: slideUpFromBottom 0.3s ease-out;
+}
+
+.modal-icon {
+  width: 40px;
+  height: 40px;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+}
+
+.modal-title {
+  text-align: center;
+  color: #1f2937;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  margin: 0 0 16px 0;
+}
+
+.modal-description {
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  margin: 0 0 28px 0;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;  /* 버튼 최대 너비 제한 */
+  margin: 0 auto;
+}
+
+.modal-cancel-btn,
+.modal-confirm-btn {
+  flex: 1;
+  height: 48px;
+  background: rgba(255, 209, 102, 0.65);
+  border-radius: 12px;
+  border: none;
+  color: #374151;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-cancel-btn:hover,
+.modal-confirm-btn:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+.modal-cancel-btn:active,
+.modal-confirm-btn:active {
+  transform: translateY(0);
+}
+
+/* ✅ 하단에서 올라오는 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUpFromBottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ✅ 반응형 대응 */
+@media (max-width: 480px) {
+  .transfer-modal {
+    padding: 24px 20px 32px 20px;
+    margin: 0 auto;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+  }
+
+  .modal-buttons {
+    gap: 8px;
+    max-width: none;
+  }
+
+  .modal-cancel-btn,
+  .modal-confirm-btn {
+    height: 44px;
+    font-size: 15px;
+  }
+}
+
+/* ✅ 큰 화면에서도 적절한 크기 유지 */
+@media (min-width: 768px) {
+  .transfer-modal {
+    max-width: 325px;  /* 태블릿/데스크톱에서는 최대 너비 제한 */
+    margin: 0 auto;
+    border-radius: 16px;  /* 큰 화면에서는 모든 모서리 둥글게 */
+    margin-bottom: 2rem;  /* 하단 여백 */
+  }
+}
+
+/* ✅ 배경 블러 효과 */
+.modal-overlay {
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 </style>

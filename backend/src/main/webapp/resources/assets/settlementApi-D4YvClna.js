@@ -1,1 +1,0 @@
-import{a as e}from"./index-Kd1lVUqJ.js";const n=t=>e.get(`/settlements/${t}/summary`),r=t=>e.get(`/settlements/${t}/calculate`),a=t=>e.post("/settlements",t),l=t=>e.get(`/settlements/my/${t}`),m=t=>e.get(`/settlements/${t}`),o=t=>e.post("/settlements/transfer",t);export{m as a,l as b,r as c,n as g,a as r,o as t};

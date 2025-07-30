@@ -1,1 +1,0 @@
-import{a as e}from"./index-COoeZcPP.js";const n=t=>e.get(`/settlements/${t}/summary`),r=t=>e.post("/settlements",t),m=t=>e.get(`/settlements/my/${t}`),a=t=>e.get(`/settlements/${t}`),l=t=>e.post("/settlements/transfer",t);export{n as a,a as b,m as g,r,l as t};
