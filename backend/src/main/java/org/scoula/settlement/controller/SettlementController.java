@@ -2,6 +2,7 @@ package org.scoula.settlement.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.scoula.security.accounting.domain.CustomUser;
 import org.scoula.settlement.exception.domain.SettlementVO;
 import org.scoula.settlement.dto.SettlementDTO;
 import org.scoula.settlement.service.SettlementService;
