@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { ChevronDown, ChevronRight } from 'lucide-vue-next';
 import Header from '@/components/layout/Header.vue';
-import { useAuthStore } from '@/stores/auth';
+// import { useAuthStore } from '@/stores/auth';
 
 // 로그인한 사용자 ID로 변경
 const userId = 1; 
