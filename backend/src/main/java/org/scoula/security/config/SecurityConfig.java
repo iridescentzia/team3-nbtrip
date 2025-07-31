@@ -106,6 +106,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/static/**",
                 "/public/**",
 
+                // Vue Router 페이지 경로들 - 페이지 접근 허용
+                "/login",
+                "/register",
+                "/mypage",
+                "/settlement",
+                "/trips",
+                "/merchants",
+                "/accounts",
+                "/payments",
+                "/chart",
+                "/notifications",
+
                 // 시스템 모니터링
                 "/api/health",
                 "/api/status",
