@@ -19,9 +19,13 @@
         :budget="tripStore.currentTrip.budget"
       >
       </Summary>
+    
+      <Filter 
+      v-if="tripStore.currentTrip"
+      :start-date="formatDate(tripStore.currentTrip.startDate)"
+      @date-filtered="onDateFiltered" />  
 
-      <!-- 필터 -->
-      <Filter></Filter>
+      <PaymentListInfo :date-range="selectedDateRange" />
     </div>
   </DefaultLayout>
 </template>
@@ -29,11 +33,11 @@
 <script setup>
 import Header from '@/components/layout/Header.vue';
 import TravelCard from '@/components/common/TravelCard.vue';
-import Button from '@/components/common/Button.vue';
 import DefaultLayout from '@/components/layout/DefaultLayout.vue';
 import Filter from '@/components/paymentlist/Filter.vue';
+import PaymentListInfo from './PaymentListInfo.vue';
 
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useTripStore } from '@/stores/trip.js';
 import Summary from '@/components/common/Summary.vue';
 
@@ -45,8 +49,19 @@ const formatDate = (timestamp) => {
   return date.toISOString().split('T')[0].replace(/-/g, '.');
 };
 
+// Filter.vue에서 emit된 날짜 범위를 저장할 ref
+const selectedDateRange = ref({ start: '', end: '' })
+
+// Filter.vue로부터 'date-filtered' 이벤트 전달받는 핸들러
+function onDateFiltered(range) {
+  console.log('[PaymentList.vue] 받은 날짜 범위:', range)
+  // 부모 컴포넌트가 선택된 날짜 값을 보관
+  selectedDateRange.value = range
+}
+
 onMounted(async () => {
-  await tripStore.fetchTrips();
+  await tripStore.fetchTrips()
+  await tripStore.fetchCurrentTripMembers()
   console.log('currentTrip:', tripStore.currentTrip);
 });
 </script>

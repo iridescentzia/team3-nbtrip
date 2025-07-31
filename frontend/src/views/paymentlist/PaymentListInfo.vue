@@ -1,7 +1,8 @@
 <template>
   <div class="wrapper">
+     <!-- computed된 filteredPayments를 순회하며 카드 렌더링 -->
     <ExpenseCard
-      v-for="(item, index) in payments"
+      v-for="(item, index) in filteredPayments"
       :key="index"
       :title="item.memo"
       :sub="formatSub(item.userId, item.payAt)"
@@ -11,14 +12,38 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router'; // ✅ 라우터에서 파라미터 추출
+import { ref,computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router'; 
 import ExpenseCard from '@/views/paymentlist/PaymentListInfoCard.vue';
 import paymentApi from '@/api/paymentlistApi';
 
+const props = defineProps({
+  dateRange: {
+    type: Object,
+    default: () => ({ start: '', end: '' })
+  }
+})
+
+// URL에서 tripId 추출
 const route = useRoute();
-const tripId = Number(route.params.tripId); // ✅ URL에서 tripId 추출
-const payments = ref([]);
+const tripId = Number(route.params.tripId); 
+const payments = ref([]); // 서버에서 받아온 전체 결제 내역
+
+const filteredPayments = computed(() => {
+  const { start, end } = props.dateRange
+  console.log('[PaymentListInfo.vue] 현재 dateRange:', start, end)
+
+  // 시작/종료 날짜가 모두 비어있으면 전체 반환
+  if (!start && !end) return payments.value
+
+  return payments.value.filter(p => {
+    // ISO 문자열에서 yyyy-MM-dd 부분만 비교
+    const payDate = p.payAt.slice(0, 10)
+    if (start && end)   return payDate >= start && payDate <= end
+    if (start)          return payDate >= start
+    if (end)            return payDate <= end
+  })
+})
 
 function formatSub(payer, time) {
   const t = new Date(time);
@@ -28,6 +53,7 @@ function formatSub(payer, time) {
   return `${payer} · ${meridiem} ${h}:${m}`;
 }
 
+// 컴포넌트 마운트 시 서버에서 결제 내역 호출
 onMounted(async () => {
   try {
     const result = await paymentApi.getPaymentList(tripId);
@@ -48,7 +74,7 @@ onMounted(async () => {
 <style scoped>
 .wrapper {
   padding: 20px;
-  background-color: #f5f5f5;
+  /* background-color: #f5f5f5; */
   min-height: 100vh;
 }
 </style>
