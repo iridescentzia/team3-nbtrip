@@ -86,7 +86,7 @@ const submitUpdate = async () => {
 
     if (res.success) {
       alert('회원 정보가 수정되었습니다.')
-      router.push('/my') // 수정 완료 후 마이페이지로 이동
+      router.push('/mypage')  // 수정 완료 후 마이페이지로 이동
     }
   } catch (err) {
     alert(err.message || '회원 정보 수정 실패')
