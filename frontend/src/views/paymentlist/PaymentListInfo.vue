@@ -73,7 +73,7 @@ onMounted(async () => {
 
 <style scoped>
 .wrapper {
-  padding: 20px;
+  padding: 20px 0;
   /* background-color: #f5f5f5; */
   min-height: 100vh;
 }
