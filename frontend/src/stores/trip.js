@@ -1,28 +1,29 @@
-import {defineStore} from 'pinia'
-import axios from 'axios'
-import {ref} from 'vue'
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import tripApi from '@/api/tripApi' // 전체 default 객체로 불러오기
 
-export const useTripStore = defineStore('trip', ()=>{
-    const trip = ref(null)
+export const useTripStore = defineStore('trip', () => {
+  const trips = ref([])
 
-    const fetchActiveTrip = async () =>{
-        try{
-            const res = await axios.get('/api/trips')
-            const trips = res.data
+  const fetchTrips = async () => {
+    const data = await tripApi.fetchTrips()  
+    trips.value = Array.isArray(data) ? data : []
+  }
 
-            if(Array.isArray(trips) && trips.length > 0){
-                const now = new Date()
+  const currentTrip = computed(() => {
+    const now = Date.now()
+    return trips.value.find(trip => {
+      return (
+        trip.tripStatus === 'ACTIVE' &&
+        now >= trip.startDate &&
+        now <= trip.endDate
+      )
+    })
+  })
 
-                const activeTrips = trips
-                    .filter(t => t.tripStatus === 'ACTIVE' && new Date(t.startDate) >= now)
-                    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
-
-                trip.value = activeTrips[0] || null
-            }
-        }catch(e){
-            console.error('진행 중인 여행 정보 가져오기 실패: ', e)
-        }
-    }
-    return {trip, fetchActiveTrip}
-
+  return {
+    trips,
+    fetchTrips,
+    currentTrip,
+  }
 })
