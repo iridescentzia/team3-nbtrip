@@ -237,6 +237,9 @@ async function submitPayment() {
   font-size: 14px;
   color: #333333;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
 }
 
 /* 버튼 스타일 */
