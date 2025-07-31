@@ -61,21 +61,19 @@ public class SettlementServiceImpl implements SettlementService {
     public SettlementDTO.PersonalSettlementResponseDto getMySettlements(int userId, int tripId) {
         log.info("🟢 getMySettlements - userId: {}, tripId: {}", userId, tripId);
 
-        List<SettlementVO> allMySettlements = mapper.getSettlementsWithNicknamesByUserId(userId)
-                .stream()
-                .filter(vo -> vo.getTripId().equals(tripId))
-                .collect(Collectors.toList());
+        // DB에서 바로 특정 여행의 정산만 조회
+        List<SettlementVO> allMySettlements = mapper.getMySettlementsByTripId(userId, tripId);
 
         // 내가 보내야 할 정산들
-        List<SettlementDTO.OptimizedTransaction> toSend = allMySettlements.stream()
+        List<SettlementDTO.OptimizedTransactionWithNickname> toSend = allMySettlements.stream()
                 .filter(vo -> vo.getSenderId().equals(userId))
-                .map(this::toOptimizedTransaction)
+                .map(this::toOptimizedTransactionWithNickname)
                 .collect(Collectors.toList());
 
         // 내가 받아야 할 정산들
-        List<SettlementDTO.OptimizedTransaction> toReceive = allMySettlements.stream()
+        List<SettlementDTO.OptimizedTransactionWithNickname> toReceive = allMySettlements.stream()
                 .filter(vo -> vo.getReceiverId().equals(userId))
-                .map(this::toOptimizedTransaction)
+                .map(this::toOptimizedTransactionWithNickname)
                 .collect(Collectors.toList());
 
         // 전체 상태 계산
@@ -86,21 +84,32 @@ public class SettlementServiceImpl implements SettlementService {
         result.setToReceive(toReceive);
         result.setOverallStatus(overallStatus);
 
+        try {
+            Integer totalAmount = mapper.getTotalAmountByTripId(tripId);
+            result.setTotalAmount(totalAmount != null ? totalAmount : 0);
+
+            String tripName = tripMapper.findTripNameById(tripId);
+            result.setTripName(tripName != null ? tripName : "여행");
+
+            log.info("🔍 조회된 여행 정보 - tripName: {}, totalAmount: {}", tripName, totalAmount);
+
+        } catch (Exception e) {
+            log.warn("여행 정보 조회 실패 - tripId: {}", tripId, e);
+            result.setTotalAmount(0);
+            result.setTripName("여행");
+        }
+
         return result;
     }
 
     @Override
     public List<SettlementVO> getMyOutgoingSettlements(int userId, int tripId) {
-        return mapper.getSettlementsWithNicknamesByUserId(userId).stream()
-                .filter(vo -> vo.getSenderId().equals(userId) && vo.getTripId().equals(tripId))
-                .collect(Collectors.toList());
+        return mapper.getMyOutgoingSettlementsByTripId(userId, tripId);
     }
 
     @Override
     public List<SettlementVO> getMyIncomingSettlements(int userId, int tripId) {
-        return mapper.getSettlementsWithNicknamesByUserId(userId).stream()
-                .filter(vo -> vo.getReceiverId().equals(userId) && vo.getTripId().equals(tripId))
-                .collect(Collectors.toList());
+        return mapper.getMyIncomingSettlementsByTripId(userId, tripId);
     }
 
     // ==================== 정산 요청 생성 ====================
@@ -276,89 +285,22 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     public SettlementDTO.MySettlementStatusResponseDto getMyOverallSettlementStatus(int userId) {
-        List<SettlementVO> list = mapper.getSettlementsWithNicknamesByUserId(userId);
-
-        SettlementDTO.MySettlementStatusResponseDto response = new SettlementDTO.MySettlementStatusResponseDto();
-
-        // 보내야 할 정산들 상태별 카운트
-
-        // 보낼 돈 중 pending 상태 건수
-        int pendingToSend = (int) list.stream()
-                .filter(vo -> userId == vo.getSenderId()) // 내가 송금자
-                .filter(vo -> "PENDING".equalsIgnoreCase(vo.getSettlementStatus())) // 상태 pending
-                .count();
-
-        // 보낼 돈 중 processing 상태 건수
-        int processingToSend = (int) list.stream()
-                .filter(vo -> userId == vo.getSenderId())
-                .filter(vo -> "PROCESSING".equalsIgnoreCase(vo.getSettlementStatus()))
-                .count();
-
-        // 받아야 할 정산들 상태별 카운트
-
-        // 받을 돈 중 pending 상태 건수
-        int pendingToReceive = (int) list.stream()
-                .filter(vo -> userId == vo.getReceiverId()) // 내가 수신자
-                .filter(vo -> "PENDING".equalsIgnoreCase(vo.getSettlementStatus()))
-                .count();
-
-        // 받을 돈 중 processing 상태 건수
-        int processingToReceive = (int) list.stream()
-                .filter(vo -> userId == vo.getReceiverId())
-                .filter(vo -> "PROCESSING".equalsIgnoreCase(vo.getSettlementStatus()))
-                .count();
-
-        // 완료된 건수 : 송금자/수신자 여부와 상관없이 상태가 completed인 모든 건수 계산
-        int completed = (int) list.stream()
-                .filter(vo -> "COMPLETED".equalsIgnoreCase(vo.getSettlementStatus()))
-                .count();
+        // ✅ DB에서 한 번에 모든 통계 계산
+        SettlementDTO.MySettlementStatusResponseDto response = mapper.getMySettlementStatusCounts(userId);
 
         // 전체 상태 결정
-        // 보낼 돈, 받을 돈 중 pending 또는 processing 상태의 건이 0개라면 -> 전체 정산 상태를 completed로 판단
-        // 하나라도 pending 또는 processing이 있으면 -> 전체 상태는 processing으로 판단
-        String overallStatus;
-        if (pendingToSend + processingToSend + pendingToReceive + processingToReceive == 0) {
-            overallStatus = "COMPLETED";
-        } else {
-            overallStatus = "PROCESSING";
-        }
+        int totalPending = response.getPendingToSendCount() + response.getPendingToReceiveCount() +
+                response.getProcessingToSendCount() + response.getProcessingToReceiveCount();
 
-        // DTO에 값 세팅 -> 사용자의 현재 정산 진행 상황을 상세하게 반환
-        response.setOverallStatus(overallStatus);
-        response.setPendingToSendCount(pendingToSend); // 내가 아직 안 보낸 돈
-        response.setProcessingToSendCount(processingToSend);
-        response.setPendingToReceiveCount(pendingToReceive); // 내가 아직 못 받은 돈
-        response.setProcessingToReceiveCount(processingToReceive);
-        response.setCompletedCount(completed);
+        response.setOverallStatus(totalPending == 0 ? "COMPLETED" : "PROCESSING");
 
         return response;
     }
 
     @Override
     public SettlementDTO.RemainingSettlementResponseDto getRemainingSettlements(int tripId) {
-        List<SettlementVO> allSettlements = mapper.getSettlementsWithNicknamesByTripId(tripId);
-
-        SettlementDTO.RemainingSettlementResponseDto response = new SettlementDTO.RemainingSettlementResponseDto();
-
-        int pendingCount = (int) allSettlements.stream()
-                .filter(vo -> "PENDING".equalsIgnoreCase(vo.getSettlementStatus()))
-                .count();
-
-        int processingCount = (int) allSettlements.stream()
-                .filter(vo -> "PROCESSING".equalsIgnoreCase(vo.getSettlementStatus()))
-                .count();
-
-        int completedCount = (int) allSettlements.stream()
-                .filter(vo -> "COMPLETED".equalsIgnoreCase(vo.getSettlementStatus()))
-                .count();
-
-        response.setHasRemaining(pendingCount + processingCount > 0);
-        response.setTotalCount(allSettlements.size());
-        response.setPendingCount(pendingCount);
-        response.setProcessingCount(processingCount);
-        response.setCompletedCount(completedCount);
-
-        return response;
+        // ✅ DB에서 한 번에 모든 통계 계산
+        return mapper.getRemainingSettlementCounts(tripId);
     }
 
     // ==================== 내부 메서드들 ====================
@@ -383,6 +325,19 @@ public class SettlementServiceImpl implements SettlementService {
         return dto;
     }
 
+    private SettlementDTO.OptimizedTransactionWithNickname toOptimizedTransactionWithNickname(SettlementVO vo) {
+        SettlementDTO.OptimizedTransactionWithNickname dto = new SettlementDTO.OptimizedTransactionWithNickname();
+        dto.setSettlementId(vo.getSettlementId());
+        dto.setSenderId(vo.getSenderId());
+        dto.setReceiverId(vo.getReceiverId());
+        dto.setAmount(vo.getAmount());
+        dto.setStatus(vo.getSettlementStatus());
+        // ✅ 닉네임 설정
+        dto.setSenderNickname(vo.getSenderNickname());
+        dto.setReceiverNickname(vo.getReceiverNickname());
+        return dto;
+    }
+
     private String calculateOverallStatus(List<SettlementVO> settlements, int userId) {
         boolean hasPendingOrProcessingToSend = settlements.stream()
                 .filter(vo -> userId == vo.getSenderId())
@@ -396,20 +351,6 @@ public class SettlementServiceImpl implements SettlementService {
             return "COMPLETED";
         } else {
             return "PROCESSING";
-        }
-    }
-
-    private int resolveUserId(String nickname) {
-        // MemberMapper 연동
-        try {
-            Integer userId = memberMapper.findUserIdByNickname(nickname);
-            if(userId == null) {
-                throw new IllegalArgumentException("존재하지 않는 닉네임: " + nickname);
-            }
-            return userId;
-        } catch (Exception e) {
-            log.error("닉네임 -> 사용자 ID 변환 실패: {}", nickname, e);
-            throw new IllegalArgumentException("사용자 정보 조회 실패: " + nickname);
         }
     }
 
@@ -458,9 +399,15 @@ public class SettlementServiceImpl implements SettlementService {
         // 3. 조회된 데이터들을 DTO에 담아서 반환
         SettlementDTO.SettlementSummaryResponseDto summaryDto = new SettlementDTO.SettlementSummaryResponseDto();
 
-        // To-do: tripMapper를 사용하여 tripId로 여행 이름을 조회하고 설정해야 함.
-        // summaryDto.setTripName(tripMapper.getTripNameById(tripId));
-        summaryDto.setTripName("서울 우정여행"); // 현재는 임시 데이터 사용
+        try {
+            String tripName = tripMapper.findTripNameById(tripId);
+            summaryDto.setTripName(tripName != null ? tripName : "여행");
+            log.info("🔍 조회된 여행 이름: {}", tripName);
+        } catch (Exception e) {
+            log.warn("여행 이름 조회 실패 - tripId: {}", tripId, e);
+            summaryDto.setTripName("여행");
+        }
+
         summaryDto.setTotalAmount(totalAmount);
         summaryDto.setMemberPayments(memberPayments);
 
@@ -490,10 +437,13 @@ public class SettlementServiceImpl implements SettlementService {
         resultDto.setMembers(members);
         resultDto.setTransactions(transactions);
 
-        // To-do: tripMapper를 사용하여 실제 여행 이름을 조회해야 합니다.
-        // String tripName = tripMapper.findTripNameById(tripId);
-        // resultDto.setTripName(tripName);
-        resultDto.setTripName("서울 우정여행"); // 현재는 임시 데이터 사용
+        try {
+            String tripName = tripMapper.findTripNameById(tripId);
+            resultDto.setTripName(tripName != null ? tripName : "여행");
+        } catch (Exception e) {
+            log.warn("여행 이름 조회 실패 - tripId: {}", tripId, e);
+            resultDto.setTripName("여행");
+        }
 
         return resultDto;
     }

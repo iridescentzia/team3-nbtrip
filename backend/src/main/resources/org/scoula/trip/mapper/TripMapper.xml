@@ -64,6 +64,14 @@
                  JOIN users u ON tm.user_id = u.user_id
         WHERE tm.trip_id = #{tripId} AND tm.member_status = 'JOINED'
     </select>
+
+    <!-- 여행 ID로 여행 이름 조회 -->
+    <select id="findTripNameById" resultType="String">
+        SELECT trip_name
+        FROM trip
+        WHERE trip_id = #{tripId}
+    </select>
+
     <resultMap id="tripMap" type="org.scoula.trip.domain.TripVO">
         <id property="tripId" column="trip_id" />
         <result property="ownerId" column="owner_id" />

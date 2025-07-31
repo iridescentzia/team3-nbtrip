@@ -1,77 +1,48 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import Header from '../../components/layout/Header.vue';
-import {
-  calculateFinalSettlement,
-  requestSettlement,
-} from '@/api/settlementApi';
+import { onMounted, computed } from 'vue';
+import { storeToRefs } from 'pinia';
+import Header from '../../components/layout/Header2.vue';
+import { useSettlementStore } from '@/stores/settlementStore';
 import { useRoute, useRouter } from 'vue-router';
 
-// --- 상태 관리 ---
-const settlementData = ref(null);
-const isLoading = ref(true);
-const error = ref(null);
-const selectedMember = ref(null); // 드롭다운에서 선택된 멤버
+// ✅ Pinia Store 사용
+const settlementStore = useSettlementStore();
+const {
+  groupSettlementData,
+  selectedMember,
+  isLoading,
+  error,
+  toReceiveList,
+  toSendList
+} = storeToRefs(settlementStore);
 
-// --- 라우터 ---
 const route = useRoute();
 const router = useRouter();
 const tripId = route.params.tripId;
 
-// --- 데이터 로딩 ---
+// 뒤로가기
+const goBackToSummary = () => {
+  router.push(`/settlement/${tripId}`);
+};
+
+// 데이터 로딩
 onMounted(async () => {
-  const minLoadingTime = new Promise((resolve) => setTimeout(resolve, 700));
-
   try {
-    const [response] = await Promise.all([
-      calculateFinalSettlement(tripId),
-      minLoadingTime,
-    ]);
-    settlementData.value = response.data;
-
-    if (
-      response.data &&
-      response.data.members &&
-      response.data.members.length > 0
-    ) {
-      selectedMember.value = response.data.members[0]; // 첫 번째 멤버를 기본값으로 설정
-    }
+    await settlementStore.fetchGroupSettlement(tripId);
   } catch (err) {
-    console.error('최종 정산 정보 로딩 실패:', err);
-    error.value = '데이터를 불러오는 데 실패했습니다.';
-  } finally {
-    isLoading.value = false;
+    // 에러 처리는 store에서 담당
   }
 });
 
-// --- 계산된 속성 (Computed Properties) ---
-// 선택된 멤버가 받아야 할 돈 목록
-const toReceiveList = computed(() => {
-  if (!settlementData.value || !selectedMember.value) return [];
-  return settlementData.value.transactions.filter(
-    (tx) => tx.receiverNickname === selectedMember.value
-  );
-});
-
-// 선택된 멤버가 보내야 할 돈 목록
-const toSendList = computed(() => {
-  if (!settlementData.value || !selectedMember.value) return [];
-  return settlementData.value.transactions.filter(
-    (tx) => tx.senderNickname === selectedMember.value
-  );
-});
-
-// 정산 요청 보내기 함수
+// 정산 요청 보내기 함수 - 단순 이동
 const handleRequestSettlement = async () => {
-  if (!confirm('모든 멤버에게 정산 요청을 보낼까요?')) return;
+  if (!confirm('정산 내역을 확인하러 가시겠습니까?')) return;
 
   try {
-    await requestSettlement({ tripId });
-    alert('정산 요청을 성공적으로 보냈습니다!');
-    router.push('/'); // 홈으로 이동
+    router.push(`/settlement/${tripId}/detail`);
   } catch (err) {
-    console.error('정산 요청 실패:', err);
-    alert('정산 요청에 실패했습니다.');
+    console.error('페이지 이동 실패:', err);
+    alert('페이지 이동에 실패했습니다.');
   }
 };
 </script>
@@ -79,7 +50,7 @@ const handleRequestSettlement = async () => {
 <template>
   <div class="view-wrapper">
     <div class="settlement-view">
-      <Header title="정산하기" />
+      <Header title="정산하기" :back-action="goBackToSummary"/>
 
       <main v-if="isLoading" class="content-container loading">
         <p>최종 정산 결과를 계산하는 중...</p>
@@ -88,11 +59,11 @@ const handleRequestSettlement = async () => {
         <p>{{ error }}</p>
       </main>
 
-      <main v-else-if="settlementData" class="content-container">
+      <main v-else-if="groupSettlementData" class="content-container">
         <div class="summary-header">
-          <p class="trip-name">{{ settlementData.tripName }}</p>
+          <p class="trip-name">{{ groupSettlementData.tripName }}</p>
           <h2 class="total-amount">
-            총 {{ settlementData.totalAmount?.toLocaleString() || 0 }}원 사용
+            총 {{ groupSettlementData.totalAmount?.toLocaleString() || 0 }}원 사용
           </h2>
         </div>
 
@@ -101,9 +72,9 @@ const handleRequestSettlement = async () => {
           <div class="card-header">
             <select v-model="selectedMember" class="member-select">
               <option
-                v-for="member in settlementData.members"
-                :key="member"
-                :value="member"
+                  v-for="member in groupSettlementData.members"
+                  :key="member"
+                  :value="member"
               >
                 {{ member }}
               </option>
@@ -113,17 +84,17 @@ const handleRequestSettlement = async () => {
           <div class="transaction-list">
             <div v-if="toReceiveList.length > 0">
               <div
-                v-for="(tx, index) in toReceiveList"
-                :key="index"
-                class="transaction-item"
+                  v-for="(tx, index) in toReceiveList"
+                  :key="index"
+                  class="transaction-item"
               >
                 <div class="member-info">
                   <div class="avatar bg-theme-secondary">
-                    <span>{{ tx.senderNickname.substring(0, 1) }}</span>
+                    <span>{{ tx.senderNickname?.substring(0, 1) || '?' }}</span>
                   </div>
-                  <span>{{ tx.senderNickname }}</span>
+                  <span>{{ tx.senderNickname || '알 수 없음' }}</span>
                 </div>
-                <span class="amount">{{ tx.amount.toLocaleString() }}원</span>
+                <span class="amount">{{ tx.amount?.toLocaleString() || 0 }}원</span>
               </div>
             </div>
             <p v-else class="empty-message">받을 돈이 없습니다.</p>
@@ -135,9 +106,9 @@ const handleRequestSettlement = async () => {
           <div class="card-header">
             <select v-model="selectedMember" class="member-select">
               <option
-                v-for="member in settlementData.members"
-                :key="member"
-                :value="member"
+                  v-for="member in groupSettlementData.members"
+                  :key="member"
+                  :value="member"
               >
                 {{ member }}
               </option>
@@ -147,17 +118,17 @@ const handleRequestSettlement = async () => {
           <div class="transaction-list">
             <div v-if="toSendList.length > 0">
               <div
-                v-for="(tx, index) in toSendList"
-                :key="index"
-                class="transaction-item"
+                  v-for="(tx, index) in toSendList"
+                  :key="index"
+                  class="transaction-item"
               >
                 <div class="member-info">
                   <div class="avatar bg-theme-primary">
-                    <span>{{ tx.receiverNickname.substring(0, 1) }}</span>
+                    <span>{{ tx.receiverNickname?.substring(0, 1) || '?' }}</span>
                   </div>
-                  <span>{{ tx.receiverNickname }}</span>
+                  <span>{{ tx.receiverNickname || '알 수 없음' }}</span>
                 </div>
-                <span class="amount">{{ tx.amount.toLocaleString() }}원</span>
+                <span class="amount">{{ tx.amount?.toLocaleString() || 0 }}원</span>
               </div>
             </div>
             <p v-else class="empty-message">보낼 돈이 없습니다.</p>
