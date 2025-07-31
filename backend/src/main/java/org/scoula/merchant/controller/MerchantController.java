@@ -2,7 +2,6 @@ package org.scoula.merchant.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.scoula.merchant.dto.MerchantAccountDTO;
 import org.scoula.merchant.dto.MerchantCategoryDTO;
 import org.scoula.merchant.dto.MerchantDTO;
 import org.scoula.merchant.service.MerchantService;
@@ -24,11 +23,6 @@ public class MerchantController {
     @GetMapping("/category/{id}")
     public ResponseEntity<MerchantCategoryDTO> getMerchantCategory(@PathVariable("id") int id) {
         return ResponseEntity.ok(service.getMerchantCategory(id));
-    }
-
-    @GetMapping("/account/{id}")
-    public ResponseEntity<MerchantAccountDTO> getMerchantAccount(@PathVariable("id") int id) {
-        return ResponseEntity.ok(service.getMerchantAccount(id));
     }
 
     @PostMapping("")

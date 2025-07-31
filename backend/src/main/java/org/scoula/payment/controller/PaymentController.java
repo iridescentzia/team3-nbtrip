@@ -22,22 +22,14 @@ public class PaymentController {
     // QR 결제
     @PostMapping("/qr")
     public ResponseEntity<String> processQrPayment(@RequestBody PaymentDTO paymentDTO) {
-        log.info("QR 결제 요청: {}", paymentDTO);
-
         try {
             paymentService.processPayment(paymentDTO);
-            return ResponseEntity.ok("QR 결제가 성공적으로 처리되었습니다.");
+            return ResponseEntity.ok("결제 완료!");
         } catch (RuntimeException e) {
             log.error("QR 결제 실패: {}", e.getMessage());
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
-                    .body("결제 실패: " + e.getMessage());
+                    .body(e.getMessage());
         }
     }
-//    @PostMapping("/qr")
-//    public ResponseEntity<String> processPayment(@RequestBody PaymentDTO paymentDTO) {
-//        log.info("QR 결제 요청: {}", paymentDTO);
-//        paymentService.processPayment(paymentDTO);
-//        return ResponseEntity.ok("QR 결제가 성공적으로 처리되었습니다.");
-//    }
 }

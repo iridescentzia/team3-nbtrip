@@ -13,11 +13,13 @@ import org.scoula.merchant.domain.MerchantVO;
 public class MerchantDTO {
     private int categoryId;
     private String merchantName;
+    private int sales;
 
     public static MerchantDTO of(MerchantVO vo) {
         return MerchantDTO.builder()
                 .categoryId(vo.getCategoryId())
                 .merchantName(vo.getMerchantName())
+                .sales(vo.getSales())
                 .build();
     }
 
@@ -25,6 +27,7 @@ public class MerchantDTO {
         return MerchantVO.builder()
                 .categoryId(categoryId)
                 .merchantName(merchantName)
+                .sales(sales)
                 .build();
     }
 }
