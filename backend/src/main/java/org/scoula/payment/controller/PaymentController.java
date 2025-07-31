@@ -32,4 +32,34 @@ public class PaymentController {
                     .body(e.getMessage());
         }
     }
+
+    // 선결제 등록
+    @PostMapping("/prepaid")
+    public ResponseEntity<String> registerPrepaidPayment(@RequestBody PaymentDTO paymentDTO) {
+        try {
+            paymentDTO.setPaymentType(org.scoula.payment.domain.PaymentType.PREPAID);
+            paymentService.registerManualPayment(paymentDTO);
+            return ResponseEntity.ok("선결제 등록 완료");
+        } catch(RuntimeException e) {
+            log.error("선결제 등록 실패: {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
+    }
+
+    // 기타 결제 등록
+    @PostMapping("/other")
+    public ResponseEntity<String> registerOtherPayment(@RequestBody PaymentDTO paymentDTO) {
+        try {
+            paymentDTO.setPaymentType(org.scoula.payment.domain.PaymentType.OTHER);
+            paymentService.registerManualPayment(paymentDTO);
+            return ResponseEntity.ok("기타 결제 등록 완료");
+        } catch(RuntimeException e) {
+            log.error("기타 결제 등록 실패: {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
+    }
 }
