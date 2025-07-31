@@ -7,6 +7,7 @@ import org.scoula.settlement.dto.SettlementDTO;
 import org.scoula.settlement.service.SettlementService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.scoula.security.accounting.domain.CustomUser;
 
 import java.security.Principal;
 import java.util.List;
@@ -244,18 +245,38 @@ public class SettlementController {
      * 로그인 사용자 ID 추출
      */
     private int extractUserId(Principal principal) {
-        // TODO: Security와 연동 후 정식으로 교체
-        // if(principal == null) {
-        //     log.warn("Principal is null");
-        //     return 1;
-        // }
-        // try {
-        //     return Integer.parseInt(principal.getName());
-        // } catch (Exception e) {
-        //     log.warn("Principal parse 실패 [{}]", principal.getName());
-        //     return 1;
-        // }
-        return 7; // 테스트용
+        if(principal == null) {
+            log.warn("Principal is null");
+            return 1;
+        }
+
+        log.info("🔍 Principal name: [{}], type: [{}]", principal.getName(), principal.getClass().getName());
+
+        // UsernamePasswordAuthenticationToken인 경우
+        if(principal instanceof org.springframework.security.authentication.UsernamePasswordAuthenticationToken) {
+            org.springframework.security.authentication.UsernamePasswordAuthenticationToken authToken =
+                    (org.springframework.security.authentication.UsernamePasswordAuthenticationToken) principal;
+
+            Object principalObj = authToken.getPrincipal();
+            log.info("🔍 Principal object type: [{}]", principalObj.getClass().getName());
+
+            // CustomUser로 캐스팅
+            if(principalObj instanceof CustomUser) {
+                CustomUser customUser =
+                        (CustomUser) principalObj;
+
+                Integer userId = customUser.getUserId();
+                if(userId != null) {
+                    log.info("✅ CustomUser에서 추출된 userId: {}", userId);
+                    return userId;
+                } else {
+                    log.warn("⚠️ CustomUser.getUserId()가 null 반환");
+                }
+            }
+        }
+
+        log.error("❌ userId 추출 실패 - 임시값 1 사용");
+        return 1;
     }
 
     /**
