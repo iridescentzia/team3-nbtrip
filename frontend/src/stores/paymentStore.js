@@ -31,7 +31,7 @@ export const usePaymentStore = defineStore('payment', () => {
     participantsId.value = participants;
     participantsNickname.value = await Promise.all(
       participants.map(async (userId) => {
-        const user = await memberApi.get(userId);
+        const user = await memberApi.getUserInfo(userId);
         return { userId, nickname: user.nickname };
       })
     );
