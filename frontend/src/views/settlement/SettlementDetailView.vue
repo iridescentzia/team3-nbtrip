@@ -1,77 +1,58 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
 import Header from '../../components/layout/Header2.vue';
-import { getMySettlementDetails, transferMoney } from '@/api/settlementApi';
+import { useSettlementStore } from '@/stores/settlementStore';
 import { useRoute, useRouter } from 'vue-router';
 
-// --- 상태 관리 ---
-const settlementData = ref(null);
-const isLoading = ref(true);
-const error = ref(null);
-const showTransferModal = ref(false);  // ✅ 모달 표시 상태 추가
+// ✅ Pinia Store 사용
+const settlementStore = useSettlementStore();
+const {
+  mySettlementData,
+  isLoading,
+  error,
+  showTransferModal,
+  totalReceiveAmount,
+  totalSendAmount,
+  netBalance
+} = storeToRefs(settlementStore);
 
-// --- 라우터 ---
 const route = useRoute();
 const router = useRouter();
 const tripId = route.params.tripId;
 
-// --- 데이터 로딩 ---
+// 데이터 로딩
 onMounted(async () => {
   try {
-    const response = await getMySettlementDetails(tripId);
-    settlementData.value = response.data;
+    await settlementStore.fetchMySettlement(tripId);
   } catch (err) {
-    console.error('개인 정산 정보 로딩 실패:', err);
-    error.value = '데이터를 불러오는 데 실패했습니다.';
-  } finally {
-    isLoading.value = false;
+    // 에러 처리는 store에서 담당
   }
-});
-
-// --- 계산된 속성 ---
-const totalReceiveAmount = computed(() => {
-  if (!settlementData.value?.toReceive) return 0;
-  return settlementData.value.toReceive.reduce((sum, tx) => sum + tx.amount, 0);
-});
-
-const totalSendAmount = computed(() => {
-  if (!settlementData.value?.toSend) return 0;
-  return settlementData.value.toSend.reduce((sum, tx) => sum + tx.amount, 0);
-});
-
-const netBalance = computed(() => {
-  return totalReceiveAmount.value - totalSendAmount.value;
 });
 
 // ✅ 송금하기 버튼 클릭 - 모달 표시
 const handleTransferClick = () => {
-  if (totalSendAmount.value === 0) {
-    alert('보낼 돈이 없습니다.');
-    return;
+  try {
+    settlementStore.openTransferModal();
+  } catch (err) {
+    alert(err.message);
   }
-  showTransferModal.value = true;  // 모달 표시
 };
 
 // ✅ 모달 취소
 const cancelTransfer = () => {
-  showTransferModal.value = false;
+  settlementStore.closeTransferModal();
 };
 
 // ✅ 실제 송금 실행
 const confirmTransfer = async () => {
-  showTransferModal.value = false;  // 모달 숨김
+  settlementStore.closeTransferModal();
 
   try {
-    const settlementIdsToSend = settlementData.value.toSend.map(
-        (tx) => tx.settlementId
-    );
-
-    // API 응답 받기
-    const response = await transferMoney({settlementIds: settlementIdsToSend});
-    const transferResult = response.data;
+    const transferResult = await settlementStore.executeTransfer();
 
     // 송금 결과에 따른 페이지 이동
-    if(transferResult.failedCount == 0) {
+    if (transferResult.failedCount == 0) {
       // 모든 송금 성공
       alert('모든 송금이 완료되었습니다.');
       router.push(`/settlement/${tripId}/pending`);
@@ -100,11 +81,11 @@ const confirmTransfer = async () => {
         <p>{{ error }}</p>
       </main>
 
-      <main v-else-if="settlementData" class="content-container">
+      <main v-else-if="mySettlementData" class="content-container">
         <div class="summary-header">
-          <p class="trip-name">{{ settlementData.tripName }}</p>
+          <p class="trip-name">{{ mySettlementData.tripName }}</p>
           <h2 class="total-amount">
-            총 {{ settlementData.totalAmount?.toLocaleString() || 0 }}원 사용
+            총 {{ mySettlementData.totalAmount?.toLocaleString() || 0 }}원 사용
           </h2>
         </div>
 
@@ -113,24 +94,24 @@ const confirmTransfer = async () => {
           <p class="card-title text-theme-text">받을 돈</p>
           <div class="transaction-list">
             <div
-              v-if="
-                settlementData.toReceive && settlementData.toReceive.length > 0
-              "
+                v-if="mySettlementData.toReceive && mySettlementData.toReceive.length > 0"
             >
               <div
-                v-for="tx in settlementData.toReceive"
-                :key="tx.settlementId"
-                class="transaction-item"
+                  v-for="tx in mySettlementData.toReceive"
+                  :key="tx.settlementId"
+                  class="transaction-item"
               >
                 <div class="member-info">
                   <div class="avatar">
-                    <span>{{ tx.senderNickname.substring(0, 1) }}</span>
+                    <span>{{ tx.senderNickname?.substring(0, 1) || '?' }}</span>
                   </div>
-                  <span class="font-semibold text-sm text-theme-text">{{tx.senderNickname }}</span>
+                  <span class="font-semibold text-sm text-theme-text">
+                    {{ tx.senderNickname || '알 수 없음' }}
+                  </span>
                 </div>
-                <span class="amount text-theme-text"
-                  >{{ tx.amount.toLocaleString() }}원</span
-                >
+                <span class="amount text-theme-text">
+                  {{ tx.amount?.toLocaleString() || 0 }}원
+                </span>
               </div>
             </div>
             <p v-else class="empty-message text-theme-text">
@@ -144,22 +125,22 @@ const confirmTransfer = async () => {
           <p class="card-title">보낼 돈</p>
           <div class="transaction-list">
             <div
-              v-if="settlementData.toSend && settlementData.toSend.length > 0"
+                v-if="mySettlementData.toSend && mySettlementData.toSend.length > 0"
             >
               <div
-                v-for="tx in settlementData.toSend"
-                :key="tx.settlementId"
-                class="transaction-item"
+                  v-for="tx in mySettlementData.toSend"
+                  :key="tx.settlementId"
+                  class="transaction-item"
               >
                 <div class="member-info">
                   <div class="avatar">
-                    <span>{{ tx.receiverNickname.substring(0, 1) }}</span>
+                    <span>{{ tx.receiverNickname?.substring(0, 1) || '?' }}</span>
                   </div>
-                  <span class="font-semibold text-sm">{{
-                    tx.receiverNickname
-                  }}</span>
+                  <span class="font-semibold text-sm">
+                    {{ tx.receiverNickname || '알 수 없음' }}
+                  </span>
                 </div>
-                <span class="amount">{{ tx.amount.toLocaleString() }}원</span>
+                <span class="amount">{{ tx.amount?.toLocaleString() || 0 }}원</span>
               </div>
             </div>
             <p v-else class="empty-message">보낼 돈이 없습니다.</p>
@@ -168,22 +149,21 @@ const confirmTransfer = async () => {
       </main>
 
       <footer class="footer">
-        <!-- ✅ 버튼 클릭 시 모달 표시 -->
         <button
             @click="handleTransferClick"
             class="next-button"
             :disabled="totalSendAmount === 0"
         >
-          송금
+          송금하기
         </button>
       </footer>
     </div>
+
     <!-- ✅ 송금 확인 모달 -->
     <div v-if="showTransferModal" class="modal-overlay" @click="cancelTransfer">
       <div class="transfer-modal" @click.stop>
         <!-- 아이콘 -->
         <div class="modal-icon">
-
         </div>
 
         <!-- 메인 메시지 -->

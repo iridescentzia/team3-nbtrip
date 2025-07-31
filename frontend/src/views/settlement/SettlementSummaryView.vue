@@ -1,14 +1,13 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-// 1. Header.vue 컴포넌트를 import 합니다.
+import { onMounted } from 'vue';
 import Header from '../../components/layout/Header2.vue';
-// 2. 실제 API 호출 함수와 라우터를 import 합니다.
 import { getSettlementSummary, requestSettlement } from '@/api/settlementApi';
 import { useRoute, useRouter } from 'vue-router';
+import {storeToRefs} from "pinia";
+import {useSettlementStore} from "@/stores/settlementStore.js";
 
-const summaryData = ref(null);
-const isLoading = ref(true);
-const error = ref(null);
+const settlementStore = useSettlementStore();
+const { summaryData, isLoading, error } = storeToRefs(settlementStore);
 
 // 3. 실제 Vue Router를 사용하도록 설정합니다.
 const route = useRoute();
@@ -21,14 +20,12 @@ onMounted(async () => {
   const minLoadingTime = new Promise((resolve) => setTimeout(resolve, 800));
 
   try {
-    // --- 수정된 부분 시작 ---
     // API 호출과 최소 로딩 시간을 동시에 실행하고 모두 끝나기를 기다림
     const [response] = await Promise.all([
       getSettlementSummary(tripId),
       minLoadingTime,
     ]);
     summaryData.value = response.data;
-    // --- 수정된 부분 끝 ---
   } catch (err) {
     console.error('정산 요약 정보 로딩 실패:', err);
 
@@ -106,7 +103,7 @@ const goToNextStep = async () => {
             >
               <div class="member-info">
                 <div class="member-avatar">
-                  <span>{{ member.nickname.substring(0, 1) }}</span>
+                  <span>{{ member.nickname.substring(0, 1) || '?'}}</span>
                 </div>
                 <span class="member-name">{{ member.nickname }}</span>
               </div>
