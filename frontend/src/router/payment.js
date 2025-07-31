@@ -2,6 +2,6 @@ export default [
   {
     path: '/payment',
     name: 'payment',
-    component: () => import('../views/payment/QRScanner.vue'),
+    component: () => import('../views/payment/PaymentPage.vue'),
   },
 ];

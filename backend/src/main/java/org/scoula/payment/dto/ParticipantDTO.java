@@ -1,4 +1,4 @@
-package org.scoula.account.dto;
+package org.scoula.payment.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,10 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AccountViewDTO {
-    private int accountId;
+public class ParticipantDTO {
+    private int paymentId;
     private int userId;
-    private String accountNumber;
-    private String bankCode;
-    private int balance;
+    private int splitAmount;
 }

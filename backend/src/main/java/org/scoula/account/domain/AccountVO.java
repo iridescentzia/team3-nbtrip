@@ -13,6 +13,6 @@ public class AccountVO {
     private int accountId;
     private int userId;
     private String accountNumber;
-    private String bankName;
+    private String bankCode;
     private int balance;
 }

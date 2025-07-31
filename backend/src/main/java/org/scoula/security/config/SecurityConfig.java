@@ -167,7 +167,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // OPTIONS 요청 (CORS Preflight) 항상 허용
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // 인증 불필요(공개 API)
+                // 페이지 접근 허용 (프론트엔드 라우터)
                 .antMatchers(HttpMethod.POST, "/auth/login").permitAll()  // 로그인
                 .antMatchers(HttpMethod.POST, "/auth/register").permitAll()  // 회원가입
                 .antMatchers(HttpMethod.POST, "/auth/logout").permitAll()  // 로그아웃
