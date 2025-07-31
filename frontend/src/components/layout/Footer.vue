@@ -69,7 +69,6 @@ const handlerTabClick = (item) => {
 <style scoped>
 /* 하단 네비게이션 바 컨테이너 */
 .footer {
-  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;

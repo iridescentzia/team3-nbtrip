@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.scoula.member.domain.MemberVO;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,8 +38,12 @@ public interface MemberMapper {
     void updateMember(MemberVO memberVO);
 
     // 비밀번호 변경
-    void updatePassword(@Param("userId") int userId, @Param("password") String encodedPassword);
+    void updatePassword(@Param("userId") int userId,
+                        @Param("password") String encodedPassword,
+                        @Param("updatedAt")LocalDateTime updatedAt);
 
     // FCM 토큰 업데이트
-    void updateFcmToken(@Param("userId") int userId, @Param("fcmToken") String fcmToken);
+    void updateFcmToken(@Param("userId") int userId,
+                        @Param("fcmToken") String fcmToken,
+                        @Param("updatedAt")LocalDateTime updatedAt);
 }

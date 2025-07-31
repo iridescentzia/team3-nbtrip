@@ -35,4 +35,7 @@ public interface MemberService {
 
     // 닉네임으로 유저 검색
     List<MemberSearchResponseDTO> searchMembersByNickname(String nickname);
+
+    // 비밀번호 검증 요청
+    boolean verifyPassword(int userId, String password) throws UserNotFoundException, PasswordMismatchException;
 }

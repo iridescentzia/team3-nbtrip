@@ -1,8 +1,7 @@
 package org.scoula.settlement.service;
 
 import org.scoula.settlement.dto.SettlementDTO;
-import org.springframework.stereotype.Service;
-import org.scoula.settlement.domain.SettlementVO;
+import org.scoula.settlement.exception.domain.SettlementVO;
 import java.util.List;
 
 /**

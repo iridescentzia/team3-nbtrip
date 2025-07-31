@@ -26,4 +26,10 @@ public interface TripMapper {
     void inviteTrip(@Param("tripId") int tripId, @Param("userId") int userId, @Param("status")TripMemberStatus status);
     int changeTripStatus(int tripId);
     boolean isOwner(@Param("tripId") int tripId, @Param("userId") int userId);
+    /**
+     * 여행 ID로 여행 이름 조회
+     * @param tripId 여행 ID
+     * @return 여행 이름
+     */
+    String findTripNameById(int tripId);
 }
