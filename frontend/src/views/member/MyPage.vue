@@ -3,52 +3,59 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Footer from '@/components/layout/Footer.vue'
 import { Briefcase, BriefcaseConveyorBelt, CircleUserRound, ChevronRight } from 'lucide-vue-next'
-import axios from 'axios'
+import { getMyInfo, logoutMember } from "@/api/memberApi.js"; // ✅ getMyInfo와 logoutMember import
 
 const router = useRouter()
 const userInfo = ref({ nickname: '', name: '' })
 
 // 마운트 시 사용자 정보 불러오기
 onMounted(async () => {
-  const token = localStorage.getItem('accessToken')
-  if (!token) {
-    console.error('Access Token이 없습니다. 로그인 페이지로 이동합니다.')
-    router.push('/login')
-    return
-  }
   try {
-    const res = await axios.get('/api/mypage', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-    console.log('응답 결과:', res.data)
-    if (res.data?.success && res.data?.data) {
-      userInfo.value = res.data.data
+    console.log('마이페이지 마운트 시작');
+
+    // ✅ getMyInfo() 사용 (userId 파라미터 불필요)
+    const res = await getMyInfo();
+    console.log('응답 결과:', res);
+
+    // ✅ 응답 구조에 맞게 수정
+    if (res?.success && res?.data) {
+      userInfo.value = res.data;
+      console.log('사용자 정보 설정 완료:', userInfo.value);
     } else {
-      console.error('유저 정보 조회 실패:', res.data?.message || '데이터 없음')
+      console.error('유저 정보 조회 실패:', res?.message || '데이터 없음');
     }
   } catch (err) {
-    console.error('마이페이지 API 에러:', err)
+    console.error('마이페이지 API 에러:', err);
+
+    if (err.message?.includes('인증') || err.message?.includes('토큰')) {
+      console.log('인증 오류로 로그인 페이지로 이동');
+      router.push('/login');
+    }
   }
-})
+});
 
 // 페이지 이동
 const goTo = (path) => router.push(path)
 
-// 로그아웃
+// ✅ 로그아웃 - memberApi의 logoutMember 함수 사용
 const logout = async () => {
   try {
-    const token = localStorage.getItem('accessToken')
-    await axios.post('/api/auth/logout', {}, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-    localStorage.removeItem('accessToken')
-    router.push('/login')
+    console.log('로그아웃 시작');
+    await logoutMember();
+
+    // 토큰 정리
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+
+    console.log('로그아웃 성공, 로그인 페이지로 이동');
+    router.push('/login');
   } catch (e) {
-    console.error('로그아웃 실패:', e)
+    console.error('로그아웃 실패:', e);
+
+    // 에러가 발생해도 토큰은 정리하고 로그인 페이지로 이동
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    router.push('/login');
   }
 }
 </script>
