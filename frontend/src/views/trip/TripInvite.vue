@@ -2,7 +2,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import tripApi from "@/api/tripApi.js";
 import {useTravelCreateStore} from "@/stores/tripStore.js";
-import Button from "@/components/common/Button.vue";
+import { MoveRight, Search } from 'lucide-vue-next';
 import Header from "@/components/layout/Header.vue";
 import { Lightbulb } from 'lucide-vue-next';
 
@@ -101,7 +101,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="view-wrapper">
-    <div class="tripinvite-view">
+    <div class="trip-invite-view">
       <Header title="멤버 초대하기"/>
       <div class="content-container">
         <div class="info-box">
@@ -109,20 +109,25 @@ onBeforeUnmount(() => {
           <p class="guide">친구들을 초대하고</p>
           <p class="guide">함께 여행을 계획하세요!</p>
           <div class="tip-box">
-            <p class="tip-text"><Lightbulb :size="12" />모든 것을 완벽하게 하려고 하기보다</p>
+            <p class="tip-text"><Lightbulb :size="12" />모든 것을 완벽하게 하려고 하기보다, </p>
             <p class="tip-text">예기치 못한 상황을 즐겨보세요!</p>
           </div>
         </div>
         <div class="autocomplete" ref="wrapper" style="position: relative">
-          <label>회원 검색</label>
-          <input
-              class="input-box"
-              v-bind:value="inputValue"
-              @input="onInput"
-              @focus="showList = true"
-              type="text"
-              placeholder="이름 입력..."
-          />
+          <p class="menu-label">회원 검색</p>
+          <div class="input-wrapper">
+            <span class="unit-text">
+              <Search size="20" />
+            </span>
+            <input
+                class="input-box"
+                v-bind:value="inputValue"
+                @input="onInput"
+                @focus="showList = true"
+                type="text"
+                placeholder="닉네임으로 검색"
+            />
+          </div>
           <div
               v-if="showList && options.length"
               class="autocomplete-list"
@@ -132,24 +137,34 @@ onBeforeUnmount(() => {
                 v-for="(option, index) in options"
                 :key="index"
             >
-              {{ option.nickname }}
-              <button @click.stop="onButtonClick(option)">추가하기</button>
+              <div class = "avatar avatar-sm">{{ option.nickname.charAt(0) }}</div>
+              <div class = "autocomplete-name">
+                {{ option.nickname }}
+                <button class="autocomplete-btn" @click.stop="onButtonClick(option)">초대하기</button>
+              </div>
             </div>
           </div>
-
+          <p class="menu-label">초대 목록</p>
           <div v-if="addedItems.length" class="added-list">
-            <h4>추가된 사용자</h4>
             <ul>
               <li v-for="(item, idx) in addedItems" :key="idx">
                 <div class="added-item">
-                  {{ item.nickname }}
-                  <button @click="removeItem(idx)">x</button>
+                  <div class="avatar avatar-lg">{{ item.nickname.charAt(0)}}</div>
+                    <div class="list-item">
+                      {{ item.nickname }}
+                      <button @click="removeItem(idx)">삭제</button>
+                    </div>
                 </div>
               </li>
             </ul>
           </div>
         </div>
-        <Button class="next-btn" @click="createTrip" label="다음"></Button>
+        <button
+            class="round-next-btn"
+            @click="createTrip"
+        >
+          <MoveRight/>
+        </button>
       </div>
     </div>
   </div>
@@ -160,11 +175,7 @@ onBeforeUnmount(() => {
 p{
   margin: 0;
 }
-label{
-  color: var(--theme-text);
-}
-
-.tripinvite-view {
+.trip-invite-view {
   --theme-primary: rgba(255, 209, 102, 0.65);
   --theme-primary-dark: #e2c05e;
   --theme-bg: #f8f9fa;
@@ -183,7 +194,7 @@ label{
 }
 
 /* 전체 레이아웃 */
-.tripinvite-view {
+.trip-invite-view {
   z-index: 1;
   width: 100%;
   max-width: 24rem; /* 384px */
@@ -198,14 +209,6 @@ label{
   max-height: 90vh; /* 화면 높이의 90%를 넘지 않도록 설정 */
 }
 
-.input-box {
-  width: 100%;
-  padding-right: 50px;
-  height: 40px;
-  box-sizing: border-box;
-  border-radius: 5px;
-  border: 1px solid var(--theme-text-light)
-}
 
 /* 메인 콘텐츠 */
 .content-container {
@@ -222,6 +225,8 @@ label{
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 
 .autocomplete-item {
@@ -236,15 +241,27 @@ label{
   background-color: var(--theme-bg);
 }
 
-.autocomplete-item button {
-  padding: 2px 6px;
-  font-size: 12px;
+.autocomplete-btn{
+  background-color: var(--theme-primary);
+  color: var(--theme-text);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.autocomplete-btn:hover {
+  background-color: var(--theme-primary-dark);
+}
+
+.autocomplete-name{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex:1;
 }
 
 .added-list {
-  margin-top: 12px;
-  border-top: 1px solid #ccc;
-  padding-top: 8px;
+  margin-top: 6px;
 }
 
 .added-list ul {
@@ -259,18 +276,25 @@ label{
   padding: 4px 0;
 }
 
+.menu-label{
+  color: var(--theme-text);
+  margin: 5px 0;
+}
+
 .added-list button {
   background: red;
   color: white;
+  border-radius: 5px;
   border: none;
-  padding: 2px 6px;
+  padding: 2px 4px;
   cursor: pointer;
 }
 
 .info-box{
   margin: 8px 0;
   background-color: #ffffff;
-  border: 2px solid rgba(136, 136, 136, 0.3);
+  padding: 16px 0;
+  border: 1px solid rgba(136, 136, 136, 0.2);
   border-radius: 10px;
   display: flex;
   flex-direction: column;
@@ -282,25 +306,101 @@ label{
   font-size: 14px;
 }
 .guide{
-  font-size: 20px;
+  font-size: 22px;
   font-weight: bold;
   color: var(--theme-text);
 }
+
 .tip-box{
   margin: 4px;
   background: rgba(136, 136, 136, 0.3);
   border-radius: 8px;
-  padding: 3px;
+  padding: 3px 7px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 .tip-text{
+  margin: 4px;
   font-size: 12px;
+  color: var(--theme-text-light);
 }
 
 .added-item{
+  width: 100%;
   padding: 8px;
   background: white;
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
 }
+.list-item{
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+}
+.avatar{
+  border-radius: 50%;
+  background: var(--theme-primary);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.avatar-sm{
+  height : 25px;
+  width : 25px;
+  font-size : 14px;
+  margin-right: 10px;
+}
+
+.avatar-lg{
+  height : 30px;
+  width : 30px;
+  font-size : 14px;
+  margin-right: 10px;
+}
+.round-next-btn{
+  background-color: var(--theme-primary);
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 45px;
+  width: 45px;
+  position: absolute;
+  bottom : 5%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.input-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-box {
+  width: 100%;
+  padding-left: 40px;
+  height: 40px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  border: 1px solid var(--theme-text-light)
+}
+
+.unit-text {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  height: 20px;
+  transform: translateY(-50%);
+  color: var(--theme-text-light);
+  pointer-events: none;
+  font-size: 14px;
+}
+
 </style>

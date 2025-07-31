@@ -1,6 +1,6 @@
 <script setup>
 import tripApi from "@/api/tripApi.js";
-import {computed, ref} from 'vue';
+import {ref} from 'vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import { useTravelCreateStore } from "@/stores/tripStore.js"
@@ -33,7 +33,7 @@ const store = useTravelCreateStore();
 
 <template>
   <div class="view-wrapper">
-    <div class="tripcreate-view">
+    <div class="trip-create-view">
       <Header title="새로운 여행 만들기"/>
       <div class="content-container">
         <label for="trip_name" class="label-text">어떤 여행인가요?</label><br>
@@ -64,7 +64,6 @@ const store = useTravelCreateStore();
           <input type="number" class="input-box" name="budget" id="budget" v-model="store.budget">
           <span class="unit-text">원</span>
         </div>
-        <br>
         <Button class="next-btn" @click="toNextPage" label="다음"></Button>
       </div>
     </div>
@@ -72,7 +71,7 @@ const store = useTravelCreateStore();
 </template>
 
 <style scoped>
-.tripcreate-view {
+.trip-create-view {
   --theme-primary: rgba(255, 209, 102, 0.65);
   --theme-primary-dark: #e2c05e;
   --theme-bg: #f8f9fa;
@@ -91,7 +90,7 @@ const store = useTravelCreateStore();
 }
 
 /* 전체 레이아웃 */
-.tripcreate-view {
+.trip-create-view {
   z-index: 1;
   width: 100%;
   max-width: 24rem; /* 384px */
@@ -112,7 +111,7 @@ const store = useTravelCreateStore();
   overflow-y: auto;
   padding: calc(56px) 1.25rem 1.25rem;
 }
-
+  /* input:number에 있는 스핀 버튼 제거 */
   input::-webkit-inner-spin-button {
     appearance: none;
     -moz-appearance: none;
@@ -151,9 +150,12 @@ const store = useTravelCreateStore();
 }
 
 .next-btn {
-  width: 100%;
+  width: 90%;
   height: 50px;
-  margin: 32px auto 12px auto;
+  position: absolute;
+  bottom : 0%;
+  left: 50%;
+  transform: translateX(-50%);
 }
 </style>
 <!--scoped에선 datepicker에 대한 커스터마이징이 먹히지 않아서 관련 내용 style에 정의-->
