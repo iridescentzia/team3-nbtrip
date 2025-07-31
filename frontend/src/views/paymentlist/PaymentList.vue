@@ -2,25 +2,25 @@
   <DefaultLayout>
     <Header title="진행 중인 여행" />
     <div class="content-container">
-<!--       여행 정보 카드 -->
-<!--      DefaultLayout.vue에서 pinia 처리함 (보여주기식 하드코딩)-->
-      <TravelCard
-          :trip-name="'서울 우정 여행'"
-          :start-date="'2025.07.10'"
-          :end-date="'2025.07.12'"
-          showEdit
-      />
 
-<!--      <TravelCard-->
-<!--          v-if="tripStore.trip"-->
-<!--          :trip-name="tripStore.trip.tripName"-->
-<!--          :start-date="tripStore.trip.startDate"-->
-<!--          :end-date="tripStore.trip.endDate"-->
-<!--      />-->
-      <Summary :amount="1000000" :budget="2000000"></Summary>
-
-<!--        pinia ver.  -->
-<!--  <Summary budget="tripStore.trip?.budget || 0" amount="totalAmount"></Summary>-->
+      <!-- 현재 userID = 1 -->
+    <TravelCard
+      v-if="tripStore.currentTrip"
+      :trip-name="tripStore.currentTrip.tripName"
+      :start-date="formatDate(tripStore.currentTrip.startDate)"
+      :end-date="formatDate(tripStore.currentTrip.endDate)"
+      showEdit
+    />
+    
+    <div v-else>
+      현재 진행 중인 여행이 없습니다.
+    </div>
+    
+    <Summary 
+      v-if="tripStore.currentTrip"
+      :amount="1000000"  
+      :budget="tripStore.currentTrip.budget">
+    </Summary>
 
       <!-- 필터 -->
       <Filter></Filter>
@@ -33,17 +33,25 @@ import Header from '@/components/layout/Header.vue'
 import TravelCard from '@/components/common/TravelCard.vue'
 import Button from '@/components/common/Button.vue'
 import DefaultLayout from '@/components/layout/DefaultLayout.vue'
+import Filter from '@/components/paymentlist/Filter.vue'
 
 import {onMounted} from 'vue'
-import {useTripStore} from "@/stores/trip.js";
+import {useTripStore} from "@/stores/trip2.js";
 import Summary from "@/components/common/Summary.vue";
 
 const tripStore = useTripStore()
 
-// 컴포넌트가 마운트될 때 trip 정보 가져오기
-onMounted(()=>{
-  tripStore.fetchActiveTrip()
+// timestamp -> date 변환
+const formatDate = (timestamp) => {
+  const date = new Date(timestamp)
+  return date.toISOString().split('T')[0].replace(/-/g, '.')
+}
+
+onMounted(async () => {
+  await tripStore.fetchTrips()
+  console.log('currentTrip:', tripStore.currentTrip)
 })
+
 </script>
 
 <style scoped>
