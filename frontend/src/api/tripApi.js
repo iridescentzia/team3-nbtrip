@@ -4,11 +4,11 @@ const BASE_URL = '/trips'
 export default {
     async getTripDetail(tripId){
         const { data } = await api.get(`${BASE_URL}/${tripId}`);
-        console.log("data:" + JSON.stringify(data));
+        console.log("get tripDetail: " + tripId);
         return data
     },
     async createTrip(params) {
-        console.log("📤 보내는 데이터:", params);
+        console.log("보내는 데이터:", params);
         await api.post(`${BASE_URL}/`, params);
     },
     async getDisabledDates(){
@@ -30,6 +30,38 @@ export default {
             date.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })
         ));
         return allDates;
+    },
+    async isAvailableDate(startDate, endDate) {
+        const response = await api.get(`${BASE_URL}/`);
+        const data = response.data;
+
+        console.log("data:", data);
+
+        // 기간 배열 만들기
+        const period = data.map(item => [
+            item.startDate,
+            item.endDate
+        ]);
+
+        console.log(`주어진 일정: ${startDate} ~ ${endDate}`);
+        console.log("period:", JSON.stringify(period));
+
+        // 겹치는 날짜 있는지 확인
+        for (const [start, end] of period) {
+            console.log(`내가 가진 일정 시작: ${start}, 끝: ${end}`);
+            if (
+                (start <= startDate && startDate <= end) ||  // 새 일정 시작이 기존 기간 안에 있음
+                (start <= endDate && endDate <= end) ||      // 새 일정 끝이 기존 기간 안에 있음
+                (startDate <= start && end <= endDate)       // 기존 기간이 새 일정에 완전히 포함됨
+            ) {
+                return false;  // 겹치는 기간 발견
+            }
+        }
+
+        return true; // 겹치는 기간 없음
+    },
+    async acceptInvitation(tripId){
+        await api.put(`${BASE_URL}/${tripId}/join`, {})
     },
     async searchNickname(Nickname){
         const { data } = await api.get(`/users/search/${Nickname}`);

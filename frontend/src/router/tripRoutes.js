@@ -9,4 +9,14 @@ export default [
         name: 'tripInvite',
         component: () => import('../views/trip/TripInvite.vue'),
     },
+    {
+        path: '/trip/join/:tripId',
+        name: 'tripInvite',
+        component: () => import('../views/trip/TripJoin.vue'),
+    },
+    {
+        path: '/trip/join/:tripId/complete',
+        name: 'tripJoinComplete',
+        component: () => import('../views/trip/TripJoinComplete.vue'),
+    },
 ];

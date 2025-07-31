@@ -10,8 +10,13 @@ import Header from "@/components/layout/Header.vue";
 const router=useRouter();
 const rawDate = ref({});
 const disableDates = ref();
+const store = useTravelCreateStore();
 const load = async () => {
-  disableDates.value=await tripApi.getDisabledDates();
+  try {
+    disableDates.value = await tripApi.getDisabledDates();
+  } catch (e) {
+    console.error('비활성화 날짜 불러오기 실패:', e);
+  }
 }
 load();
 const toNextPage = () => {
@@ -23,11 +28,8 @@ const handleDate = (modelData) => {
   rawDate.value = modelData;
   store.startDate = new Date(modelData[0]);
   store.endDate = new Date(modelData[1]);
-  // do something else with the data
   console.log(rawDate.value);
 }
-
-const store = useTravelCreateStore();
 
 </script>
 
@@ -153,7 +155,7 @@ const store = useTravelCreateStore();
   width: 90%;
   height: 50px;
   position: absolute;
-  bottom : 0%;
+  bottom : 0;
   left: 50%;
   transform: translateX(-50%);
 }
