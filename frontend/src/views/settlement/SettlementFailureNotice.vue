@@ -1,64 +1,53 @@
 <script setup>
+import { onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
 import Header from "@/components/layout/Header2.vue";
 import Button from "@/components/common/Button.vue";
 import { useRoute, useRouter } from "vue-router";
-import tripApi from "@/api/tripApi.js";
 import catImage from "@/assets/img/crying_cat.png";
-import { onMounted, ref } from "vue";
-import {getMySettlementDetails} from "@/api/settlementApi.js";
+import { useSettlementStore } from '@/stores/settlementStore';
 
-const router = useRouter()
-const route = useRoute()
-const tripId = route.params.tripId
+// ✅ Pinia Store 사용
+const settlementStore = useSettlementStore();
+const { mySettlementData, isLoading, error } = storeToRefs(settlementStore);
 
-const settlementData = ref(null)
-const isLoading = ref(true)
-const error = ref(null)
+const router = useRouter();
+const route = useRoute();
+const tripId = route.params.tripId;
 
-// 미정산 내역으로 이동
+// 미정산 내역으로 이동 (재시도)
 const goBack = () => {
-  router.push(`/settlement/${tripId}/detail`)
-}
+  router.push(`/settlement/${tripId}/detail`);
+};
 
-const fetchTrip = async () => {
+// 데이터 로딩
+onMounted(async () => {
   try {
-    const response = await getMySettlementDetails(tripId);
-    settlementData.value = response.data;
+    await settlementStore.fetchMySettlement(tripId);
   } catch (err) {
-    console.error('개인 정산 정보 로딩 실패:', err);
-    error.value = '데이터를 불러오는 데 실패했습니다.';
-  } finally {
-    isLoading.value = false;
+    // 에러 처리는 store에서 담당
   }
-}
-
-onMounted(() => {
-  fetchTrip()
-})
+});
 </script>
 
 <template>
-  <!-- ✅ DetailView와 동일한 wrapper 구조 -->
   <div class="view-wrapper">
     <div class="settlement-view">
       <Header title="정산하기" />
 
-      <!-- ✅ 로딩 상태 -->
       <main v-if="isLoading" class="content-container loading">
         <p>여행 정보를 불러오는 중...</p>
       </main>
 
-      <!-- ✅ 에러 상태 -->
       <main v-else-if="error" class="content-container error">
         <p>{{ error }}</p>
       </main>
 
-      <!-- ✅ 정상 데이터 -->
       <main v-else class="content-container">
         <div class="content">
           <img class="cat-img" :src="catImage" alt="우는 고양이"/>
           <div class="text-area">
-            <p class="trip-name">{{ settlementData.tripName }}</p>
+            <p class="trip-name">{{ mySettlementData?.tripName || '여행' }}</p>
             <h2 class="main-msg">송금이 일부 실패했습니다.</h2>
           </div>
         </div>

@@ -1,40 +1,35 @@
 <script setup>
+import { onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
 import Header from "@/components/layout/Header2.vue";
 import Button from "@/components/common/Button.vue";
 import { useRoute, useRouter } from "vue-router";
 import catImage from "@/assets/img/standing_cat.png";
-import { onMounted, ref } from "vue";
-import tripApi from "@/api/tripApi.js";
-import {getMySettlementDetails} from "@/api/settlementApi.js";
+import { useSettlementStore } from '@/stores/settlementStore';
 
-const router = useRouter()
-const route = useRoute()
-const tripId = route.params.tripId
+// ✅ Pinia Store 사용
+const settlementStore = useSettlementStore();
+const { mySettlementData, isLoading, error } = storeToRefs(settlementStore);
 
-const settlementData = ref(null)
-const isLoading = ref(true)
-const error = ref(null)
+const router = useRouter();
+const route = useRoute();
+const tripId = route.params.tripId;
 
 // 홈 화면으로 이동
 const goHome = () => {
-  router.push('/')
-}
+  // ✅ Store 데이터 정리 후 이동
+  settlementStore.clearMySettlementData();
+  router.push('/');
+};
 
-const fetchTrip = async () => {
+// 데이터 로딩
+onMounted(async () => {
   try {
-    const response = await getMySettlementDetails(tripId);
-    settlementData.value = response.data;
+    await settlementStore.fetchMySettlement(tripId);
   } catch (err) {
-    console.error('개인 정산 정보 로딩 실패:', err);
-    error.value = '데이터를 불러오는 데 실패했습니다.';
-  } finally {
-    isLoading.value = false;
+    // 에러 처리는 store에서 담당
   }
-}
-
-onMounted(() => {
-  fetchTrip()
-})
+});
 </script>
 
 <template>
@@ -54,7 +49,7 @@ onMounted(() => {
         <div class="content">
           <img class="cat-img" :src="catImage" alt="서있는 고양이"/>
           <div class="text-area">
-            <p class="trip-name">{{ settlementData.tripName }}</p>
+            <p class="trip-name">{{ mySettlementData?.tripName || '여행' }}</p>
             <h2 class="main-msg">송금이 완료되었습니다.</h2>
             <p class="sub-msg">정산이 완료되면 알려드릴게요.</p>
           </div>
