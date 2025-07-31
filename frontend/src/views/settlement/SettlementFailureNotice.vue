@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia';
 import Header from "@/components/layout/Header2.vue";
 import Button from "@/components/common/Button.vue";
 import { useRoute, useRouter } from "vue-router";
-import catImage from "@/assets/img/standing_cat.png";
+import catImage from "@/assets/img/crying_cat.png";
 import { useSettlementStore } from '@/stores/settlementStore';
 
 // ✅ Pinia Store 사용
@@ -15,11 +15,9 @@ const router = useRouter();
 const route = useRoute();
 const tripId = route.params.tripId;
 
-// 홈 화면으로 이동
-const goHome = () => {
-  // ✅ Store 데이터 정리 후 이동
-  settlementStore.clearMySettlementData();
-  router.push('/');
+// 미정산 내역으로 이동 (재시도)
+const goBack = () => {
+  router.push(`/settlement/${tripId}/detail`);
 };
 
 // 데이터 로딩
@@ -47,20 +45,19 @@ onMounted(async () => {
 
       <main v-else class="content-container">
         <div class="content">
-          <img class="cat-img" :src="catImage" alt="서있는 고양이"/>
+          <img class="cat-img" :src="catImage" alt="우는 고양이"/>
           <div class="text-area">
             <p class="trip-name">{{ mySettlementData?.tripName || '여행' }}</p>
-            <h2 class="main-msg">송금이 완료되었습니다.</h2>
-            <p class="sub-msg">정산이 완료되면 알려드릴게요.</p>
+            <h2 class="main-msg">송금이 일부 실패했습니다.</h2>
           </div>
         </div>
       </main>
 
       <footer class="footer">
         <Button
-            label="홈 화면으로 돌아가기"
-            @click="goHome"
-            class="home-button"
+            label="미정산 내역으로 돌아가기"
+            @click="goBack"
+            class="back-button"
         />
       </footer>
     </div>
@@ -120,7 +117,6 @@ onMounted(async () => {
   flex-grow: 1;
 }
 
-/* ✅ 컨텐츠 중앙 정렬 */
 .content {
   display: flex;
   flex-direction: column;
@@ -164,10 +160,8 @@ onMounted(async () => {
   border-top: none;
 }
 
-.home-button {
+.back-button {
   width: 100%;
-  background-color: var(--theme-primary) !important;
-  color: var(--theme-text) !important;
   font-weight: 800 !important;
   padding: 1rem 0 !important;
   border-radius: 0.75rem !important;
@@ -176,7 +170,7 @@ onMounted(async () => {
   cursor: pointer !important;
 }
 
-.home-button:hover {
+.back-button:hover {
   opacity: 0.9 !important;
 }
 </style>

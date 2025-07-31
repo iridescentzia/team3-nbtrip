@@ -1,5 +1,5 @@
 <script setup>
-import Header from "@/components/layout/Header.vue";
+import Header from "@/components/layout/Header2.vue";
 import Button from "@/components/common/Button.vue";
 import {useRoute, useRouter} from "vue-router";
 import catImage from "@/assets/img/smiling_cat.png";

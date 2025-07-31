@@ -35,11 +35,7 @@ public class LoginDTO {
     public static LoginDTO of(HttpServletRequest request) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            int length = request.getContentLength();
-            if (length <= 0) {
-                log.error("요청 바디가 비어 있습니다. Content-Length: {}", length);
-                throw new IllegalArgumentException("요청 바디가 비어 있습니다.");
-            }
+            // 유효성 수동 체크
             LoginDTO loginDTO = objectMapper.readValue(request.getInputStream(), LoginDTO.class);
             if (loginDTO.getEmail() == null || loginDTO.getEmail().trim().isEmpty()) {
                 log.warn("이메일 누락");

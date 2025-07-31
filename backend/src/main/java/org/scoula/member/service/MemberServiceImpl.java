@@ -56,6 +56,7 @@ public class MemberServiceImpl implements MemberService {
                     .phoneNumber(memberDTO.getPhoneNumber())
                     .fcmToken(memberDTO.getFcmToken())
                     .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
                     .build();
 
             // 4. MyBatis로 회원 정보 저장
@@ -125,7 +126,7 @@ public class MemberServiceImpl implements MemberService {
             }
 
             // 2. MyBatis로 FCM 토큰 삭제
-            memberMapper.updateFcmToken(userId, null);
+            memberMapper.updateFcmToken(userId, null, LocalDateTime.now());
             log.info("로그아웃 완료 - 회원 ID : {}", userId);
         } catch (UserNotFoundException e) {
             throw e;
@@ -188,6 +189,7 @@ public class MemberServiceImpl implements MemberService {
             }
 
             // 5. MyBatis로 데이터베이스 업데이트 (업데이트 시간 제외)
+            memberVO.setUpdatedAt(LocalDateTime.now());
             memberMapper.updateMember(memberVO);
             log.info("회원 정보 수정 완료 - 회원 ID : {}", userId);
 
@@ -208,6 +210,28 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
+    // 비밀번호 검증 요청
+    @Override
+    public boolean verifyPassword(int userId, String password) {
+        log.info("비밀번호 검증 요청 - 회원 ID: {}", userId);
+        try {
+            MemberVO member = memberMapper.findById(userId);
+            if (member == null) {
+                throw new UserNotFoundException("존재하지 않는 회원입니다.");
+            }
+            boolean match = passwordEncoder.matches(password, member.getPassword());
+            if (!match) {
+                throw new PasswordMismatchException("비밀번호가 일치하지 않습니다.");
+            }
+            return true;
+        } catch (UserNotFoundException | PasswordMismatchException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("비밀번호 검증 실패 - 회원 ID: {}, 오류: {}", userId, e.getMessage(), e);
+            throw new RuntimeException("비밀번호 검증 중 오류가 발생했습니다.");
+        }
+    }
+
     // 비밀번호 변경
     @Override
     public void changePassword(int userId, MemberPasswordDTO passwordDTO) {
@@ -225,7 +249,7 @@ public class MemberServiceImpl implements MemberService {
 
             // 3. 새 비밀번호 암호화 및 MyBatis로 업데이트
             String encodedNewPassword = passwordEncoder.encode(passwordDTO.getNewPassword());
-            memberMapper.updatePassword(userId, encodedNewPassword);
+            memberMapper.updatePassword(userId, encodedNewPassword, LocalDateTime.now());
             log.info("비밀번호 변경 완료 - 회원 ID : {}", userId);
         } catch (UserNotFoundException | PasswordMismatchException e) {
             throw e;
@@ -246,7 +270,7 @@ public class MemberServiceImpl implements MemberService {
             }
 
             // 2. MyBatis로 FCM 토큰 업데이트
-            memberMapper.updateFcmToken(userId, fcmTokenDTO.getFcmToken());
+            memberMapper.updateFcmToken(userId, fcmTokenDTO.getFcmToken(), LocalDateTime.now());
             log.info("FCM 토큰 갱신 완료 - 회원 ID : {}", userId);
         } catch (UserNotFoundException e) {
             throw e;

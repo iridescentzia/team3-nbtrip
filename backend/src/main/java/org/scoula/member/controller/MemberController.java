@@ -2,10 +2,7 @@ package org.scoula.member.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.scoula.member.dto.ApiResponse;
-import org.scoula.member.dto.MemberDTO;
-import org.scoula.member.dto.MemberFcmTokenDTO;
-import org.scoula.member.dto.MemberResponseDTO;
+import org.scoula.member.dto.*;
 import org.scoula.member.exception.DuplicateEmailException;
 import org.scoula.member.exception.DuplicateNicknameException;
 import org.scoula.member.exception.InvalidTokenException;
@@ -27,7 +24,22 @@ public class MemberController {
     private final MemberService memberService;
     private final JwtProcessor jwtProcessor;
 
-    // 1. 회원가입(POST /api/auth/register)
+    // 1. 닉네임 중복 확인(POST /api/uses/check-nickname)
+    @PostMapping("/users/check-nickname")
+    public ResponseEntity<ApiResponse> checkNickname(@Valid @RequestBody MemberNicknameCheckDTO dto) {
+        log.info("닉네임 중복 확인 요청 - 닉네임: {}", dto.getNickname());
+
+        boolean exists = memberService.checkNicknameDuplicate(dto.getNickname());
+
+        if (exists) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ApiResponse(false, "이미 사용중인 닉네임입니다."));
+        } else {
+            return ResponseEntity.ok(new ApiResponse(true, "사용 가능한 닉네임입니다."));
+        }
+    }
+
+    // 2. 회원가입(POST /api/auth/register)
     @PostMapping("/auth/register")
     public ResponseEntity<ApiResponse> register(@Valid @RequestBody MemberDTO memberDTO, BindingResult bindingResult) {
         log.info("회원가입 요청 - 이메일 : {}", memberDTO.getEmail());
@@ -47,7 +59,7 @@ public class MemberController {
         }
     }
 
-    // 2. 정보 조회(GET /api/users/{userId})
+    // 3. 정보 조회(GET /api/users/{userId})
     @GetMapping("/users/{userId}")
     public ResponseEntity<?> getUserInfo(@PathVariable("userId") int userId) {
         log.info("회원 정보 조회 요청 - userId: {}", userId);
@@ -63,7 +75,7 @@ public class MemberController {
         }
     }
 
-    // 3. FCM 토큰 갱신(PUT /api/users/fcm-token)
+    // 4. FCM 토큰 갱신(PUT /api/users/fcm-token)
     @PutMapping("/users/fcm-token")
     public ResponseEntity<ApiResponse> updateFcmToken(
             @Valid @RequestBody MemberFcmTokenDTO memberFcmTokenDTO, BindingResult bindingResult,
@@ -93,5 +105,15 @@ public class MemberController {
         Integer userId = jwtProcessor.getUserId(token);
         if(userId == null) { throw new InvalidTokenException("JWT 토큰에서 사용자 ID를 찾을 수 없습니다."); }
         return userId;
+    }
+
+    // 5. 비밀번호 검증(POST /api/users/verify-password)
+    @PostMapping("/users/verify-password")
+    public ResponseEntity<ApiResponse> verifyPassword(
+            @RequestHeader("Authorization") String authHeader,
+            @Valid @RequestBody MemberPasswordDTO dto) {
+        int userId = extractUserIdFromJwt(authHeader);
+        boolean verified = memberService.verifyPassword(userId, dto.getCurrentPassword());
+        return ResponseEntity.ok(new ApiResponse(true, "비밀번호 확인 성공"));
     }
 }

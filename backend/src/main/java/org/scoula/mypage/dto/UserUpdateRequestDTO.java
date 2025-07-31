@@ -8,6 +8,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -28,4 +29,6 @@ public class UserUpdateRequestDTO {
 
     @Pattern(regexp = "^01[0-9]-[0-9]{4}-[0-9]{4}$", message = "올바른 휴대폰 번호 형식을 입력해주세요. (예: 010-1234-5678)")
     private String phoneNumber;
+
+    private LocalDateTime updatedAt;
 }

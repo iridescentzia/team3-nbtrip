@@ -13,7 +13,8 @@
             name,
             phone_number AS phoneNumber,
             fcm_token AS fcmToken,
-            created_at AS createdAt
+            created_at AS createdAt,
+            updated_at AS updatedAt
         FROM users
         WHERE email = #{email}
     </select>
@@ -28,7 +29,8 @@
             name,
             phone_number AS phoneNumber,
             fcm_token AS fcmToken,
-            created_at AS createdAt
+            created_at AS createdAt,
+            updated_at AS updatedAt
         FROM users
         WHERE nickname = #{nickname}
     </select>
@@ -43,7 +45,8 @@
             name,
             phone_number AS phoneNumber,
             fcm_token AS fcmToken,
-            created_at AS createdAt
+            created_at AS createdAt,
+            updated_at AS updatedAt
         FROM users
         WHERE user_id = #{userId}
     </select>
@@ -51,7 +54,8 @@
     <!-- FCM 토큰 update -->
     <update id="updateFcmToken">
         UPDATE users
-        SET fcm_token = #{fcmToken}
+        SET fcm_token = #{fcmToken},
+            updated_at = #{updatedAt}
         WHERE email = #{email}
     </update>
 </mapper>

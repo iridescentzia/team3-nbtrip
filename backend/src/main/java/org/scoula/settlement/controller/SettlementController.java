@@ -2,7 +2,7 @@ package org.scoula.settlement.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.scoula.settlement.domain.SettlementVO;
+import org.scoula.settlement.exception.domain.SettlementVO;
 import org.scoula.settlement.dto.SettlementDTO;
 import org.scoula.settlement.service.SettlementService;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +31,17 @@ public class SettlementController {
      */
     // FIX: API 경로를 프론트엔드 요청과 일치하도록 수정.
     @GetMapping("/{tripId}/summary")
-    public ResponseEntity<SettlementDTO.SettlementSummaryResponseDto> getSettlementSummary(@PathVariable int tripId) {
+    public ResponseEntity<SettlementDTO.SettlementSummaryResponseDto> getSettlementSummary(
+            @PathVariable int tripId,
+            Principal principal
+    ) {
+        int userId = extractUserId(principal);
+
+        // 그룹장 권한 체크
+        if(!settlementService.canRequestSettlement(userId, tripId)) {
+            return ResponseEntity.status(403).body(null);
+        }
+
         // SettlementService를 호출하여 비즈니스 로직을 수행
         SettlementDTO.SettlementSummaryResponseDto summaryDto = settlementService.getSettlementSummary(tripId);
 
@@ -77,6 +87,7 @@ public class SettlementController {
     ) {
         log.info("🟢GET /api/settlements/my/tripId={}", tripId);
         int userId = extractUserId(principal);
+        // int userId = 5; // 앨리스 - 임시 데이터
         return ResponseEntity.ok(settlementService.getMySettlements(userId, tripId));
     }
 
@@ -244,7 +255,7 @@ public class SettlementController {
         //     log.warn("Principal parse 실패 [{}]", principal.getName());
         //     return 1;
         // }
-        return 3; // 테스트용
+        return 7; // 테스트용
     }
 
     /**
