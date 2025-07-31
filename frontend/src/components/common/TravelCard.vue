@@ -45,7 +45,7 @@ function goToChart() {
       </div>
 
       <!-- 오른쪽: 휴지통 아이콘 -->
-      <Trash2 class="icon" />
+      <Trash2 class="icon trash-icon" />
     </div>
 
     <!-- 카드 구분선 -->
@@ -102,7 +102,7 @@ function goToChart() {
   display: flex;
   align-items: center;
   /*gap: 8px;*/
-  justify-content: space-between;
+  /* justify-content: space-between; */
 }
 
 .trip-name {
@@ -110,11 +110,12 @@ function goToChart() {
   font-size: 24px;
   font-weight: 1000;
   margin: 0;
+  margin-right:5px;
 }
 
 .trip-date {
   color: #6D6D6D;
-  font-size: 14px;
+  font-size: 15px;
   opacity: 0.8;
 }
 
@@ -131,7 +132,7 @@ function goToChart() {
 }
 
 .trash-icon {
-  margin-top: 7px;
+  margin-top: 8px;
 }
 
 .divider {

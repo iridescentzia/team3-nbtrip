@@ -23,22 +23,24 @@ defineProps({
   align-items: center;
   background-color: white;
   border-radius: 12px;
-  padding: 16px;
+  padding: 18px 25px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   margin-bottom: 12px;
-  font-family: sans-serif;
+  max-width: 343px;
 }
 .left .title {
-  font-weight: bold;
-  font-size: 14px;
+  font-weight: 1000;
+  font-size: 16px;
+  color: #4A4A4A;
 }
 .left .sub {
-  font-size: 12px;
-  color: gray;
-  margin-top: 4px;
+  font-size: 14px;
+  color: #AAAAAA;
+  margin-top: 10px;
 }
 .right {
-  font-weight: bold;
-  font-size: 15px;
+  font-weight: 1000;
+  font-size: 18px;
+  color: #4A4A4A;
 }
 </style>
