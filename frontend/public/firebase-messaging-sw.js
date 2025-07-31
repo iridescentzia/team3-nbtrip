@@ -22,19 +22,18 @@ messaging.onBackgroundMessage(function (payload) {
 
   const notificationTitle = payload.notification?.title || 'NbbangTrip';
   const notificationOptions = {
-    body: payload.notification?.body || 'Push notification received.',
-    icon: '/logo.png'
+    body: payload.notification?.body || 'Push notification received.'
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
+//테스트 용
 self.addEventListener('push', (event) => {
   console.log('푸시 이벤트 수신 (테스트):', event);
   event.waitUntil(
     self.registration.showNotification('테스트 알림', {
-      body: '서비스워커 수신 테스트입니다.',
-      icon: '/logo.png'
+      body: '서비스워커 수신 테스트',
     })
   );
 });

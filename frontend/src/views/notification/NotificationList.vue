@@ -4,8 +4,14 @@ import { storeToRefs } from 'pinia';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { ChevronDown, ChevronRight } from 'lucide-vue-next';
 import Header from '@/components/layout/Header.vue';
+import { useAuthStore } from '@/stores/auth';
 
-const userId = 1; // TODO: 로그인한 사용자 ID로 변경
+// 로그인한 사용자 ID로 변경
+const userId = 1; 
+// const authStore = useAuthStore();
+// const { user } = storeToRefs(authStore);
+// const userId = user.value.userId;
+
 const notificationStore = useNotificationStore();
 const { notifications } = storeToRefs(notificationStore);
 
@@ -27,7 +33,10 @@ const selectCategory = (tab) => {
   selectedLabel.value = tab.label;
   showDropdown.value = false;
 
+  //테스트
   notificationStore.getNotifications(userId, tab.value);
+  // 실제
+  // notificationStore.getNotifications(tab.value);
 };
 
 const handleCardClick = (n) => {
@@ -40,7 +49,10 @@ const formatAmount = (value) => {
 };
 
 onMounted(() => {
+  // 테스트
   notificationStore.getNotifications(userId);
+  // 실제 적용
+  // notificationStore.getNotifications()
 });
 
 const getMessage = (n) => {
