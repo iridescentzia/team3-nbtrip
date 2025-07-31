@@ -23,6 +23,7 @@ public interface NotificationService {
     // 알림 생성
     void createNotification(NotificationDTO dto);
 
+    // 그룹 카테고리 알림 생성(초대, 누가 나감, 누가 들어옴)
     void createGroupEventNotification(Integer fromUserId, Integer tripId, String type);
 
     // 알림 읽음 처리

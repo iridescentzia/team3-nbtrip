@@ -6,6 +6,7 @@ import org.scoula.notification.dto.NotificationDTO;
 import org.scoula.notification.service.FCMService;
 import org.scoula.notification.service.NotificationService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class NotificationController {
     private final NotificationService notificationService;
     private final FCMService fcmService;
 
+    //푸시 알림 테스트용 엔드포인트
     @GetMapping("/fcm/test")
     public ResponseEntity<String> testPush() {
         try {
@@ -67,30 +69,35 @@ public class NotificationController {
         return ResponseEntity.ok().build();
     }
 
-    // JWT 인증된 유저의 알림 조회 (userId 파라미터 없이)
+//    // 로그인한 사용자 기준 알림 조회 (category optional)
 //    @GetMapping
-//    public ResponseEntity<List<NotificationDTO>> getNotifications(
-//            @AuthenticationPrincipal UserPrincipal principal, // JWT 인증 유저 객체
+//    public ResponseEntity<List<NotificationDTO>> getMyNotifications(
+//            Authentication authentication,
 //            @RequestParam(required = false) String category) {
 //
-//        Integer userId = principal.getUserId(); // 토큰에서 userId 추출
-//
-//        log.info("userId = " + userId + ", category = " + category);
+//        Integer userId = Integer.parseInt(authentication.getName());
 //
 //        List<NotificationDTO> notifications = (category != null && !category.isEmpty())
 //                ? notificationService.getNotificationsByCategory(userId, category)
 //                : notificationService.getNotificationsByUserId(userId);
+//
 //        return ResponseEntity.ok(notifications);
 //    }
 //
+//    // 알림 생성 (userId는 토큰에서 추출해서 dto에 직접 set)
 //    @PostMapping
-//    public ResponseEntity<Void> createNotification(
-//            @RequestBody NotificationDTO dto,
-//            @AuthenticationPrincipal UserPrincipal principal) {
-//
-//        dto.setUserId(principal.getUserId()); // 토큰에서 userId 셋팅
-//        log.info("Create Notification: {}", dto);
+//    public ResponseEntity<Void> createNotification(@RequestBody NotificationDTO dto,
+//                                                   Authentication authentication) {
+//        Integer userId = Integer.parseInt(authentication.getName());
+//        dto.setUserId(userId);
 //        notificationService.createNotification(dto);
+//        return ResponseEntity.ok().build();
+//    }
+//
+//    // 단일 알림 읽음 처리
+//    @PutMapping("/{notificationId}/read")
+//    public ResponseEntity<Void> readNotification(@PathVariable Integer notificationId) {
+//        notificationService.readNotification(notificationId);
 //        return ResponseEntity.ok().build();
 //    }
 

@@ -20,14 +20,22 @@ public interface NotificationMapper {
     // 그룹 알림 (INVITE, JOINED, LEFT)
     List<NotificationVO> findGroupNotifications(@Param("userId") Integer userId);
 
+    // tripId로 멤버 userId 조회 (푸시용) -> 푸시 알림 보낼 대상 조회
+    List<Integer> findUserIdsByTripId(@Param("tripId") Integer tripId);
+
     // 단일 알림 생성
     int createNotification(NotificationVO vo);
     //trip 맴버 전체에게 completed 알림
     int createCompletedNotification(NotificationVO vo);
-    // trip 멤버 전체에게 joined/left 알림
+    // trip 멤버 전체(본인 제외)에게 joined/left 알림
     int createGroupEventNotification(NotificationVO vo);
+    // trip 멤버 전체에게 정산 요청 알림
+    void createSettlementNotificationForAll(NotificationVO vo);
 
     // 알림 읽음 처리
     int readNotification(@Param("notificationId") Integer notificationId);
+
+    // FCM 토큰을 user_id 기준으로 조회
+    String findFcmTokenByUserId(@Param("userId") Integer userId);
 
 }
