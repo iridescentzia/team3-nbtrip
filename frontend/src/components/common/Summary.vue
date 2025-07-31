@@ -49,7 +49,7 @@ const formattedBudget = computed(()=>{
 // 진행 바 퍼센트 계산 (진행률 = amount / budget * 100)
 const progressPercentage = computed(()=>{
   const { amount, budget } = props;
-  console.log("budget: ", budget);
+  // console.log("budget: ", budget);
 
   if(!budget || budget === 0) return 0;
 
@@ -72,7 +72,7 @@ const isOverBudget = computed(() =>{
 <style scoped>
 .summary-card {
   padding: 16px;
-  border-radius: 10px;
+  border-radius: 16px;
   background-color: #fff;
   max-width: 343px; /* TravelCard와 동일 */
   margin: 0 auto; /* 가운데 정렬 */

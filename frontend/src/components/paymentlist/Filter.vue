@@ -1,7 +1,12 @@
 <template>
-  <div class="filter-bar">
+  <div 
+  class="filter-bar"
+  @click="resetFilter"
+  >
+    <!-- 리셋 아이콘 -->
     <RotateCcw class="reset-icon" />
 
+    <!-- 날짜 필터 버튼 -->
     <!-- 버튼 active 조건: 필터 열려 있거나 적용되어 있을 때 -->
     <button
         class="filter-button"
@@ -37,12 +42,23 @@
     </button>
   </div>
 
-  <div v-if="isDateModalOpen" class="overlay" @click.self="closeDateModal">
+  <!-- 날짜 선택 모달 -->
+  <div 
+  v-if="isDateModalOpen" 
+  class="overlay" 
+  @click.self="closeDateModal">
     <transition name="slide-up" appear>
       <div class="bottom-modal">
         <h3 class="modal-title">날짜 선택</h3>
-        <input type="date" v-model="dateRange.start" />
-        <input type="date" v-model="dateRange.end" />
+
+        <!-- @vuepic/vue-datepicker Range 모드 -->
+        <VueDatePicker
+          v-model="pickerRange"
+          :range="true"
+          format="yyyy-MM-dd"
+          :clearable="true"
+          class="date-picker"
+        />
         <Button @click="applyDateFilter" label="조회하기"></Button>
       </div>
     </transition>
@@ -102,14 +118,30 @@ import { ref, onMounted, computed } from 'vue';
 import { ChevronDown, RotateCcw } from 'lucide-vue-next';
 import { useTripStore } from '@/stores/trip';
 import Button from '@/components/common/Button.vue';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css'
+
+const props = defineProps({
+  startDate: {
+    type: String,
+    default: ''
+  }
+})
+
+const emit = defineEmits(['date-filtered'])
 
 const tripStore = useTripStore();
 
 const selectedMembers = ref([]);
 
+const today = new Date()
+const pickerRange = ref([props.startDate, today])
 
-// 필터 적용 여부 상태 관리
-const isDateModalOpen = ref(false);
+
+// 모달 열림/닫힘 상태
+const isDateModalOpen = ref(false)
+const hasApplied = ref(false)
+
 const isParticipantModalOpen = ref(false);
 const isCategoryModalOpen = ref(false);
 
@@ -117,16 +149,17 @@ const dateRange = ref({ start: '', end: '' });
 const categoryFilter = ref(null);
 const selectedParticipants = ref([]); // 복수 선택 가능
 
-
-
+// 버튼 active 여부 계산
 const isDateFiltered = computed(() => {
-  return dateRange.value.start !== '' || dateRange.value.end !== '';
-});
+ return hasApplied.value && (
+    pickerRange.value[0] !== null ||
+    pickerRange.value[1] !== null  )
+})
 
 // const isCategoryFiltered = computed(() => categoryFilter.value !== null);
 // const isParticipantsFiltered = computed(() => participantsFilter.value.length > 0);
 
-
+// 날짜 모달 토글 함수
 const toggleDateModal = () => {
   isDateModalOpen.value = !isDateModalOpen.value;
 };
@@ -135,28 +168,48 @@ const closeDateModal = () => {
   isDateModalOpen.value = false;
 };
 
-const payments = ref([]); // 전체 결제 내역
-const filteredPayments = ref([]); // 필터링된 결과
+//const payments = ref([]); // 전체 결제 내역
+//const filteredPayments = ref([]); // 필터링된 결과
+
+// "2025-07-30" 형식으로 변환
+const formatDateHyphen = (timestamp) => {
+  const date = new Date(timestamp)
+  // ko-KR + replace 로 yyyy-MM-dd 만들기
+  return date
+    .toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      timeZone: 'Asia/Seoul'
+    })
+    // ". " → "-" 로, e.g. "2025.07.30" → "2025-07-30"
+    .replace(/\.\s?/g, '-')
+    // 이제 끝에 남은 "-" 도 삭제
+    .replace(/-$/, '')
+}
 
 
-// 선택된 날짜 필터링
+// “조회하기” 클릭 시 호출: 부모에게 선택된 날짜 범위를 emit
 const applyDateFilter = () => {
-  console.log("dateRange:", dateRange.value);
+  hasApplied.value = true
+  const [s, e] = pickerRange.value
 
-  const start = dateRange.value.start;
-  const end = dateRange.value.end;
+  // local 기준 “YYYY-MM-DD” 얻기
+  const startStr = s ? formatDateHyphen(s) : ''
+  const endStr   = e ? formatDateHyphen(e) : ''
 
-  if(!start && !end){
-    filteredPayments.value = payments.value; // 필터 안 함
-    closeDateModal();
-    return;
-  }
+  emit('date-filtered', { start: startStr, end: endStr })
+  closeDateModal()
+}
 
-  filteredPayments.value = payments.value.filter(payment => {
-    const payAtDate = payment.pay_at.spl
-  })
-  closeDateModal();
-};
+// 리셋 클릭: 초기 상태로
+const resetFilter = () => {
+    console.log("click resetFilter")
+  hasApplied.value = false
+  pickerRange.value = [ props.startDate, today ]
+  console.log("reset date: ", pickerRange.value[0], pickerRange.value[1])
+  emit('date-filtered', { start: '', end: '' })
+}
 
 
 const toggleCategoryModal = async () => {
@@ -235,7 +288,6 @@ onMounted(async () => {
   font-weight: 500;
 }
 
-
 .reset-icon {
   color: #b0adad;
   stroke-width: 2.3;
@@ -243,6 +295,11 @@ onMounted(async () => {
   width: 20px;
   transform: translateY(7px);
 }
+
+.reset-icon:hover{
+    color:black;
+}
+
 .down-icon {
   color: #b0adad;
   stroke-width: 1;
@@ -302,5 +359,10 @@ onMounted(async () => {
 .slide-up-leave-from {
   transform: translateY(0);
   opacity: 1;
+}
+
+.date-picker {
+  width: calc(100% - 2rem);
+  margin: 0 1rem;
 }
 </style>
