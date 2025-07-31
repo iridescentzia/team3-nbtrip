@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,6 +78,7 @@ public class MyPageServiceImpl implements MyPageService {
                 .nickname(requestDTO.getNickname())
                 .name(requestDTO.getName())
                 .phoneNumber(requestDTO.getPhoneNumber())
+                .updatedAt(LocalDateTime.now())
                 .build();
 
         int updateCount = myPageMapper.updateUserInfo(updateDTO);
@@ -129,6 +131,7 @@ public class MyPageServiceImpl implements MyPageService {
         Map<String, Object> params = new HashMap<>();
         params.put("userId", userId);
         params.put("password", newEncodedPassword);
+        params.put("updatedAt", LocalDateTime.now());
         int updateCount = myPageMapper.updateUserPassword(params);
         return updateCount > 0;
     }
@@ -142,6 +145,7 @@ public class MyPageServiceImpl implements MyPageService {
         Map<String, Object> params = new HashMap<>();
         params.put("userId", userId);
         params.put("fcmToken", fcmToken);
+        params.put("updatedAt", LocalDateTime.now());
         int updateCount = myPageMapper.updateFcmToken(params);
         return updateCount > 0;
     }
