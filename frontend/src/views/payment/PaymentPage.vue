@@ -2,9 +2,39 @@
 import { usePaymentStore } from '@/stores/paymentStore';
 import paymentApi from '@/api/paymentApi';
 import QRScanner from '@/components/qr/QRScanner.vue';
-import { computed } from 'vue';
+import { getMyInfo } from '@/api/memberApi.js';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const store = usePaymentStore();
+
+const userInfo = ref({ nickname: '', name: '' });
+
+onMounted(async () => {
+  try {
+    console.log('마이페이지 마운트 시작');
+
+    // ✅ getMyInfo() 사용 (userId 파라미터 불필요)
+    const res = await getMyInfo();
+    console.log('응답 결과:', res);
+
+    // ✅ 응답 구조에 맞게 수정
+    if (res?.success && res?.data) {
+      userInfo.value = res.data;
+      console.log('사용자 정보 설정 완료:', userInfo.value);
+    } else {
+      console.error('유저 정보 조회 실패:', res?.message || '데이터 없음');
+    }
+  } catch (err) {
+    console.error('마이페이지 API 에러:', err);
+
+    if (err.message?.includes('인증') || err.message?.includes('토큰')) {
+      console.log('인증 오류로 로그인 페이지로 이동');
+      router.push('/login');
+    }
+  }
+});
 
 const canSubmit = computed(() => {
   return store.amount > 0;
@@ -14,7 +44,7 @@ async function submitPayment() {
   try {
     const payload = {
       tripId: 1,
-      userId: 1,
+      userId: userInfo.value.userId,
       merchantId: store.merchantID,
       amount: store.amount,
       paymentType: 'QR',
