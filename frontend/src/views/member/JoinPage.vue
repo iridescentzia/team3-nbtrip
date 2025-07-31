@@ -4,6 +4,7 @@ import { registerMember, checkNicknameDuplicate } from '@/api/memberApi.js'
 import Button from "@/components/common/Button.vue";
 import {useRouter} from "vue-router";
 import Header from "@/components/layout/Header.vue";
+// import { fetchBankList, createAccount } from '@/api/accountApi.js'
 
 const router = useRouter()
 const emit = defineEmits(['signup-complete'])
@@ -46,6 +47,7 @@ const nicknameMessage = ref('')
 const isPasswordMatch = computed(() => password.value === passwordConfirm.value)
 
 // 은행 코드 리스트(account DB)
+// const bankCodes = ref([])
 const bankCodes = ref([
   { code: '003', name: '기업은행' },
   { code: '004', name: '국민은행' },
@@ -58,6 +60,16 @@ const bankCodes = ref([
   { code: '090', name: '카카오뱅크' },
   { code: '092', name: '토스뱅크' }
 ])
+
+// 은행 목록 불러오기
+onMounted(async () => {
+  // try {
+  //   const data = await fetchBankList()
+  //   bankCodes.value = data.banks || []
+  // } catch (err) {
+  //   alert('은행 목록을 불러오지 못했습니다.')
+  // }
+})
 
 // 닉네임 중복 확인(POST /api/users/check-nickname)
 const checkNickname = async () => {

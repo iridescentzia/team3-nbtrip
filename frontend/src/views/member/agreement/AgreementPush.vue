@@ -12,6 +12,14 @@ const agreeAndGoBack = () => {
   agreementStore.check('push')
   router.back()
 }
+
+// 회원가입/마이페이지 뷰 전환용
+const props = defineProps({
+  viewOnly : {
+    type: Boolean,
+    default: false
+  }
+})
 </script>
 
 <template>
@@ -92,7 +100,7 @@ const agreeAndGoBack = () => {
     </div>
 
     <!-- 하단 버튼 -->
-    <Button label="동의합니다." @click="agreeAndGoBack" />
+    <Button v-if="!viewOnly" label="동의합니다." @click="agreeAndGoBack" />
   </div>
 </template>
 

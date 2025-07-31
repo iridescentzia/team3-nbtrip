@@ -3,7 +3,8 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Footer from '@/components/layout/Footer.vue'
 import { Briefcase, BriefcaseConveyorBelt, CircleUserRound, ChevronRight } from 'lucide-vue-next'
-import { getMyInfo, logoutMember } from "@/api/memberApi.js"; // ✅ getMyInfo와 logoutMember import
+import { getMyInfo, logoutMember } from "@/api/memberApi.js";
+import Header2 from "@/components/layout/Header2.vue";
 
 const router = useRouter()
 const userInfo = ref({ nickname: '', name: '' })
@@ -64,7 +65,7 @@ const logout = async () => {
   <div class="mypage-wrapper">
     <div class="content">
       <!-- 상단 제목 -->
-      <header class="header"><h1>마이페이지</h1></header>
+      <Header2 title="마이페이지"></Header2>
 
       <!-- 프로필 이미지 + 닉네임 -->
       <div class="profile-section">
@@ -74,7 +75,7 @@ const logout = async () => {
 
       <!-- 아이콘 -->
       <div class="icon-section">
-        <div class="icon-wrapper" @click="goTo('/my/info')">
+        <div class="icon-wrapper" @click="goTo('/mypage/info')">
           <div class="icon-button"><CircleUserRound size="28" /></div>
           <span>회원 정보</span>
         </div>
@@ -92,13 +93,13 @@ const logout = async () => {
 
       <!-- 메뉴 리스트 -->
       <div class="menu-list">
-        <div class="menu-item" @click="goTo('/my/payment')">
+        <div class="menu-item" @click="goTo('/mypage/payment')">
           결제 수단 관리 <ChevronRight class="arrow"/>
         </div>
-        <div class="menu-item" @click="goTo('/faq')">
+        <div class="menu-item" @click="goTo('/mypage/faq')">
           공지사항 및 FAQ <ChevronRight class="arrow"/>
         </div>
-        <div class="menu-item" @click="goTo('/terms')">
+        <div class="menu-item" @click="goTo('/mypage/terms')">
           이용 약관 <ChevronRight class="arrow"/>
         </div>
       </div>
@@ -135,21 +136,6 @@ const logout = async () => {
   display: flex;
   flex-direction: column;
   min-height: 0;
-}
-
-.header {
-  text-align: center;
-  font-size: 20px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 16px;
-}
-
-.header h1 {
-  font-size: 20px;
-  margin-bottom: 16px;
-  font-weight: bold;
-  color: #333;
 }
 
 .profile-section {
