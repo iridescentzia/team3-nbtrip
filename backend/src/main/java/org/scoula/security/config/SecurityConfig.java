@@ -106,6 +106,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/static/**",
                 "/public/**",
 
+                // Vue Router 페이지 경로들 - 페이지 접근 허용
+                "/login",
+                "/register",
+                "/mypage",
+                "/settlement",
+                "/trips",
+                "/merchants",
+                "/accounts",
+                "/payments",
+                "/chart",
+                "/notifications",
+
                 // 시스템 모니터링
                 "/api/health",
                 "/api/status",
@@ -155,7 +167,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // OPTIONS 요청 (CORS Preflight) 항상 허용
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // 인증 불필요(공개 API)
+                // 페이지 접근 허용 (프론트엔드 라우터)
                 .antMatchers(HttpMethod.POST, "/auth/login").permitAll()  // 로그인
                 .antMatchers(HttpMethod.POST, "/auth/register").permitAll()  // 회원가입
                 .antMatchers(HttpMethod.POST, "/auth/logout").permitAll()  // 로그아웃
