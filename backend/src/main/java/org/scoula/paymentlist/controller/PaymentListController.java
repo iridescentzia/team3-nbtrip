@@ -18,17 +18,16 @@ import java.util.Map;
 @RequestMapping("/api/paymentlist")
 @RequiredArgsConstructor
 public class PaymentListController {
-
     private final PaymentListService paymentService;
 
     /** 결제내역 **/
     @GetMapping("/{tripId}")
     public ResponseEntity<Map<String, Object>> getPaymentList(@PathVariable int tripId) {
 
+
         Map<String, Object> response = new HashMap<>();
         response.put("paymentData", paymentService.getPaymentList(tripId));
         log.info("api 불러오는중");
         return ResponseEntity.ok(response);
     }
-
 }

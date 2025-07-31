@@ -2,7 +2,7 @@
   <DefaultLayout>
     <Header title="진행 중인 여행" />
     <div class="content-container">
-      <!-- 현재 userID = 1 -->
+      <!-- 현재 tripId = 1 -->
       <TravelCard
         v-if="tripStore.currentTrip"
         :trip-name="tripStore.currentTrip.tripName"

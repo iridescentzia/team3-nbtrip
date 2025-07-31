@@ -41,7 +41,7 @@ const formattedAmount = computed(()=>{
   return props.amount.toLocaleString() + '원'
 })
 
-// 총 금액 포맷팅 (ex. 350,000원)
+// 예산 포맷팅 (ex. 350,000원)
 const formattedBudget = computed(()=>{
   return props.budget.toLocaleString() + '원'
 })
@@ -49,6 +49,7 @@ const formattedBudget = computed(()=>{
 // 진행 바 퍼센트 계산 (진행률 = amount / budget * 100)
 const progressPercentage = computed(()=>{
   const { amount, budget } = props;
+  console.log("budget: ", budget);
 
   if(!budget || budget === 0) return 0;
 
@@ -115,13 +116,13 @@ const isOverBudget = computed(() =>{
   font-size: 36px;
   font-weight: 1000;
   /*margin-bottom: 8px;*/
-  margin-right: 5px;
+  margin-right: 7px;
 }
 
 .info-icon{
   color:#AAAAAA;
   width:18px;
-  padding-bottom:6px;
+  padding-bottom:5px;
 }
 
 .budget {
