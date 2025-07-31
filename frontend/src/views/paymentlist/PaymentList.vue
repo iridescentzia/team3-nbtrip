@@ -36,7 +36,7 @@ import DefaultLayout from '@/components/layout/DefaultLayout.vue'
 import Filter from '@/components/paymentlist/Filter.vue'
 
 import {onMounted} from 'vue'
-import {useTripStore} from "@/stores/trip2.js";
+import {useTripStore} from "@/stores/trip.js";
 import Summary from "@/components/common/Summary.vue";
 
 const tripStore = useTripStore()
