@@ -1,6 +1,6 @@
 import api from '@/api';
 
-const BASE_URL = '/api/payments';
+const BASE_URL = '/payments';
 
 export default {
   async create(payload) {

@@ -8,6 +8,12 @@
         VALUES (#{categoryId}, #{merchantName})
     </insert>
 
+    <update id="increaseSales">
+        UPDATE merchant
+        SET sales = sales + #{amount}
+        WHERE merchant_id = #{merchant_id}
+    </update>
+
     <select id="getMerchant" resultType="org.scoula.merchant.domain.MerchantVO">
         SELECT *
         FROM merchant
@@ -17,10 +23,5 @@
         SELECT *
         FROM merchant_category
         WHERE category_id=#{categoryId}
-    </select>
-    <select id="getMerchantAccount" resultType="org.scoula.merchant.domain.MerchantAccountVO">
-        SELECT *
-        FROM merchant_account
-        WHERE merchant_id=#{id}
     </select>
 </mapper>
