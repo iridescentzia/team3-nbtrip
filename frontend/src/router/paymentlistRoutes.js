@@ -1,7 +1,7 @@
 export default [
-    {
-        path: '/paymentlist',
-        name: 'paymentlist',
-        component: () => import('@/views/paymentlist/PaymentList.vue')
-    }
-]
+  {
+    path: '/paymentlist/:tripId',
+    name: 'paymentlist',
+    component: () => import('@/views/paymentlist/PaymentList.vue'),
+  },
+];
