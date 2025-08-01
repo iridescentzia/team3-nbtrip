@@ -1,6 +1,9 @@
 <script setup>
 import { useRouter } from "vue-router";
 import Header from '@/components/layout/Header.vue'
+import AgreementTerms from "@/views/member/agreement/AgreementTerms.vue";
+import AgreementPrivacy from "@/views/member/agreement/AgreementPrivacy.vue";
+import AgreementPush from "@/views/member/agreement/AgreementPush.vue";
 
 const router = useRouter()
 
@@ -12,22 +15,23 @@ const goBack = () => {
 
 <template>
   <div class="terms-wrapper">
-    <Header title="이용 약관 동의" :back-action="goBack" />
+    <Header title="이용 약관 전체 보기" :back-action="goBack" />
 
-    <div class="terms-list">
-      <router-link to="/terms" class="terms-card">
-        <h3>서비스 이용 약관</h3>
-      </router-link>
+    <section class="section">
+      <h2>📄 서비스 이용 약관</h2>
+      <AgreementTerms :viewOnly="true" />
+    </section>
 
-      <router-link to="/privacy" class="terms-card">
-        <h3>개인정보 수집 및 이용 동의</h3>
-      </router-link>
+    <section class="section">
+      <h2>🔐 개인정보 수집 및 이용 동의</h2>
+      <AgreementPrivacy :viewOnly="true" />
+    </section>
 
-      <router-link to="/push" class="terms-card">
-        <h3>푸시 알림 동의</h3>
-      </router-link >
+    <section class="section">
+      <h2>📬 푸시 알림 동의</h2>
+      <AgreementPush :viewOnly="true" />
+    </section>
     </div>
-  </div>
 </template>
 
 <style scoped>
@@ -43,7 +47,7 @@ const goBack = () => {
   box-sizing: border-box;
 }
 
-.terms-list {
+.section {
   display: flex;
   flex-direction: column;
   gap: 20px;

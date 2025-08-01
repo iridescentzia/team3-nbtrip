@@ -96,7 +96,7 @@ export default [
     {
         path: '/mypage/terms',
         name: 'TermsViewOnly',
-        component: () => import('@/views/member/agreement/AgreementTerms.vue'),
+        component: () => import('@/views/member/mypage/Terms.vue'),
         props: { viewOnly: true }
     },
 
