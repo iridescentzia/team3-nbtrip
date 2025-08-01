@@ -12,8 +12,9 @@ export const useNotificationStore = defineStore('notification', {
     // 테스트
     async getNotifications(userId, category = 'ALL') {
       try {
-        const { data } = await fetchNotifications(userId, category);
-        this.notifications = data;
+        const res = await fetchNotifications(userId, category);
+        console.log('받은 데이터:', res.data); // 삭제
+        this.notifications = res.data;
         this.selectedCategory = category;
       } catch (error) {
         console.error('알림 조회 실패:', error);

@@ -7,7 +7,7 @@ import Header from '@/components/layout/Header.vue';
 // import { useAuthStore } from '@/stores/auth';
 
 // 로그인한 사용자 ID로 변경
-const userId = 1; 
+const userId = 2; 
 // const authStore = useAuthStore();
 // const { user } = storeToRefs(authStore);
 // const userId = user.value.userId;
@@ -22,7 +22,7 @@ const tabs = [
   { label: '전체', value: 'ALL' },
   { label: '결제', value: 'TRANSACTION' },
   { label: '정산', value: 'SETTLEMENT' },
-  { label: '그룹', value: 'INVITE' }
+  { label: '그룹', value: 'GROUP_EVENT' }
 ];
 
 const toggleDropdown = () => {
@@ -67,25 +67,25 @@ const getMessage = (n) => {
       return `${user}님이 정산 요청을 보냈습니다.\n정산을 확인하시겠습니까?`;
 
     case 'INVITE':
-      return `${user}님이 "${n.tripName}" 그룹에 초대하셨습니다.\n여행에 참여하시겠습니까?`;
-    
-    case 'GROUP_EVENT':
-      if(n.memberStatus === 'JOINED'){
-        return `${user}님이 ${n.tripName} 그룹에 들어왔습니다.`;
+      if (n.memberStatus === 'JOINED') {
+        return `${user}님이 "${n.tripName}" 그룹에 참여했어요.`;
       } else if (n.memberStatus === 'LEFT') {
-        return `${user}님이 ${n.tripName} 그룹에서 나갔습니다.`;
+        return `${user}님이 "${n.tripName}" 그룹에서 나갔어요.`;
+      } else {
+        return `${user}님이 "${n.tripName}" 그룹에 초대하셨습니다.\n여행에 참여하시겠습니까?`;
       }
-      return `${user}님의 그룹 상태가 변경되었습니다.`;
+
     case 'REMINDER':
       return `${user}님이 정산 알림을 보냈습니다.`;
 
     case 'COMPLETED':
       return `${user}님이 정산을 완료했습니다.`;
-      
+
     default:
       return `${user}님이 새로운 알림을 보냈습니다.`;
   }
 };
+
 </script>
 
 <template>
@@ -113,7 +113,7 @@ const getMessage = (n) => {
            :class="{'read': n.isRead}"
            @click="handleCardClick(n)">
         <div class="card-content">
-          <p class="card-title" v-if="n.notificationType !== 'INVITE'">
+          <p class="card-title" v-if="n.notificationType !== 'INVITE' || n.memberStatus === 'JOINED' || n.memberStatus === 'LEFT'">
             [{{ n.tripName }}]
           </p>
           <p class="card-body">{{ getMessage(n) }}</p>

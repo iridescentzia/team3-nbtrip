@@ -60,6 +60,7 @@ public class NotificationServiceImpl implements NotificationService {
             case "TRANSACTION" -> getTransactionNotifications(userId);
             case "SETTLEMENT" -> getSettlementNotifications(userId);
             case "INVITE" -> getGroupNotifications(userId);
+            case "GROUP_EVENT" -> getGroupNotifications(userId);
             default -> getNotificationsByUserId(userId);
         };
     }
