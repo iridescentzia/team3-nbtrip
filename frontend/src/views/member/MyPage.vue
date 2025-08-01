@@ -1,13 +1,17 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import Footer from '@/components/layout/Footer.vue'
-import { Briefcase, BriefcaseConveyorBelt, CircleUserRound, ChevronRight } from 'lucide-vue-next'
-import { getMyInfo, logoutMember } from "@/api/memberApi.js";
-import Header2 from "@/components/layout/Header2.vue";
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import Footer from '@/components/layout/Footer.vue';
+import {
+  Briefcase,
+  BriefcaseConveyorBelt,
+  CircleUserRound,
+  ChevronRight,
+} from 'lucide-vue-next';
+import { getMyInfo, logoutMember } from '@/api/memberApi.js'; // ✅ getMyInfo와 logoutMember import
 
-const router = useRouter()
-const userInfo = ref({ nickname: '', name: '' })
+const router = useRouter();
+const userInfo = ref({ nickname: '', name: '' });
 
 // 마운트 시 사용자 정보 불러오기
 onMounted(async () => {
@@ -36,7 +40,7 @@ onMounted(async () => {
 });
 
 // 페이지 이동
-const goTo = (path) => router.push(path)
+const goTo = (path) => router.push(path);
 
 // ✅ 로그아웃 - memberApi의 logoutMember 함수 사용
 const logout = async () => {
@@ -58,24 +62,28 @@ const logout = async () => {
     localStorage.removeItem('refreshToken');
     router.push('/login');
   }
-}
+};
 </script>
 
 <template>
-  <div class="mypage-wrapper">
+  <div class="mypage-content">
     <div class="content">
       <!-- 상단 제목 -->
-      <Header2 title="마이페이지"></Header2>
+      <header class="header"><h1>마이페이지</h1></header>
 
       <!-- 프로필 이미지 + 닉네임 -->
       <div class="profile-section">
-        <img src="@/assets/img/airplane_left.png" alt="프로필" class="profile-img" />
+        <img
+          src="@/assets/img/airplane_left.png"
+          alt="프로필"
+          class="profile-img"
+        />
         <div class="nickname">{{ userInfo.nickname || '김냥이' }}</div>
       </div>
 
       <!-- 아이콘 -->
       <div class="icon-section">
-        <div class="icon-wrapper" @click="goTo('/mypage/info')">
+        <div class="icon-wrapper" @click="goTo('/my/info')">
           <div class="icon-button"><CircleUserRound size="28" /></div>
           <span>회원 정보</span>
         </div>
@@ -93,14 +101,14 @@ const logout = async () => {
 
       <!-- 메뉴 리스트 -->
       <div class="menu-list">
-        <div class="menu-item" @click="goTo('/mypage/payment')">
-          결제 수단 관리 <ChevronRight class="arrow"/>
+        <div class="menu-item" @click="goTo('/my/payment')">
+          결제 수단 관리 <ChevronRight class="arrow" />
         </div>
-        <div class="menu-item" @click="goTo('/mypage/faq')">
-          공지사항 및 FAQ <ChevronRight class="arrow"/>
+        <div class="menu-item" @click="goTo('/faq')">
+          공지사항 및 FAQ <ChevronRight class="arrow" />
         </div>
-        <div class="menu-item" @click="goTo('/mypage/terms')">
-          이용 약관 <ChevronRight class="arrow"/>
+        <div class="menu-item" @click="goTo('/terms')">
+          이용 약관 <ChevronRight class="arrow" />
         </div>
       </div>
 
@@ -109,112 +117,116 @@ const logout = async () => {
     </div>
 
     <!-- 공통 푸터 -->
-    <Footer class="footer"/>
+    <Footer class="footer" />
   </div>
 </template>
 
 <style scoped>
-.mypage-wrapper {
-  --theme-primary: rgba(255, 209, 102, 0.65);
-  --theme-bg: #f8f9fa;
-  --theme-text: #333333;
-  --theme-text-light: #888888;
-
+.mypage-content {
   width: 100%;
-  max-width: 24rem;
-  height: 844px;
-  margin: 0 auto;
-  background-color: var(--theme-bg);
-  border-radius: 1.5rem;
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  height: 100%;
+  background: #f8fafc;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  position: relative;
-  box-sizing: border-box;
+  overflow: hidden; /* 스크롤은 main-content에서 처리 */
 }
 
 .content {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 1.25rem;
-  padding-top: calc(56px + 1.25rem);
   overflow-y: auto;
+  padding: 0px 32px 0px 32px;
+  min-height: 0;
+}
+
+.header {
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 32px;
+}
+
+.header h1 {
+  font-size: 20px;
+  margin-bottom: 16px;
+  font-weight: bold;
+  color: #333;
 }
 
 .profile-section {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding-left: 1rem;
+  justify-content: flex-start;
+  margin: 36px 0 24px 0;
+  padding-left: 8px;
+  gap: 20px;
 }
 
 .profile-img {
   width: 70px;
   height: 70px;
-  background-color: var(--theme-primary);
-  border-radius: 9999px;
+  object-fit: contain;
+  background-color: rgba(255, 209, 102, 0.65);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  object-fit: contain;
   padding: 10px;
 }
 
 .nickname {
-  font-size: 1.125rem;
+  margin-top: 10px;
+  font-size: 18px;
   font-weight: 700;
-  color: var(--theme-text);
+  color: #333;
 }
 
 .icon-section {
   display: flex;
   justify-content: center;
-  gap: 50px;
-  margin-bottom: 2rem;
-  padding: 0 0.5rem;
+  gap: 48px;
+  margin: 24px 0 32px;
+  padding: 10px;
 }
 
 .icon-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--theme-text);
+  color: #444;
   cursor: pointer;
 }
 
 .icon-button {
   background-color: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 9999px;
+  border: 1px solid #dcdcdc;
+  border-radius: 50%;
   width: 54px;
   height: 54px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 0.5rem;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  margin-bottom: 8px;
 }
 
 .menu-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .menu-item {
-  background-color: white;
-  padding: 0.875rem 1.25rem;
-  border-radius: 0.75rem;
-  font-size: 0.9375rem;
+  background: white;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--theme-text);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
+  color: #333;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -222,23 +234,20 @@ const logout = async () => {
 }
 
 .arrow {
-  font-size: 1.125rem;
-  color: #bbbbbb;
+  font-size: 18px;
+  color: #bbb;
 }
 
 .logout {
   text-align: right;
   color: #ed5c5c;
-  font-size: 0.8125rem;
+  font-size: 13px;
   font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
-  margin-top: auto;
-  padding-bottom: 1rem;
 }
 
 .footer {
-  padding: 1rem 0;
-  background-color: var(--theme-bg);
+  margin-top: auto;
 }
 </style>

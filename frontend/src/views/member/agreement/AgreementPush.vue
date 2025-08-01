@@ -1,14 +1,15 @@
 <script setup>
-import Header from '@/components/layout/Header.vue'
-import Button from '@/components/common/Button.vue'
-import { useRouter } from 'vue-router'
-import { useAgreementStore } from '@/stores/agreement.js'
+import Header from '@/components/layout/Header.vue';
+import Button from '@/components/common/Button.vue';
+import { useRouter } from 'vue-router';
+import { useAgreementStore } from '@/stores/agreement.js';
 
-const router = useRouter()
-const agreementStore = useAgreementStore()
+const router = useRouter();
+const agreementStore = useAgreementStore();
 
 // 동의 클릭 시 약관 체크 + 뒤로 가기
 const agreeAndGoBack = () => {
+<<<<<<< HEAD
   agreementStore.check('push')
   router.back()
 }
@@ -20,29 +21,40 @@ const props = defineProps({
     default: false
   }
 })
+=======
+  agreementStore.check('push');
+  router.back();
+};
+>>>>>>> c8246ea3a8ed4215f166f99943bea227a32f1451
 </script>
 
 <template>
-  <div class="page-container">
+  <div class="page-content">
     <!-- Header에 backAction 전달 -->
     <Header title="푸시 알림 수신 동의" :backAction="agreeAndGoBack" />
 
     <div class="content-area">
       <div class="text">
         <h1>푸시 알림 수신 동의 (필수)</h1>
-        <p>N빵페이는 서비스 이용 중 다음과 같은 정보를 푸시 알림을 통해 안내드릴 수 있습니다.<br />
-          본 항목에 동의하실 경우, 아래 항목에 해당하는 푸시 알림을 앱을 통해 수신하게 됩니다.</p>
+        <p>
+          N빵페이는 서비스 이용 중 다음과 같은 정보를 푸시 알림을 통해 안내드릴
+          수 있습니다.<br />
+          본 항목에 동의하실 경우, 아래 항목에 해당하는 푸시 알림을 앱을 통해
+          수신하게 됩니다.
+        </p>
 
         <h3>1. 발송하는 알림 유형</h3>
         <ul>
-          <li><strong>정산 관련 알림</strong>
+          <li>
+            <strong>정산 관련 알림</strong>
             <ul>
               <li>정산 요청 수신 시 알림</li>
               <li>정산 완료 시 알림</li>
               <li>미정산 상태 장기화 시 리마인드 알림</li>
             </ul>
           </li>
-          <li><strong>거래/결제 관련 알림</strong>
+          <li>
+            <strong>거래/결제 관련 알림</strong>
             <ul>
               <li>결제 완료/실패 알림</li>
               <li>송금 요청 및 입금 확인 안내</li>
@@ -51,7 +63,8 @@ const props = defineProps({
               <li>중복 계좌 등록 시도 알림</li>
             </ul>
           </li>
-          <li><strong>보안 관련 알림</strong>
+          <li>
+            <strong>보안 관련 알림</strong>
             <ul>
               <li>로그인 알림</li>
               <li>비밀번호 변경 알림</li>
@@ -59,13 +72,15 @@ const props = defineProps({
               <li>부정 거래 탐지 알림</li>
             </ul>
           </li>
-          <li><strong>그룹 관련 알림</strong>
+          <li>
+            <strong>그룹 관련 알림</strong>
             <ul>
               <li>그룹 초대 알림</li>
               <li>그룹 탈퇴 관련 알림</li>
             </ul>
           </li>
-          <li><strong>서비스 이용 편의를 위한 알림</strong>
+          <li>
+            <strong>서비스 이용 편의를 위한 알림</strong>
             <ul>
               <li>시스템 점검 및 공지 알림</li>
               <li>서비스 장애 및 복구 알림</li>
@@ -99,27 +114,25 @@ const props = defineProps({
       </div>
     </div>
 
+<<<<<<< HEAD
     <!-- 하단 버튼 -->
     <Button v-if="!viewOnly" label="동의합니다." @click="agreeAndGoBack" />
+=======
+    <footer class="bottom-fixed">
+      <Button label="동의합니다." @click="agreeAndGoBack" />
+    </footer>
+>>>>>>> c8246ea3a8ed4215f166f99943bea227a32f1451
   </div>
 </template>
 
 <style scoped>
-.page-container {
-  width: 384px;
-  height: 800px;
+.page-content {
+  width: 100%;
+  height: 100%;
   background: #f8fafc;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
-  border-radius: 24px;
-  outline: 1px solid black;
-  outline-offset: -1px;
-  margin: 0 auto;
-  padding-top: 56px; /* Header 영역 확보 */
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  overflow: hidden;
 }
 
 /* 본문 스크롤 영역 */
@@ -127,7 +140,14 @@ const props = defineProps({
   flex: 1;
   overflow-y: auto;
   padding: 24px;
+  padding-top: calc(50px + 20px); /* Header 높이만큼 여백 추가 */
   box-sizing: border-box;
+}
+
+/* 하단 버튼을 화면 맨 아래에 고정 */
+.bottom-fixed {
+  padding: 16px 24px;
+  background-color: #f8fafc;
 }
 
 /* 텍스트 영역 */
