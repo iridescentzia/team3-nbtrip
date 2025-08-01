@@ -24,12 +24,12 @@ const router = createRouter({
       component: DefaultLayout,
       children: [
         { path: '', name: 'home', component: Home },
-    ...settlementRoutes,
-    ...memberRoutes,
-    ...paymentRoutes,
-    ...notificationRoutes,
-    ...paymentlistRoutes,
-    ...reportRoutes,
+        ...settlementRoutes,
+        ...memberRoutes,
+        ...paymentRoutes,
+        ...notificationRoutes,
+        ...paymentlistRoutes,
+        ...reportRoutes,
       ],
     },
 
