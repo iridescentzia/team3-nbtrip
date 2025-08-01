@@ -1,28 +1,72 @@
-import {defineStore} from 'pinia'
-import axios from 'axios'
-import {ref} from 'vue'
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import tripApi from '@/api/tripApi'; // 전체 default 객체로 불러오기
+import memberApi from '@/api/memberApi';
 
-export const useTripStore = defineStore('trip', ()=>{
-    const trip = ref(null)
+export const useTripStore = defineStore('trip', () => {
+  const trips = ref([]);
 
-    const fetchActiveTrip = async () =>{
-        try{
-            const res = await axios.get('/api/trips')
-            const trips = res.data
+  const fetchTrips = async () => {
+    const data = await tripApi.fetchTrips();
+    trips.value = Array.isArray(data) ? data : [];
+  };
 
-            if(Array.isArray(trips) && trips.length > 0){
-                const now = new Date()
+  const currentTrip = computed(() => {
+    const now = Date.now();
+    return trips.value.find((trip) => {
+      return (
+        trip.tripStatus === 'ACTIVE' &&
+        now >= trip.startDate &&
+        now <= trip.endDate
+      );
+    });
+  });
 
-                const activeTrips = trips
-                    .filter(t => t.tripStatus === 'ACTIVE' && new Date(t.startDate) >= now)
-                    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+  const currentTripMembers = ref([]);
 
-                trip.value = activeTrips[0] || null
-            }
-        }catch(e){
-            console.error('진행 중인 여행 정보 가져오기 실패: ', e)
-        }
+  const fetchCurrentTripMembers = async () => {
+    if (!currentTrip.value) return;
+
+    try {
+      const detail = await tripApi.getTripDetail(currentTrip.value.tripId);
+      console.log(detail);
+      currentTripMembers.value = Array.isArray(detail.members)
+        ? detail.members
+        : [];
+    } catch (error) {
+      console.error('Failed to fetch current trip members:', error);
+      currentTripMembers.value = [];
     }
-    return {trip, fetchActiveTrip}
+  };
 
-})
+  const currentTripMemberNicknames = ref([]);
+
+  const fetchCurrentTripMemberNicknames = async () => {
+    currentTripMemberNicknames.value = [];
+
+    // currentTripMembers는 이미 tripDetail에서 가져온 상태여야 함
+    const memberIds = currentTripMembers.value.map((m) => m.userId);
+
+    const nicknamePromises = memberIds.map(async (id) => {
+      try {
+        const user = await memberApi.get(id);
+        return { userId: id, nickname: user.nickname };
+      } catch (error) {
+        console.error(`Failed to fetch user ${id}:`, error);
+        return { userId: id, nickname: null };
+      }
+    });
+
+    currentTripMemberNicknames.value = await Promise.all(nicknamePromises);
+  };
+
+  return {
+    trips,
+    fetchTrips,
+    currentTrip,
+    fetchCurrentTripMembers,
+    currentTripMembers,
+    fetchCurrentTripMemberNicknames,
+    currentTripMemberNicknames,
+  };
+});
