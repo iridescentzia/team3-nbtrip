@@ -88,7 +88,7 @@ const saveAccount = async () => {
         <option v-for="bank in bankList" :key="bank.code" :value="bank.name">
           {{ bank.name }}
         </option>
-      </select>
+      </select><br>
 
       <label class="label">계좌 번호</label>
       <input
@@ -107,20 +107,20 @@ const saveAccount = async () => {
 
 <style scoped>
 .page-wrapper {
-  width: 384px;
-  height: 800px;
-  background: #f8f9fa;
-  margin: 0 auto;
-  padding: 80px 24px 32px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border-radius: 24px;
-  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
 }
 
 .form {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  padding-top: calc(56px + 24px); /* Header 높이만큼 여백 */
+  padding-left: 24px;
+  padding-right: 24px;
 }
 
 .label {

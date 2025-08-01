@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, defineEmits } from 'vue';
+import { ref, computed, onMounted, defineEmits, watch } from 'vue';
 import { registerMember, checkNicknameDuplicate } from '@/api/memberApi.js';
 import Button from '@/components/common/Button.vue';
 import { useRouter } from 'vue-router';
@@ -42,25 +42,6 @@ const isNicknameChecked = ref(false);
 const nicknameValid = ref(false);
 const nicknameMessage = ref('');
 
-// 비밀번호 일치 여부
-const isPasswordMatch = computed(
-    () => password.value === passwordConfirm.value
-);
-
-// 은행 코드 리스트(account DB)
-const bankCodes = ref([
-  { code: '003', name: '기업은행' },
-  { code: '004', name: '국민은행' },
-  { code: '011', name: '농협은행' },
-  { code: '020', name: '우리은행' },
-  { code: '023', name: 'SC제일은행' },
-  { code: '027', name: '한국시티은행' },
-  { code: '081', name: '하나은행' },
-  { code: '088', name: '신한은행' },
-  { code: '090', name: '카카오뱅크' },
-  { code: '092', name: '토스뱅크' },
-]);
-
 // 닉네임 중복 확인(POST /api/users/check-nickname)
 const checkNickname = async () => {
   if (!nickname.value.trim()) {
@@ -79,6 +60,77 @@ const checkNickname = async () => {
   }
 };
 
+// 이름 유효성 검사
+const isNameValid = computed(() => name.value.length >= 2);
+const nameMessage = computed(() =>
+    name.value
+        ? isNameValid.value
+            ? '올바른 이름입니다.'
+            : '이름은 2자 이상이어야 합니다.'
+        : ''
+);
+
+// 이메일 유효성 검사
+const emailMessage = ref('');
+const isEmailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value));
+watch(email, () => {
+  emailMessage.value = isEmailValid.value ? '올바른 이메일 형식입니다.' : '이메일 형식이 올바르지 않습니다.';
+});
+
+// 비밀번호 유효성 검사
+const passwordMessage = ref('');
+const isPasswordValid = computed(() => /^(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{9,}$/.test(password.value));
+watch(password, () => {
+  passwordMessage.value = isPasswordValid.value
+      ? '사용 가능한 비밀번호입니다.'
+      : '영문, 숫자, 특수문자를 포함해 9자 이상이어야 합니다.';
+});
+
+// 비밀번호 일치 여부
+const isPasswordMatch = computed(
+    () => password.value === passwordConfirm.value
+);
+
+// 전화번호 유효성 검사
+const isPhoneValid = computed(() => /^010-\d{4}-\d{4}$/.test(phoneNumber.value));
+const phoneMessage = computed(() =>
+    phoneNumber.value
+        ? isPhoneValid.value
+            ? '유효한 전화번호입니다.'
+            : '010-1234-5678 형식으로 입력해주세요.'
+        : ''
+);
+
+// 계좌번호 유효성 검사
+const isAccountValid = computed(() => /^\d{10,14}$/.test(accountNumber.value));
+const accountMessage = computed(() =>
+    accountNumber.value
+        ? isAccountValid.value
+            ? '유효한 계좌번호입니다.'
+            : '10~14자리 숫자만 입력 가능합니다.'
+        : ''
+);
+
+// 은행 선택 시 코드 설정
+// watch(bankName, () => {
+//   const selected = bankList.value.find(b => b.name === bankName.value);
+//   bankCode.value = selected ? selected.code : '';
+// });
+
+// 은행 코드 리스트(account DB)
+const bankCodes = ref([
+  { code: '003', name: '기업은행' },
+  { code: '004', name: '국민은행' },
+  { code: '011', name: '농협은행' },
+  { code: '020', name: '우리은행' },
+  { code: '023', name: 'SC제일은행' },
+  { code: '027', name: '한국시티은행' },
+  { code: '081', name: '하나은행' },
+  { code: '088', name: '신한은행' },
+  { code: '090', name: '카카오뱅크' },
+  { code: '092', name: '토스뱅크' },
+]);
+
 // 회원가입(POST /api/auth/register)
 const submitForm = async () => {
   if (
@@ -91,18 +143,26 @@ const submitForm = async () => {
       !bankCode.value ||
       !accountNumber.value
   ) {
-    alert('모든 항목을 입력해주세요.');
-    return;
-  }
-  if (!isNicknameChecked.value || !nicknameValid.value) {
-    alert('닉네임 중복 확인을 해주세요.');
-    return;
-  }
-  if (!isPasswordMatch.value) {
-    alert('비밀번호가 일치하지 않습니다.');
-    return;
-  }
-  try {
+      alert('모든 항목을 입력해주세요.');
+      return;
+    }
+    if (!isNicknameChecked.value || !nicknameValid.value) {
+      alert('닉네임 중복 확인을 해주세요.');
+      return;
+    }
+    if (!isPasswordMatch.value || !isPasswordValid.value) {
+      alert('비밀번호를 다시 확인해주세요.');
+      return;
+    }
+    if (!isPhoneValid.value) {
+      alert('전화번호 형식을 확인해주세요.');
+      return;
+    }
+    if (!isAccountValid.value) {
+      alert('계좌번호 형식을 확인해주세요.');
+      return;
+    }
+    try {
     const res = await registerMember({
       email: email.value,
       password: password.value,
@@ -116,7 +176,7 @@ const submitForm = async () => {
     });
     if (res.success) {
       alert('회원가입이 완료되었습니다!');
-      emit('signup-complete');
+      router.push('/login');
     }
   } catch (err) {
     alert(err.message || '회원가입 실패');
@@ -151,6 +211,11 @@ const submitForm = async () => {
       <!-- 이름 -->
       <label class="label">이름</label>
       <input v-model="name" type="text" class="input-box" />
+      <div class="check">
+        <span v-if="nameMessage" :class="isNameValid ? 'success' : 'error'">
+          {{ nameMessage }}
+        </span>
+      </div>
 
       <!-- 전화번호 -->
       <label class="label">전화번호</label>
@@ -160,23 +225,33 @@ const submitForm = async () => {
           class="input-box"
           placeholder="010-1234-5678"
       />
+      <div class="check">
+        <span v-if="phoneMessage" :class="isPhoneValid ? 'success' : 'error'">
+          {{ phoneMessage }}
+        </span>
+      </div>
 
       <!-- 이메일 -->
       <label class="label">이메일</label>
       <input v-model="email" type="email" class="input-box" />
+      <div class="check">
+        <span v-if="emailMessage" :class="isEmailValid ? 'success' : 'error'">
+          {{ emailMessage }}
+        </span>
+      </div>
 
       <!-- 비밀번호 -->
       <label class="label">비밀번호</label>
       <input v-model="password" type="password" class="input-box" />
-      <p class="password-rules">
-        • 비밀번호는 영문 소문자, 숫자를 포함해 최소 9자리 이상이어야 한다.<br />
-        • 3자 이상의 연속되는 글자, 숫자는 사용이 불가능하다.
-      </p>
+      <span class="password-rules">
+        • 영문 소문자, 숫자, 특수문자를 포함해 최소 9자리 이상이어야 합니다.<br />
+        • 3자 이상의 연속되는 글자, 숫자는 사용이 불가능합니다.
+      </span>
 
       <!-- 비밀번호 확인 -->
       <label class="label">비밀번호 확인</label>
       <input v-model="passwordConfirm" type="password" class="input-box" />
-      <div class="password-check">
+      <div class="check">
         <span v-if="passwordConfirm && !isPasswordMatch" class="error"
         >비밀번호가 동일하지 않습니다.</span
         >
@@ -200,6 +275,11 @@ const submitForm = async () => {
       <!-- 계좌번호 -->
       <label class="label">계좌번호</label>
       <input v-model="accountNumber" type="text" class="input-box" />
+      <div class="check">
+        <span v-if="accountMessage" :class="isAccountValid ? 'success' : 'error'">
+          {{ accountMessage }}
+        </span>
+      </div>
     </div>
 
     <!-- 회원가입 버튼 -->
@@ -314,7 +394,7 @@ const submitForm = async () => {
   line-height: 1.5;
 }
 
-.password-check {
+.check {
   font-size: 10px;
   margin-top: 8px;
 }

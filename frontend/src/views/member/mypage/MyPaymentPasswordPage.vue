@@ -8,14 +8,14 @@ import Header from '@/components/layout/Header.vue'
 import Button from '@/components/common/Button.vue'
 
 // 상태 변수
-const password = ref('')
-const errorMessage = ref('')
-const router = useRouter()
+const password = ref('');
+const errorMessage = ref('');
+const router = useRouter();
 
 // Header에서 이전 페이지로 이동
 const goBack = () => {
   router.back()
-}
+};
 
 // 완료 버튼 클릭 시 실행되는 비밀번호 검증 함수
 const handleVerifyPassword = async () => {
@@ -33,7 +33,7 @@ const handleVerifyPassword = async () => {
     errorMessage.value = err.message || '오류가 발생했습니다.'
     console.error(err)
   }
-}
+};
 </script>
 
 <template>
@@ -42,21 +42,24 @@ const handleVerifyPassword = async () => {
     <Header title="결제 수단 관리" :back-action="goBack"/>
 
     <!-- 안내 문구 -->
-    <p class="guide-text">
-      개인 정보 보호를 위해<br />
-      비밀 번호를 입력해주세요.
-    </p>
+    <main class="main-content">
+      <p class="guide-text">
+        개인 정보 보호를 위해<br />
+        비밀 번호를 입력해주세요.
+      </p>
 
-    <!-- 비밀번호 입력 필드 -->
-    <input
-        type="password"
-        v-model="password"
-        placeholder="비밀번호 입력"
-        class="password-input"
-    />
+      <!-- 비밀번호 입력 -->
+      <input
+          type="password"
+          v-model="password"
+          placeholder="비밀번호 입력"
+          class="password-input"
+          @keyup.enter="handleVerifyPassword"
+      />
 
-    <!-- 에러 메시지 출력 -->
-    <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+      <!-- 에러 메시지 출력 -->
+      <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+    </main>
 
     <!-- 완료 버튼 -->
       <Button label="완료" @click="handleVerifyPassword" />
@@ -65,53 +68,50 @@ const handleVerifyPassword = async () => {
 
 <style scoped>
 .page-wrapper {
-  --theme-bg: #f8f9fa;
-  --theme-text: #333333;
-  --theme-text-light: #888888;
-
   width: 100%;
-  max-width: 24rem; /* 384px */
-  height: 844px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-  background-color: var(--theme-bg);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border-radius: 1.5rem;
-  box-sizing: border-box;
+  height: 100%;
+  background: #f8fafc;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  overflow: hidden;
 }
 
-/* 안내 텍스트 */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-top: calc(56px + 24px); /* Header 높이 */
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* 안내문 */
 .guide-text {
   text-align: center;
-  color: var(--theme-text);
-  font-size: 1.125rem;
+  color: #4a4a4a;
+  font-size: 20px;
   font-weight: 800;
   line-height: 1.5;
-  margin-top: 10rem; /* 160px */
-  margin-bottom: 2.5rem; /* 40px */
+  margin-top: 160px;
+  margin-bottom: 40px;
 }
 
-/* 비밀번호 입력 박스 */
+/* 입력창 */
 .password-input {
-  width: 100%;
-  height: 3.25rem;
-  background-color: #ffffff;
-  border-radius: 0.75rem;
+  width: 100%; /* 부모 영역의 너비를 100% 채움 */
+  height: 52px;
+  background: #fff;
+  border-radius: 12px;
   border: 2px solid #e2e8f0;
-  padding: 0 1rem;
-  font-size: 1rem;
-  margin-bottom: 1.25rem;
-  box-sizing: border-box;
+  padding: 0 16px;
+  font-size: 16px;
+  margin-bottom: 16px;
+  box-sizing: border-box; /* 패딩과 테두리를 너비에 포함 */
 }
 
-/* 에러 메시지 스타일 */
+/* 에러 메시지 */
 .error-message {
   color: red;
-  font-size: 0.875rem;
-  margin-bottom: 0.75rem;
+  font-size: 14px;
+  margin-bottom: 12px;
 }
 </style>

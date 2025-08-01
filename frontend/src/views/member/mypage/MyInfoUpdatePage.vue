@@ -8,23 +8,23 @@ import { checkNicknameDuplicate, updateMyInfo, getMyInfo } from '@/api/memberApi
 const router = useRouter()
 
 // 사용자 정보 상태
-const nickname = ref('')
-const name = ref('')
-const phoneNumber = ref('')
-const email = ref('')
-const password = ref('')
-const passwordConfirm = ref('')
+const nickname = ref('');
+const name = ref('');
+const phoneNumber = ref('');
+const email = ref('');
+const password = ref('');
+const passwordConfirm = ref('');
 
 // 닉네임 중복 확인 상태
-const isNicknameChecked = ref(false)
-const nicknameValid = ref(false)
-const nicknameMessage = ref('')
+const isNicknameChecked = ref(false);
+const nicknameValid = ref(false);
+const nicknameMessage = ref('');
 
 // 비밀번호 일치 여부
-const isPasswordMatch = computed(() => password.value === passwordConfirm.value)
+const isPasswordMatch = computed(() => password.value === passwordConfirm.value);
 
 // 뒤로가기
-const goBack = () => router.back()
+const goBack = () => router.back();
 
 // 마운트 시 기존 사용자 정보 불러오기
 onMounted(async () => {
@@ -39,7 +39,7 @@ onMounted(async () => {
   } catch (err) {
     alert('회원 정보 조회 실패')
   }
-})
+});
 
 // 닉네임 중복 확인
 const checkNickname = async () => {
@@ -57,7 +57,7 @@ const checkNickname = async () => {
     isNicknameChecked.value = false
     nicknameMessage.value = err.message || '이미 사용 중인 닉네임입니다.'
   }
-}
+};
 
 // 저장 버튼 클릭 시
 const submitUpdate = async () => {
@@ -91,11 +91,11 @@ const submitUpdate = async () => {
   } catch (err) {
     alert(err.message || '회원 정보 수정 실패')
   }
-}
+};
 </script>
 
 <template>
-  <div class="update-container">
+  <div class="update-page">
     <Header title="회원 정보" :back-action="goBack" />
 
     <div class="form-area">
@@ -146,25 +146,20 @@ const submitUpdate = async () => {
 </template>
 
 <style scoped>
-.update-container {
-  position: relative;
-  width: 384px;
-  height: 800px;
-  margin: 0 auto;
-  background: #f8fafc;
-  border-radius: 24px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  outline: 1px solid black;
-  overflow: hidden;
+.update-page {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  background: var(--theme-bg);
+  padding-top: 76px; /* Header 높이 보정 */
+  padding-bottom: 16px;
+  box-sizing: border-box;
 }
 
 .form-area {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
-  padding-bottom: 80px;
+  padding: 0 24px;
   box-sizing: border-box;
 }
 
@@ -205,7 +200,7 @@ const submitUpdate = async () => {
 .nickname-check-button {
   width: 84px;
   height: 52px;
-  background: #fddf99;
+  background: var(--theme-primary);
   border: none;
   border-radius: 12px;
   font-size: 14px;
@@ -235,23 +230,7 @@ const submitUpdate = async () => {
 }
 
 .password-check {
-  font-size: 10px;
+  font-size: 12px;
   margin-top: 8px;
-}
-
-.bottom-fixed {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 64px;
-  background: #f8f9fa;
-  border-top: 1px solid #e2e8f0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 24px;
-  box-sizing: border-box;
 }
 </style>

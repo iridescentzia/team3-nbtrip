@@ -1,6 +1,7 @@
 <script setup>
 import { useRouter } from "vue-router";
 import Header from '@/components/layout/Header.vue'
+import { ChevronRight } from 'lucide-vue-next';
 
 const router = useRouter()
 
@@ -27,12 +28,12 @@ const goBack = () => {
 </script>
 
 <template>
-  <div class="terms-wrapper">
+  <div class="page-wrapper">
     <!-- 헤더 -->
     <Header title="이용 약관" :back-action="goBack" /><br>
 
     <!-- 약관 카드 리스트 -->
-    <section class="section">
+    <section class="form">
       <div
           v-for="(card, index) in cards"
           :key="index"
@@ -40,50 +41,43 @@ const goBack = () => {
           @click="router.push({ path: card.route, query: { viewOnly: true } })"
       >
         {{ card.title }}
-        <span class="arrow">›</span>
+        <ChevronRight class="arrow"/>
       </div>
     </section>
   </div>
 </template>
 
 <style scoped>
-.terms-wrapper {
-  --theme-bg: #f8f9fa;
-  --theme-text: #333333;
-  --theme-text-light: #888888;
-
+.page-wrapper {
   width: 100%;
-  max-width: 24rem; /* 384px */
-  height: 844px;
-  margin: 0 auto;
-  background-color: var(--theme-bg);
-  border-radius: 1.5rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  padding: 1.25rem;
-  box-sizing: border-box;
-  overflow-y: auto;
-}
-
-/* 카드 리스트 구역 */
-.section {
+  height: 100%;
+  background: #f8fafc;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem; /* 20px */
-  margin-top: 1.5rem;
 }
 
-/* 개별 약관 카드 */
+.form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-top: calc(56px + 24px); /* header height + 여백 */
+  padding-left: 24px;
+  padding-right: 24px;
+  gap: 16px;
+}
+
+/* 약관 카드 스타일 */
 .terms-card {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(0 0 0 / 0.1), 0 1px 2px -1px rgba(0 0 0 / 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.25rem 1.5rem;
-  background-color: white;
-  border-radius: 1rem;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--theme-text);
-  box-shadow: 0 1px 3px rgba(0 0 0 / 0.1), 0 1px 2px -1px rgba(0 0 0 / 0.1);
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
@@ -94,6 +88,6 @@ const goBack = () => {
 
 .arrow {
   font-size: 1.25rem;
-  color: #bbbbbb;
+  color: #bbb;
 }
 </style>
