@@ -59,56 +59,59 @@ const handleVerifyPassword = async () => {
     <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
 
     <!-- 완료 버튼 -->
-    <Button label="완료" @click="handleVerifyPassword" />
+      <Button label="완료" @click="handleVerifyPassword" />
   </div>
 </template>
 
 <style scoped>
-/* 전체 박스 스타일 */
 .page-wrapper {
-  width: 384px;
-  height: 800px;
-  background: #f8fafc;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
-  border-radius: 24px;
-  outline: 1px solid black;
-  outline-offset: -1px;
+  --theme-bg: #f8f9fa;
+  --theme-text: #333333;
+  --theme-text-light: #888888;
+
+  width: 100%;
+  max-width: 24rem; /* 384px */
+  height: 844px;
   margin: 0 auto;
-  padding: 32px 24px;
+  padding: 2rem 1.5rem;
+  background-color: var(--theme-bg);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border-radius: 1.5rem;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  overflow: hidden;
 }
 
 /* 안내 텍스트 */
 .guide-text {
   text-align: center;
-  color: #4a4a4a;
-  font-size: 20px;
+  color: var(--theme-text);
+  font-size: 1.125rem;
   font-weight: 800;
   line-height: 1.5;
-  margin-top: 160px;
-  margin-bottom: 40px;
+  margin-top: 10rem; /* 160px */
+  margin-bottom: 2.5rem; /* 40px */
 }
 
 /* 비밀번호 입력 박스 */
 .password-input {
-  width: 320px;
-  height: 52px;
-  background: #fff;
-  border-radius: 12px;
+  width: 100%;
+  height: 3.25rem;
+  background-color: #ffffff;
+  border-radius: 0.75rem;
   border: 2px solid #e2e8f0;
-  padding: 0 16px;
-  font-size: 16px;
-  margin-bottom: 16px;
+  padding: 0 1rem;
+  font-size: 1rem;
+  margin-bottom: 1.25rem;
+  box-sizing: border-box;
 }
 
 /* 에러 메시지 스타일 */
 .error-message {
   color: red;
-  font-size: 14px;
-  margin-bottom: 12px;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
 }
 </style>

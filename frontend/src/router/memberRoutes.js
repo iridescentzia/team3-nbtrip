@@ -88,14 +88,14 @@ export default [
     // 공지사항 및 FAQ
     {
         path: '/mypage/faq',
-        name: 'FaqPage',
+        name: 'MyPageFaqPage',
         component: () => import('@/views/member/mypage/FAQ.vue')
     },
 
     // 이용 약관
     {
         path: '/mypage/terms',
-        name: 'TermsViewOnly',
+        name: 'MyPageTermsPage',
         component: () => import('@/views/member/mypage/Terms.vue'),
         props: { viewOnly: true }
     },

@@ -115,103 +115,106 @@ const logout = async () => {
 
 <style scoped>
 .mypage-wrapper {
-  width: 384px;
-  height: 800px;
-  position: relative;
-  background: #f8fafc;
-  box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
-  overflow: auto;
-  border-radius: 24px;
-  outline: 1px black solid;
-  outline-offset: -1px;
+  --theme-primary: rgba(255, 209, 102, 0.65);
+  --theme-bg: #f8f9fa;
+  --theme-text: #333333;
+  --theme-text-light: #888888;
+
+  width: 100%;
+  max-width: 24rem;
+  height: 844px;
   margin: 0 auto;
-  padding: 32px 32px 0;
-  box-sizing: border-box;
+  background-color: var(--theme-bg);
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
 }
 
 .content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  padding: 1.25rem;
+  padding-top: calc(56px + 1.25rem);
+  overflow-y: auto;
 }
 
 .profile-section {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  justify-content: flex-start;
-  margin: 12px 0 24px;
-  padding-left: 8px;
-  gap: 20px;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-left: 1rem;
 }
 
 .profile-img {
   width: 70px;
   height: 70px;
-  object-fit: contain;
-  background-color: rgba(255, 209, 102, 0.65);
-  border-radius: 50%;
+  background-color: var(--theme-primary);
+  border-radius: 9999px;
   display: flex;
   align-items: center;
   justify-content: center;
+  object-fit: contain;
   padding: 10px;
 }
 
 .nickname {
-  margin-top: 10px;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
-  color: #333;
+  color: var(--theme-text);
 }
 
 .icon-section {
   display: flex;
   justify-content: center;
-  gap: 48px;
-  margin: 24px 0 32px;
-  padding: 10px;
+  gap: 50px;
+  margin-bottom: 2rem;
+  padding: 0 0.5rem;
 }
 
 .icon-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: #444;
+  color: var(--theme-text);
   cursor: pointer;
 }
 
 .icon-button {
   background-color: white;
-  border: 1px solid #dcdcdc;
-  border-radius: 50%;
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
   width: 54px;
   height: 54px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
 }
 
 .menu-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
 }
 
 .menu-item {
-  background: white;
-  padding: 14px 20px;
-  border-radius: 12px;
-  font-size: 15px;
+  background-color: white;
+  padding: 0.875rem 1.25rem;
+  border-radius: 0.75rem;
+  font-size: 0.9375rem;
   font-weight: 600;
-  color: #333;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  color: var(--theme-text);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -219,21 +222,23 @@ const logout = async () => {
 }
 
 .arrow {
-  font-size: 18px;
-  color: #bbb;
+  font-size: 1.125rem;
+  color: #bbbbbb;
 }
 
 .logout {
   text-align: right;
   color: #ed5c5c;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
+  margin-top: auto;
+  padding-bottom: 1rem;
 }
 
 .footer {
-  padding: 12px 0 16px;
-  margin-top: auto;
+  padding: 1rem 0;
+  background-color: var(--theme-bg);
 }
 </style>
