@@ -1,5 +1,35 @@
 <script setup>
+import { ref } from 'vue'
+import TravelListCard from '@/components/mypage/TravelListCard.vue'
 
+// 샘플 여행 데이터
+const trips = ref([
+  {
+    tripId: 1,
+    tripName: '서울 우정 여행',
+    startDate: '2025-07-10',
+    endDate: '2025-07-12'
+  },
+  {
+    tripId: 2,
+    tripName: '부산 바다 여행',
+    startDate: '2025-06-15',
+    endDate: '2025-06-17'
+  },
+  {
+    tripId: 3,
+    tripName: '제주도 힐링 여행',
+    startDate: '2025-05-20',
+    endDate: '2025-05-23'
+  }
+])
+
+// 여행 상세 페이지로 이동하는 함수
+const goToTripDetail = (tripData) => {
+  console.log('클릭된 여행:', tripData)
+  // 여기에 라우터 이동 로직을 추가하세요
+  // 예: router.push(`/trip/${tripData.tripId}`)
+}
 </script>
 
 <template>
@@ -66,4 +96,10 @@
   color: #333;
 }
 
+.menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
 </style>
