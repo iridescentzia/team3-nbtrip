@@ -2,13 +2,14 @@ package org.scoula.settlement.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.scoula.settlement.domain.SettlementVO;
+import org.scoula.settlement.exception.domain.SettlementVO;
 import org.scoula.settlement.dto.SettlementDTO;
 import org.scoula.settlement.service.SettlementService;
+import org.scoula.security.accounting.domain.CustomUser;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -21,7 +22,7 @@ public class SettlementController {
 
     // private final NotificationService notificationService;
     // private final GroupService groupService;
-  
+
     /**
      * 정산 1단계: 정산 요약 정보 조회 API
      * 특정 여행의 총 사용 금액과 멤버별 총 결제 금액을 조회함.
@@ -29,9 +30,19 @@ public class SettlementController {
      * @param tripId 조회할 여행의 ID
      * @return ResponseEntity<SettlementSummaryResponseDto> 정산 요약 정보 DTO를 담은 응답
      */
-    // FIX: API 경로를 프론트엔드 요청과 일치하도록 수정.
     @GetMapping("/{tripId}/summary")
-    public ResponseEntity<SettlementDTO.SettlementSummaryResponseDto> getSettlementSummary(@PathVariable int tripId) {
+    public ResponseEntity<SettlementDTO.SettlementSummaryResponseDto> getSettlementSummary(
+            @PathVariable int tripId,
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        Integer userId = customUser.getUserId();
+        log.info("정산 요약 조회: userId={}, tripId={}", userId, tripId);
+
+        // 그룹장 권한 체크
+        if(!settlementService.canRequestSettlement(userId, tripId)) {
+            return ResponseEntity.status(403).body(null);
+        }
+
         // SettlementService를 호출하여 비즈니스 로직을 수행
         SettlementDTO.SettlementSummaryResponseDto summaryDto = settlementService.getSettlementSummary(tripId);
 
@@ -54,6 +65,7 @@ public class SettlementController {
         // 계산된 결과를 ResponseEntity에 담아 프론트엔드로 반환
         return ResponseEntity.ok(resultDto);
     }
+
     // ==================== 조회 API ====================
 
     /**
@@ -61,8 +73,12 @@ public class SettlementController {
      * 그룹장이 "정산요청하기 페이지"에서 모든 그룹원 간 정산 관계 리스트 전체를 봄
      */
     @GetMapping("/{tripId}")
-    public ResponseEntity<List<SettlementVO>> getSettlementsByTripId(@PathVariable("tripId") int tripId) {
-        log.info("🟢GET /api/settlements/tripId={}", tripId);
+    public ResponseEntity<List<SettlementVO>> getSettlementsByTripId(
+            @PathVariable("tripId") int tripId,
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        Integer userId = customUser.getUserId();
+        log.info("🟢GET /api/settlements/tripId={}, userId={}", tripId, userId);
         return ResponseEntity.ok(settlementService.getSettlementsByTripId(tripId));
     }
 
@@ -73,11 +89,10 @@ public class SettlementController {
     @GetMapping("/my/{tripId}")
     public ResponseEntity<SettlementDTO.PersonalSettlementResponseDto> getMySettlements(
             @PathVariable("tripId") int tripId,
-            Principal principal
+            @AuthenticationPrincipal CustomUser customUser
     ) {
-        log.info("🟢GET /api/settlements/my/tripId={}", tripId);
-        int userId = extractUserId(principal);
-        // int userId = 5; // 앨리스 - 임시 데이터
+        Integer userId = customUser.getUserId();
+        log.info("🟢GET /api/settlements/my/tripId={}, userId={}", tripId, userId);
         return ResponseEntity.ok(settlementService.getMySettlements(userId, tripId));
     }
 
@@ -85,8 +100,11 @@ public class SettlementController {
      * 3. 사용자의 전체 정산 상태 조회 (시나리오 6,7번)
      */
     @GetMapping("/status")
-    public ResponseEntity<SettlementDTO.MySettlementStatusResponseDto> getMySettlementStatus(Principal principal) {
-        int userId = extractUserId(principal);
+    public ResponseEntity<SettlementDTO.MySettlementStatusResponseDto> getMySettlementStatus(
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        Integer userId = customUser.getUserId();
+        log.info("정산 상태 조회: userId={}", userId);
         return ResponseEntity.ok(settlementService.getMyOverallSettlementStatus(userId));
     }
 
@@ -94,8 +112,12 @@ public class SettlementController {
      * 4. 여행별 미정산 존재 여부
      */
     @GetMapping("/{tripId}/remaining")
-    public ResponseEntity<SettlementDTO.RemainingSettlementResponseDto> hasRemainingUnsettled(@PathVariable int tripId) {
-        log.info("🟢GET /api/settlements/tripId={}/remaining", tripId);
+    public ResponseEntity<SettlementDTO.RemainingSettlementResponseDto> hasRemainingUnsettled(
+            @PathVariable int tripId,
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        Integer userId = customUser.getUserId();
+        log.info("🟢GET /api/settlements/tripId={}/remaining, userId={}", tripId, userId);
         return ResponseEntity.ok(settlementService.getRemainingSettlements(tripId));
     }
 
@@ -109,11 +131,11 @@ public class SettlementController {
     @PostMapping("")
     public ResponseEntity<SettlementDTO.CreateSettlementResponseDto> createSettlementRequest(
             @RequestBody SettlementDTO.CreateSettlementRequestDto request,
-            Principal principal
+            @AuthenticationPrincipal CustomUser customUser
     ) {
-        log.info("🟢POST /api/settlements - create settlement request for tripId={}", request.getTripId());
-        int userId = extractUserId(principal);
+        Integer userId = customUser.getUserId();
         int tripId = request.getTripId();
+        log.info("🟢POST /api/settlements - create settlement request for tripId={}, userId={}", tripId, userId);
 
         SettlementDTO.CreateSettlementResponseDto response = settlementService.createSettlementRequest(userId, tripId);
 
@@ -142,16 +164,15 @@ public class SettlementController {
     public ResponseEntity<String> updateStatus(
             @PathVariable int settlementId,
             @RequestBody SettlementDTO.UpdateSettlementStatusRequestDto request,
-            Principal principal
+            @AuthenticationPrincipal CustomUser customUser
     ) {
+        Integer loginUserId = customUser.getUserId();
         String status = request.getStatus();
-        log.info("🟢PUT /api/settlements/settlementId={}, status={}", settlementId, status);
+        log.info("🟢PUT /api/settlements/settlementId={}, status={}, userId={}", settlementId, status, loginUserId);
 
         if (!isValidStatus(status)) {
             return ResponseEntity.badRequest().body("Invalid status.");
         }
-
-        int loginUserId = extractUserId(principal);
 
         // sender 권한 체크
         if (!isSender(settlementId, loginUserId)) {
@@ -174,9 +195,11 @@ public class SettlementController {
     @PostMapping("/transfer")
     public ResponseEntity<SettlementDTO.TransferResponseDto> transferToUsers(
             @RequestBody SettlementDTO.TransferRequestDto request,
-            Principal principal
+            @AuthenticationPrincipal CustomUser customUser
     ) {
-        int loginUserId = extractUserId(principal);
+        Integer loginUserId = customUser.getUserId();
+        log.info("송금 처리 요청: userId={}, settlementIds={}", loginUserId, request.getSettlementIds());
+
         SettlementDTO.TransferResponseDto response = settlementService.transferToUsers(request.getSettlementIds(), loginUserId);
 
         return response.isSuccess() ? ResponseEntity.ok(response) : ResponseEntity.badRequest().body(response);
@@ -228,24 +251,6 @@ public class SettlementController {
             default:
                 return false;
         }
-    }
-
-    /**
-     * 로그인 사용자 ID 추출
-     */
-    private int extractUserId(Principal principal) {
-        // TODO: Security와 연동 후 정식으로 교체
-        // if(principal == null) {
-        //     log.warn("Principal is null");
-        //     return 1;
-        // }
-        // try {
-        //     return Integer.parseInt(principal.getName());
-        // } catch (Exception e) {
-        //     log.warn("Principal parse 실패 [{}]", principal.getName());
-        //     return 1;
-        // }
-        return 3; // 테스트용
     }
 
     /**

@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.scoula.settlement.mapper.SettlementMapper">
     <!-- ResultMap: 컬럼명 <-> SettlementVO 필드명 매핑 -->
-    <resultMap id="settlementMap" type="org.scoula.settlement.domain.SettlementVO">
+    <resultMap id="settlementMap" type="org.scoula.settlement.exception.domain.SettlementVO">
         <id column="settlement_id" property="settlementId"/>
         <result column="trip_id" property="tripId"/>
         <result column="sender_id" property="senderId"/>
@@ -14,7 +14,7 @@
     </resultMap>
 
     <!-- ResultMap: 닉네임 포함 SettlementVO 매핑 -->
-    <resultMap id="settlementWithNicknamesMap" type="org.scoula.settlement.domain.SettlementVO">
+    <resultMap id="settlementWithNicknamesMap" type="org.scoula.settlement.exception.domain.SettlementVO">
         <id column="settlement_id" property="settlementId"/>
         <result column="trip_id" property="tripId"/>
         <result column="sender_id" property="senderId"/>
@@ -185,8 +185,8 @@
     <select id="getRawSettlementDataByTripId" resultType="org.scoula.settlement.dto.SettlementDTO$RawSettlementDataDTO">
         SELECT
             p.payment_id,
-            p.user_id AS payer_id,
-            pp.user_id AS participant_id,
+            p.user_id AS payer_id,           -- ✅ userId 조회
+            pp.user_id AS participant_id,    -- ✅ userId 조회
             pp.split_amount
         FROM
             payment p
@@ -212,5 +212,83 @@
             users receiver ON s.receiver_id = receiver.user_id
         WHERE
             s.trip_id = #{tripId}
+    </select>
+
+    <select id="getMySettlementsByTripId" resultMap="settlementWithNicknamesMap">
+        SELECT s.settlement_id, s.trip_id, s.sender_id, s.receiver_id,
+               s.settlement_status, s.amount,
+               sender.nickname AS sender_nickname,
+               receiver.nickname AS receiver_nickname
+        FROM settlement s
+                 JOIN users sender ON s.sender_id = sender.user_id
+                 JOIN users receiver ON s.receiver_id = receiver.user_id
+        WHERE s.trip_id = #{tripId}
+          AND (s.sender_id = #{userId} OR s.receiver_id = #{userId})
+        ORDER BY s.settlement_id
+    </select>
+
+    <!-- 특정 사용자가 특정 여행에서 보내야 할 정산들만 조회 -->
+    <select id="getMyOutgoingSettlementsByTripId" resultMap="settlementWithNicknamesMap">
+        SELECT
+            s.settlement_id,
+            s.trip_id,
+            s.sender_id,
+            s.receiver_id,
+            s.settlement_status,
+            s.amount,
+            sender.nickname as sender_nickname,
+            receiver.nickname as receiver_nickname
+        FROM settlement s
+                 JOIN users sender ON s.sender_id = sender.user_id
+                 JOIN users receiver ON s.receiver_id = receiver.user_id
+        WHERE s.trip_id = #{tripId}
+          AND s.sender_id = #{userId}
+        ORDER BY s.settlement_id
+    </select>
+
+    <!-- 특정 사용자가 특정 여행에서 받아야 할 정산들만 조회 -->
+    <select id="getMyIncomingSettlementsByTripId" resultMap="settlementWithNicknamesMap">
+        SELECT
+            s.settlement_id,
+            s.trip_id,
+            s.sender_id,
+            s.receiver_id,
+            s.settlement_status,
+            s.amount,
+            sender.nickname as sender_nickname,
+            receiver.nickname as receiver_nickname
+        FROM settlement s
+                 JOIN users sender ON s.sender_id = sender.user_id
+                 JOIN users receiver ON s.receiver_id = receiver.user_id
+        WHERE s.trip_id = #{tripId}
+          AND s.receiver_id = #{userId}
+        ORDER BY s.settlement_id
+    </select>
+
+    <!-- 사용자별 정산 상태 통계 쿼리 -->
+    <select id="getMySettlementStatusCounts" resultType="org.scoula.settlement.dto.SettlementDTO$MySettlementStatusResponseDto">
+        SELECT
+            SUM(CASE WHEN sender_id = #{userId} AND settlement_status = 'PENDING' THEN 1 ELSE 0 END) as pendingToSendCount,
+            SUM(CASE WHEN sender_id = #{userId} AND settlement_status = 'PROCESSING' THEN 1 ELSE 0 END) as processingToSendCount,
+            SUM(CASE WHEN receiver_id = #{userId} AND settlement_status = 'PENDING' THEN 1 ELSE 0 END) as pendingToReceiveCount,
+            SUM(CASE WHEN receiver_id = #{userId} AND settlement_status = 'PROCESSING' THEN 1 ELSE 0 END) as processingToReceiveCount,
+            SUM(CASE WHEN (sender_id = #{userId} OR receiver_id = #{userId}) AND settlement_status = 'COMPLETED' THEN 1 ELSE 0 END) as completedCount
+        FROM settlement
+        WHERE sender_id = #{userId} OR receiver_id = #{userId}
+    </select>
+
+    <!-- 여행별 정산 상태 통계 집계 쿼리 -->
+    <select id="getRemainingSettlementCounts" resultType="org.scoula.settlement.dto.SettlementDTO$RemainingSettlementResponseDto">
+        SELECT
+            COUNT(*) as totalCount,
+            SUM(CASE WHEN settlement_status = 'PENDING' THEN 1 ELSE 0 END) as pendingCount,
+            SUM(CASE WHEN settlement_status = 'PROCESSING' THEN 1 ELSE 0 END) as processingCount,
+            SUM(CASE WHEN settlement_status = 'COMPLETED' THEN 1 ELSE 0 END) as completedCount,
+            CASE WHEN SUM(CASE WHEN settlement_status IN ('PENDING', 'PROCESSING') THEN 1 ELSE 0 END) > 0
+                     THEN true
+                 ELSE false
+                END as hasRemaining
+        FROM settlement
+        WHERE trip_id = #{tripId}
     </select>
 </mapper>

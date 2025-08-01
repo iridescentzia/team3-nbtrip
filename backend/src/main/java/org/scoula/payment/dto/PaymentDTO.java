@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.scoula.payment.domain.PaymentType;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,4 +18,7 @@ public class PaymentDTO {
     private int merchantId;
     private int amount;
     private PaymentType paymentType;
+
+    // 결제 참여자
+    private List<ParticipantDTO> participants;
 }

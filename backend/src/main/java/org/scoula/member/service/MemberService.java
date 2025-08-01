@@ -3,6 +3,8 @@ package org.scoula.member.service;
 import org.scoula.member.dto.*;
 import org.scoula.member.exception.*;
 
+import java.time.LocalDateTime;
+
 public interface MemberService {
     // 회원가입
     ApiResponse registerMember(MemberDTO memberDTO) throws DuplicateEmailException, DuplicateNicknameException;
@@ -30,4 +32,7 @@ public interface MemberService {
 
     // 닉네임으로 userId 조회
     int findUserIdByNickname(String nickname) throws UserNotFoundException;
+
+    // 비밀번호 검증 요청
+    boolean verifyPassword(int userId, String password) throws UserNotFoundException, PasswordMismatchException;
 }

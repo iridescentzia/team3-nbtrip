@@ -21,7 +21,7 @@ export const calculateFinalSettlement = (tripId) => {
 };
 
 /**
- *  정산 2단계: 정산 요청 생성 API
+ *  정산 3단계: 정산 요청 생성 API
  * @param {object} payload - { tripId }
  */
 export const requestSettlement = (payload) => {
@@ -29,20 +29,41 @@ export const requestSettlement = (payload) => {
 };
 
 /**
- * 정산 3단계: 개인화된 정산 내역 조회 API
+ * 개인별 정산 내역 조회 API
  * @param {number} tripId - 여행 ID
- * @returns {Promise} - Axios Promise 객체
+ * @return {Promise} - Axios Promise
  */
 export const getMySettlementDetails = (tripId) => {
-  // 백엔드 컨트롤러에 새로 만든 주소를 호출합니다.
-  // userId는 JWT 토큰을 통해 서버에서 자동으로 인식하므로 보낼 필요가 없습니다.
   return apiClient.get(`/settlements/my/${tripId}`);
 };
 
 /**
- *  정산 3단계: 송금 처리 API
+ * 여행별 정산 결과 조회 API (그룹장용)
+ * @param {number} tripId - 여행 ID
+ */
+export const getSettlementsByTripId = (tripId) => {
+  return apiClient.get(`/settlements/${tripId}`);
+};
+
+/**
+ * 송금 처리 API
  * @param {object} payload - { settlementIds: [...] }
  */
 export const transferMoney = (payload) => {
   return apiClient.post('/settlements/transfer', payload);
+};
+
+/**
+ * 여행 미정산 존재 여부 조회
+ * @param {number} tripId - 여행 ID
+ */
+export const getRemainingSettlements = (tripId) => {
+  return apiClient.get(`/settlements/${tripId}/remaining`);
+};
+
+/**
+ * 사용자 전체 정산 상태 조회
+ */
+export const getMySettlementStatus = () => {
+  return apiClient.get('/settlements/status');
 };

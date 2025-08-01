@@ -35,6 +35,10 @@ public class MyPageDTO {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updatedAt;
+
     private String fcmToken;
 
     // 비밀번호 관련 필드
@@ -50,13 +54,14 @@ public class MyPageDTO {
     private String newPasswordConfirm;  // 새 비밀번호 확인
 
     // 사용자 정보 조회용 생성자(비밀번호 제외)
-    public MyPageDTO(Integer userId, String email, String nickname, String name, String phoneNumber, LocalDateTime createdAt) {
+    public MyPageDTO(Integer userId, String email, String nickname, String name, String phoneNumber, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.userId = userId;
         this.email = email;
         this.nickname = nickname;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     // 마스킹된 휴대폰 번호 반환(중간 부분 마스킹 처리)
