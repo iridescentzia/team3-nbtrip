@@ -4,6 +4,7 @@ import { registerMember, checkNicknameDuplicate } from '@/api/memberApi.js';
 import Button from '@/components/common/Button.vue';
 import { useRouter } from 'vue-router';
 import Header from '@/components/layout/Header.vue';
+import {requestPermissionAndGetToken} from "@/firebase.js";
 
 const router = useRouter();
 const emit = defineEmits(['signup-complete']);
@@ -19,23 +20,22 @@ const bankCode = ref('');
 const accountNumber = ref('');
 
 // FCM 토큰
-const fcmToken = ref('dummy-token'); // firebase 연동 전(임시 토큰)
-// const fcmToken = ref('')  // firebase 연동 후
+const fcmToken = ref('')  // firebase 연동 후
 
 // FCM 토큰 받아오기(firebase 연동 후)
-// onMounted(async () => {
-//   try {
-//     const token = await getFcmToken()
-//     if (token) {
-//       fcmToken.value = token
-//       console.log('FCM 토큰 발급 성공:', token)
-//     } else {
-//       console.warn('FCM 토큰을 가져오지 못했습니다.')
-//     }
-//   } catch (err) {
-//     console.error('FCM 토큰 발급 오류:', err)
-//   }
-// })
+onMounted(async () => {
+  try {
+    const token = await requestPermissionAndGetToken();
+    if (token) {
+      fcmToken.value = token;
+      console.log('FCM 토큰 발급 성공:', token);
+    } else {
+      console.warn('FCM 토큰을 가져오지 못했습니다.');
+    }
+  } catch (err) {
+    console.error('FCM 토큰 발급 오류:', err);
+  }
+});
 
 // 닉네임 중복 확인 상태
 const isNicknameChecked = ref(false);
