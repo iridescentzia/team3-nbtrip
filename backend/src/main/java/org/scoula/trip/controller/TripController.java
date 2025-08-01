@@ -2,11 +2,16 @@ package org.scoula.trip.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.scoula.security.accounting.domain.CustomUser;
 import org.scoula.trip.dto.TripDTO;
 import org.scoula.trip.dto.TripMemberDTO;
 import org.scoula.trip.service.TripService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Log4j2
@@ -15,6 +20,29 @@ import java.util.List;
 @RequestMapping("/api/trips")
 public class TripController {
     final TripService service;
+
+    // 진행 중인 여행 Id 조회
+    @GetMapping("/current")
+    public ResponseEntity<Integer> getCurrentTripId(@AuthenticationPrincipal CustomUser customUser) {
+        Integer userId = customUser.getUserId();
+        try {
+            List<TripDTO> trips = service.getJoinedTrips(userId);
+            TripDTO currentTrip = new TripDTO();
+            for(TripDTO trip : trips) {
+                if(trip.getStartDate().isBefore(LocalDate.now()) && trip.getEndDate().isAfter(LocalDate.now())) {
+                    currentTrip = trip;
+                }
+            }
+            int tripId = currentTrip.getTripId();
+            return ResponseEntity.ok(tripId);
+        } catch (RuntimeException e) {
+            log.error("currentTripId 없음: {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(0);
+        }
+    }
+
     //그룹 1개의 정보(멤버 리스트 포함)를 그룹 ID로 찾아 가져오기
     @GetMapping("/{tripId}")
     public ResponseEntity<TripDTO> getTripByID(@PathVariable int tripId) {
