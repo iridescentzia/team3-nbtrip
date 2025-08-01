@@ -1,27 +1,30 @@
 <script setup>
-import Header from '@/components/layout/Header.vue'
-import Button from '@/components/common/Button.vue'
-import { useRouter } from 'vue-router'
-import {useAgreementStore} from "@/stores/agreement.js";
+import Header from '@/components/layout/Header.vue';
+import Button from '@/components/common/Button.vue';
+import { useRouter } from 'vue-router';
+import { useAgreementStore } from '@/stores/agreement.js';
 
-const router = useRouter()
-const agreementStore = useAgreementStore()
+const router = useRouter();
+const agreementStore = useAgreementStore();
 
 // 동의 클릭 시 약관 체크 + 뒤로 가기
 const agreeAndGoBack = () => {
-  agreementStore.check('privacy')
-  router.back()
-}
+  agreementStore.check('privacy');
+  router.back();
+};
 </script>
 
 <template>
-  <div class="page-container">
+  <div class="page-content">
     <Header title="개인정보 이용 동의" :backAction="agreeAndGoBack" />
 
     <div class="content-area">
       <div class="text">
         <h1>개인정보 수집·이용 동의 (필수)</h1>
-        <p>※ 테스트 환경 안내: 현재 더미 데이터로 운영되어 실제 금융거래는 발생하지 않습니다.</p>
+        <p>
+          ※ 테스트 환경 안내: 현재 더미 데이터로 운영되어 실제 금융거래는
+          발생하지 않습니다.
+        </p>
 
         <h3>1. 수집하는 개인정보 항목</h3>
         <ul>
@@ -104,34 +107,35 @@ const agreeAndGoBack = () => {
       </div>
     </div>
 
-    <Button label="동의합니다." @click="agreeAndGoBack" />
+    <footer class="bottom-fixed">
+      <Button label="동의합니다." @click="agreeAndGoBack" />
+    </footer>
   </div>
 </template>
 
 <style scoped>
-.page-container {
-  width: 384px;
-  height: 800px;
+.page-content {
+  width: 100%;
+  height: 100%;
   background: #f8fafc;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
-  border-radius: 24px;
-  outline: 1px solid black;
-  outline-offset: -1px;
-  margin: 0 auto;
-  padding-top: 56px; /* Header 영역 확보 */
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  overflow: hidden;
 }
 
-/* 내부 스크롤 영역 */
+/* 본문 스크롤 영역 */
 .content-area {
   flex: 1;
   overflow-y: auto;
   padding: 24px;
+  padding-top: calc(50px + 20px); /* Header 높이만큼 여백 추가 */
   box-sizing: border-box;
+}
+
+/* 하단 버튼을 화면 맨 아래에 고정 */
+.bottom-fixed {
+  padding: 16px 24px;
+  background-color: #f8fafc;
 }
 
 /* 약관 텍스트 스타일 */

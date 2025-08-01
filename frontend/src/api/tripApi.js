@@ -2,6 +2,12 @@ import api from '@/api';
 const BASE_URL = '/trips';
 
 export default {
+  async getCurrentTripId() {
+    const { data } = await api.get(`${BASE_URL}/current`);
+    console.log('data:', data);
+    return data;
+  },
+
   async getTripDetail(tripId) {
     const { data } = await api.get(`${BASE_URL}/${tripId}`);
     console.log('data:' + JSON.stringify(data));
@@ -31,5 +37,11 @@ export default {
       )
     );
     return allDates;
+  },
+
+  // 전체 여행 목록 조회
+  async fetchTrips() {
+    const { data } = await api.get('/trips');
+    return data;
   },
 };

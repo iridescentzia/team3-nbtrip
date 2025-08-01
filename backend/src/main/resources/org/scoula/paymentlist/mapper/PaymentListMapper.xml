@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.scoula.paymentlist.mapper.PaymentListMapper">
+
+    <!-- VO 필드 매핑 -->
+    <resultMap id="PaymentListResultMap" type="org.scoula.paymentlist.domain.PaymentListVO">
+        <result property="memo"    column="memo" />
+        <result property="userId" column="userId" />
+        <result property="payAt"        column="payAt" />
+        <result property="amount"       column="amount" />
+    </resultMap>
+
+    <!-- 결제 내역 불러오기 -->
+    <select id="selectPaymentList"
+            parameterType="int"
+            resultMap="PaymentListResultMap">
+        SELECT
+            p.memo,
+            u.name AS userId,
+            p.pay_at AS payAt,
+            p.amount
+        FROM payment p
+                 JOIN users u ON p.user_id = u.user_id
+        WHERE p.trip_id = #{tripId}
+        ORDER BY p.pay_at desc;
+    </select>
+
+</mapper>
