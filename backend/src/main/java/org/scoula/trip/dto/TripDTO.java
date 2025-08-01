@@ -8,6 +8,7 @@ import org.scoula.trip.domain.TripMemberVO;
 import org.scoula.trip.domain.TripVO;
 import org.scoula.trip.domain.TripStatus;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -19,8 +20,8 @@ public class TripDTO {
     private int tripId;
     private int ownerId;
     private String tripName;
-    private Date startDate;
-    private Date endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private int budget;
     private TripStatus tripStatus;
     List<TripMemberVO> members;

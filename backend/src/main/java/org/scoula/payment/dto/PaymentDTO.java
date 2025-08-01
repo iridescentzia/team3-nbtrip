@@ -15,8 +15,8 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class PaymentDTO {
-    private int tripId;
-    private int userId;
+//    private int tripId;
+//    private int userId;
     private int merchantId;
     private int amount;
     private String memo;
