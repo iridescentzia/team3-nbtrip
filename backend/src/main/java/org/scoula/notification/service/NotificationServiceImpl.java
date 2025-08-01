@@ -81,6 +81,12 @@ public class NotificationServiceImpl implements NotificationService {
     public void createNotification(NotificationDTO dto) {
         String type = dto.getNotificationType().toUpperCase();
 
+        // 결제 (TRANSACTION) 알림 -> trip 멤버 전체 insert
+        if (type.equals("TRANSACTION")) {
+            mapper.createTransactionNotificationForAll(dto.toVO());
+            return;
+        }
+
         // 정산 요청 알림 trip 멤버 전원에게 알림 insert + 푸시 전송
         if (type.equals("SETTLEMENT")) {
             mapper.createSettlementNotificationForAll(dto.toVO());
