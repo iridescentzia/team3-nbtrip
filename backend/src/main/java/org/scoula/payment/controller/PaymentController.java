@@ -34,7 +34,9 @@ public class PaymentController {
             List<TripDTO> trips = tripService.getJoinedTrips(userId);
             TripDTO currentTrip = new TripDTO();
             for(TripDTO trip : trips) {
-                if(trip.getStartDate().isBefore(LocalDate.now()) && trip.getEndDate().isAfter(LocalDate.now())) {
+                if ((trip.getStartDate().isBefore(LocalDate.now()) || trip.getStartDate().isEqual(LocalDate.now())) &&
+                        (trip.getEndDate().isAfter(LocalDate.now()) || trip.getEndDate().isEqual(LocalDate.now()))) {
+
                     currentTrip = trip;
                 }
             }
@@ -57,7 +59,9 @@ public class PaymentController {
             List<TripDTO> trips = tripService.getJoinedTrips(userId);
             TripDTO currentTrip = new TripDTO();
             for(TripDTO trip : trips) {
-                if(trip.getStartDate().isBefore(LocalDate.now()) && trip.getEndDate().isAfter(LocalDate.now())) {
+                if ((trip.getStartDate().isBefore(LocalDate.now()) || trip.getStartDate().isEqual(LocalDate.now())) &&
+                        (trip.getEndDate().isAfter(LocalDate.now()) || trip.getEndDate().isEqual(LocalDate.now()))) {
+
                     currentTrip = trip;
                 }
             }
@@ -81,7 +85,9 @@ public class PaymentController {
             List<TripDTO> trips = tripService.getJoinedTrips(userId);
             TripDTO currentTrip = new TripDTO();
             for(TripDTO trip : trips) {
-                if(trip.getStartDate().isBefore(LocalDate.now()) && trip.getEndDate().isAfter(LocalDate.now())) {
+                if ((trip.getStartDate().isBefore(LocalDate.now()) || trip.getStartDate().isEqual(LocalDate.now())) &&
+                        (trip.getEndDate().isAfter(LocalDate.now()) || trip.getEndDate().isEqual(LocalDate.now()))) {
+
                     currentTrip = trip;
                 }
             }
