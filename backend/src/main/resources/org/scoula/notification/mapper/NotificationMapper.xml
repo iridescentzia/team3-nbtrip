@@ -4,87 +4,172 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.scoula.notification.mapper.NotificationMapper">
 
-    <!-- 특정 유저의 모든 알림 -->
-    <select id="findByUserId" resultType="org.scoula.notification.domain.NotificationVO">
+    <!-- 1. 전체 알림 -->
+    <select id="findAllByUserId" resultType="org.scoula.notification.domain.NotificationVO">
         SELECT n.notification_id AS notificationId,
                n.user_id AS userId,
                n.from_user_id AS fromUserId,
                u.nickname AS fromUserNickname,
                n.trip_id AS tripId,
-               t.trip_name AS groupName,
+               t.trip_name AS tripName,
                tm.member_status AS memberStatus,
                n.payment_id AS paymentId,
                p.amount AS amount,
                COALESCE(m.merchant_name, p.memo) AS merchantName,
                n.notification_type AS notificationType,
+               n.is_read AS isRead,
                n.send_at AS sendAt
         FROM notification n
                  LEFT JOIN users u ON n.from_user_id = u.user_id
                  LEFT JOIN trip t ON n.trip_id = t.trip_id
-                 LEFT JOIN trip_member tm ON n.user_id = tm.user_id AND n.trip_id = tm.trip_id
+                 LEFT JOIN trip_member tm ON n.trip_id = tm.trip_id AND tm.user_id = #{userId}
                  LEFT JOIN payment p ON n.payment_id = p.payment_id
                  LEFT JOIN merchant m ON p.merchant_id = m.merchant_id
-        WHERE n.user_id = #{userId}
+        WHERE
+            (n.notification_type IN ('INVITE', 'SETTLEMENT', 'REMINDER') AND n.user_id = #{userId})
+           OR
+            (n.notification_type IN ('TRANSACTION') AND n.trip_id IN (
+                SELECT trip_id FROM trip_member WHERE user_id = #{userId}
+            ))
+           OR
+            (n.notification_type = 'COMPLETED' AND n.user_id = #{userId} AND n.trip_id IN (
+                SELECT trip_id FROM trip_member WHERE user_id = #{userId}
+            ))
         ORDER BY n.send_at DESC
     </select>
 
-    <!-- 특정 유저의 특정 타입 알림 -->
-    <select id="findByUserIdAndType" resultType="org.scoula.notification.domain.NotificationVO">
+    <!-- 2. 결제 알림 (TRANSACTION) -->
+    <select id="findTransactionNotifications" resultType="org.scoula.notification.domain.NotificationVO">
         SELECT n.notification_id AS notificationId,
                n.user_id AS userId,
                n.from_user_id AS fromUserId,
                u.nickname AS fromUserNickname,
                n.trip_id AS tripId,
-               t.trip_name AS groupName,
-               tm.member_status AS memberStatus,
+               t.trip_name AS tripName,
                n.payment_id AS paymentId,
                p.amount AS amount,
                COALESCE(m.merchant_name, p.memo) AS merchantName,
                n.notification_type AS notificationType,
+               n.is_read AS isRead,
                n.send_at AS sendAt
         FROM notification n
                  LEFT JOIN users u ON n.from_user_id = u.user_id
                  LEFT JOIN trip t ON n.trip_id = t.trip_id
-                 LEFT JOIN trip_member tm ON n.user_id = tm.user_id AND n.trip_id = tm.trip_id
                  LEFT JOIN payment p ON n.payment_id = p.payment_id
                  LEFT JOIN merchant m ON p.merchant_id = m.merchant_id
-        WHERE n.user_id = #{userId}
-          AND n.notification_type = #{notificationType}
+        WHERE n.notification_type = 'TRANSACTION'
+          AND n.trip_id IN (
+            SELECT trip_id FROM trip_member WHERE user_id = #{userId}
+        )
         ORDER BY n.send_at DESC
     </select>
 
-    <!-- 카테고리로 여러 타입 알림 조회 -->
-    <select id="findByUserIdAndTypes" resultType="org.scoula.notification.domain.NotificationVO">
-        SELECT n.notification_id AS notificationId,
-        n.user_id AS userId,
-        n.from_user_id AS fromUserId,
-        u.nickname AS fromUserNickname,
-        n.trip_id AS tripId,
-        t.trip_name AS groupName,
-        tm.member_status AS memberStatus,
-        n.payment_id AS paymentId,
-        p.amount AS amount,
-        COALESCE(m.merchant_name, p.memo) AS merchantName,
-        n.notification_type AS notificationType,
-        n.send_at AS sendAt
+    <!-- 3. 정산 알림 (SETTLEMENT, REMINDER, COMPLETED) -->
+    <select id="findSettlementNotifications" resultType="org.scoula.notification.domain.NotificationVO">
+        SELECT DISTINCT n.notification_id,
+                        n.user_id AS userId,
+                        n.from_user_id AS fromUserId,
+                        u.nickname AS fromUserNickname,
+                        n.trip_id AS tripId,
+                        t.trip_name AS tripName,
+                        n.payment_id AS paymentId,
+                        n.notification_type AS notificationType,
+                        n.is_read AS isRead,
+                        n.send_at AS sendAt
         FROM notification n
-        LEFT JOIN users u ON n.from_user_id = u.user_id
-        LEFT JOIN trip t ON n.trip_id = t.trip_id
-        LEFT JOIN trip_member tm ON n.user_id = tm.user_id AND n.trip_id = tm.trip_id
-        LEFT JOIN payment p ON n.payment_id = p.payment_id
-        LEFT JOIN merchant m ON p.merchant_id = m.merchant_id
-        WHERE n.user_id = #{userId}
-        AND n.notification_type IN
-        <foreach item="type" collection="types" open="(" separator="," close=")">
-            #{type}
-        </foreach>
+                 LEFT JOIN users u ON n.from_user_id = u.user_id
+                 LEFT JOIN trip t ON n.trip_id = t.trip_id
+        WHERE
+            (n.notification_type IN ('SETTLEMENT', 'REMINDER') AND n.user_id = #{userId})
+           OR
+            (n.notification_type = 'COMPLETED' AND n.user_id = #{userId} AND n.trip_id IN (
+                SELECT trip_id FROM trip_member WHERE user_id = #{userId}
+            ))
         ORDER BY n.send_at DESC
+    </select>
+
+    <!-- 4. 그룹 알림 (INVITE, JOINED, LEFT) -->
+    <select id="findGroupNotifications" resultType="org.scoula.notification.domain.NotificationVO">
+        SELECT n.notification_id AS notificationId,
+               n.user_id AS userId,
+               n.from_user_id AS fromUserId,
+               u.nickname AS fromUserNickname,
+               n.trip_id AS tripId,
+               t.trip_name AS tripName,
+               tm.member_status AS memberStatus,
+               n.notification_type AS notificationType,
+               n.is_read AS isRead,
+               n.send_at AS sendAt
+        FROM notification n
+                 LEFT JOIN users u ON n.from_user_id = u.user_id
+                 LEFT JOIN trip t ON n.trip_id = t.trip_id
+                 LEFT JOIN trip_member tm ON n.trip_id = tm.trip_id AND tm.user_id = #{userId}
+        WHERE n.notification_type IN ('INVITE', 'JOINED', 'LEFT')
+          AND n.user_id = #{userId}
+        ORDER BY n.send_at DESC
+    </select>
+
+    <!-- trip_id로 trip 멤버 user_id 리스트 조회 -->
+    <select id="findUserIdsByTripId" resultType="int">
+        SELECT user_id
+        FROM trip_member
+        WHERE trip_id = #{tripId}
     </select>
 
     <!-- 알림 생성 -->
-    <insert id="insertNotification" parameterType="org.scoula.notification.domain.NotificationVO">
+    <insert id="createNotification" parameterType="org.scoula.notification.domain.NotificationVO">
         INSERT INTO notification (user_id, from_user_id, trip_id, payment_id, notification_type, send_at)
         VALUES (#{userId}, #{fromUserId}, #{tripId}, #{paymentId}, #{notificationType}, NOW())
     </insert>
+
+    <!-- GROUP_EVENT 알림 생성 -->
+    <insert id="createGroupEventNotification" parameterType="org.scoula.notification.domain.NotificationVO">
+        INSERT INTO notification (user_id, from_user_id, trip_id, notification_type, send_at)
+        SELECT tm.user_id, #{fromUserId}, #{tripId}, #{notificationType}, NOW()
+        FROM trip_member tm
+        WHERE tm.trip_id = #{tripId}
+          AND tm.user_id != #{fromUserId};
+    </insert>
+
+    <!-- COMPLETED 알림 trip의 모든 멤버에게 알림 생성 -->
+    <insert id="createCompletedNotification" parameterType="org.scoula.notification.domain.NotificationVO">
+        INSERT INTO notification (user_id, from_user_id, trip_id, payment_id, notification_type, send_at)
+        SELECT tm.user_id, #{fromUserId}, #{tripId}, #{paymentId}, #{notificationType}, NOW()
+        FROM trip_member tm
+        WHERE tm.trip_id = #{tripId};
+    </insert>
+
+    <!-- 정산 요청 알림 trip의 모든 멤버에게 insert -->
+    <insert id="createSettlementNotificationForAll" parameterType="org.scoula.notification.domain.NotificationVO">
+        INSERT INTO notification (
+            user_id,          -- 알림 받는 유저 (trip 멤버 전체)
+            from_user_id,     -- 알림 발생시킨 유저 (그룹장)
+            trip_id,          -- 관련 여행
+            notification_type,-- 'SETTLEMENT'
+            send_at           -- 생성 시간
+        )
+        SELECT
+            tm.user_id,       -- trip의 각 멤버
+            #{fromUserId},
+            #{tripId},
+            #{notificationType},
+            NOW()
+        FROM trip_member tm
+        WHERE tm.trip_id = #{tripId}; -- trip_id 기준으로 멤버 전체 조회
+    </insert>
+
+    <!-- 알림 읽음 표시 -->
+    <update id="readNotification" parameterType="int">
+        update notification
+        set is_read = true
+        where notification_id = #{notificationId}
+    </update>
+
+    <!-- 특정 유저의 FCM 토큰 조회 -->
+    <select id="findFcmTokenByUserId" resultType="string">
+        SELECT fcm_token
+        FROM users
+        WHERE user_id = #{userId}
+    </select>
 
 </mapper>
