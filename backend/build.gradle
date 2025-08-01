@@ -106,6 +106,10 @@ dependencies {
     implementation 'io.springfox:springfox-swagger2:2.9.2'
     implementation 'io.springfox:springfox-swagger-ui:2.9.2'
 
+    //firebase
+    implementation 'com.google.auth:google-auth-library-oauth2-http:1.19.0'
+    implementation 'com.google.code.gson:gson:2.10.1'
+
 }
 
 test {

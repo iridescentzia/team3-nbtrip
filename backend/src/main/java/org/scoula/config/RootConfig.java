@@ -25,7 +25,6 @@ import javax.sql.DataSource;
         "org.scoula.merchant.mapper",
         "org.scoula.security.accounting.mapper",
         "org.scoula.mypage.mapper",
-        "org.scoula.member.mapper",
         "org.scoula.trip.mapper",
         "org.scoula.settlement.mapper",
         "org.scoula.payment.mapper",

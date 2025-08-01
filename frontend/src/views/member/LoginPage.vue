@@ -1,41 +1,40 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import JoinPage from './JoinPage.vue'
-import {loginMember} from "@/api/memberApi.js";
-import DefaultLayout from "@/components/layout/DefaultLayout.vue";
+import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import JoinPage from './JoinPage.vue';
+import { loginMember } from '@/api/memberApi.js';
 
-const router = useRouter()
-const authStore = useAuthStore()
+const router = useRouter();
+const authStore = useAuthStore();
 
 // 회원가입 전환 여부
-const isSignupMode = ref(false)
+const isSignupMode = ref(false);
 
 // 로딩 상태
-const isLoading = ref(false)
+const isLoading = ref(false);
 
 // 로그인 폼
 const loginForm = ref({
   email: '',
-  password: ''
-})
+  password: '',
+});
 
 // 로그인 유효성 검사
-const isLoginFormValid = computed(() =>
-    loginForm.value.email && loginForm.value.password
-)
+const isLoginFormValid = computed(
+  () => loginForm.value.email && loginForm.value.password
+);
 
 // FCM 토큰
 // firebase 연동 전
 const getFcmToken = async () => {
   try {
-    return ''
+    return '';
   } catch (error) {
-    console.error('FCM 토큰 오류:', error)
-    return ''
+    console.error('FCM 토큰 오류:', error);
+    return '';
   }
-}
+};
 
 // firebase 연동 후
 // const getFcmToken = async () => {
@@ -60,71 +59,71 @@ const getFcmToken = async () => {
 // 로그인 처리 함수
 const handleLogin = async () => {
   if (!isLoginFormValid.value) {
-    alert('이메일과 비밀번호를 입력해주세요.')
-    return
+    alert('이메일과 비밀번호를 입력해주세요.');
+    return;
   }
 
   try {
-    isLoading.value = true
+    isLoading.value = true;
 
-    const fcmToken = await getFcmToken()
+    const fcmToken = await getFcmToken();
     const response = await loginMember({
       email: loginForm.value.email,
       password: loginForm.value.password,
-      fcmToken
-    })
+      fcmToken,
+    });
 
-    const token = response.accessToken || response.token
-    const user = response.user || response.member
+    const token = response.accessToken || response.token;
+    const user = response.user || response.member;
 
-    localStorage.setItem('accessToken', token)
-    authStore.setToken(token)
-    authStore.setUser(user)
+    localStorage.setItem('accessToken', token);
+    authStore.setToken(token);
+    authStore.setUser(user);
 
-    alert('로그인 성공!')
-    router.push('/')  // 메인 홈 화면으로 이동
+    alert('로그인 성공!');
+    router.push('/'); // 메인 홈 화면으로 이동
   } catch (error) {
-    alert(error.message || '로그인에 실패했습니다.')
-    console.error('로그인 오류:', error)
+    alert(error.message || '로그인에 실패했습니다.');
+    console.error('로그인 오류:', error);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 </script>
 
 <template>
   <!-- 회원가입 모드일 경우 JoinPage 컴포넌트 렌더링 -->
-  <JoinPage v-if="isSignupMode" @signup-complete="isSignupMode = false"/>
+  <JoinPage v-if="isSignupMode" @signup-complete="isSignupMode = false" />
 
   <!-- 로그인 화면 -->
-  <div v-else class="join-container">
+  <div v-else class="login-content">
     <img src="@/assets/img/logo.png" alt="로고" class="logo" />
     <div class="subtitle">돈 걱정 말고, 여행 가자옹!</div>
 
     <div class="form-area">
       <label class="label">이메일</label>
       <input
-          v-model="loginForm.email"
-          type="email"
-          class="input-box"
-          placeholder="이메일 입력"
-          :disabled="isLoading"
+        v-model="loginForm.email"
+        type="email"
+        class="input-box"
+        placeholder="이메일 입력"
+        :disabled="isLoading"
       />
 
       <label class="label">비밀번호</label>
       <input
-          v-model="loginForm.password"
-          type="password"
-          class="input-box"
-          placeholder="비밀번호 입력"
-          :disabled="isLoading"
-          @keyup.enter="handleLogin"
+        v-model="loginForm.password"
+        type="password"
+        class="input-box"
+        placeholder="비밀번호 입력"
+        :disabled="isLoading"
+        @keyup.enter="handleLogin"
       />
 
       <button
-          class="login-button"
-          :disabled="!isLoginFormValid || isLoading"
-          @click="handleLogin"
+        class="login-button"
+        :disabled="!isLoginFormValid || isLoading"
+        @click="handleLogin"
       >
         {{ isLoading ? '로그인 중...' : '로그인' }}
       </button>
@@ -143,20 +142,15 @@ const handleLogin = async () => {
 </template>
 
 <style scoped>
-/* 전체 컨테이너 스타일 */
-.join-container {
-  width: 384px;
-  height: 800px;
-  position: relative;
-  background: #f8fafc;
-  box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
-  overflow: auto;
-  border-radius: 24px;
-  outline: 1px black solid;
-  outline-offset: -1px;
-  margin: 0 auto;
+.login-content {
+  width: 100%;
+  height: 100%; /* 부모(DefaultLayout)의 높이를 채우도록 변경 */
+  overflow-y: auto; /* 내용이 길어지면 스크롤 */
   padding: 32px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* 로고 이미지 */

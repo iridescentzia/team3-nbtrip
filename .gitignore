@@ -37,3 +37,9 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+# Firebase service account key
+**/firebase/*.json
+
+# Frontend build output
+/backend/src/main/webapp/resources/
