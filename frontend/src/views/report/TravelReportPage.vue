@@ -170,9 +170,6 @@ onMounted(async () => {
         },
       ],
     };
-
-    aiReport.value =
-      '전체 지출 중 교통비가 40%로 가장 큰 비중을 차지합니다. 다음 여행에서는 교통비 절감을 위해 대중교통 패스를 고려해보세요.';
   } catch (err) {
     console.error('차트 데이터 로드 실패', err);
   }

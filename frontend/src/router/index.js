@@ -14,7 +14,7 @@ import SettlementSummaryView from '../views/settlement/SettlementSummaryView.vue
 import SettlementRequestView from '../views/settlement/SettlementRequestView.vue';
 import notificationRoutes from '@/router/notificationRoutes.js';
 import paymentlistRoutes from '@/router/paymentlistRoutes.js';
-import reportRoutes from '@/router/report.js';
+import reportRoutes from '@/router/reportRoutes.js';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
