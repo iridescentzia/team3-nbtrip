@@ -45,7 +45,7 @@ function goToChart() {
       </div>
 
       <!-- 오른쪽: 휴지통 아이콘 -->
-      <Trash2 class="icon" />
+      <Trash2 class="icon trash-icon" />
     </div>
 
     <!-- 카드 구분선 -->
@@ -70,8 +70,8 @@ function goToChart() {
 .travel-card {
   width: 100%;
   max-width: 343px;
-  margin: 30px auto 0 auto;
-  padding: 16px 16px;
+  margin: 0 auto 1rem auto;
+  padding: 0;
   box-sizing: border-box;
   border-radius: 16px;
   font-family: 'IBM Plex Sans KR', sans-serif;
@@ -79,7 +79,7 @@ function goToChart() {
   flex-direction: column;
   justify-content: space-between;
 
-  background: linear-gradient(to bottom, #a2d2ff80, #b9ddff80, #ffffff80);
+  background: white;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
 }
@@ -88,7 +88,8 @@ function goToChart() {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
+  padding: 16px;
 }
 
 .title-date {
@@ -100,19 +101,21 @@ function goToChart() {
 .title-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  /*gap: 8px;*/
+  /* justify-content: space-between; */
 }
 
 .trip-name {
   color: #000;
-  font-size: 20px;
-  font-weight: 750;
+  font-size: 24px;
+  font-weight: 1000;
   margin: 0;
+  margin-right:5px;
 }
 
 .trip-date {
-  color: #666;
-  font-size: 14px;
+  color: #6D6D6D;
+  font-size: 15px;
   opacity: 0.8;
 }
 
@@ -128,11 +131,16 @@ function goToChart() {
   color: #333;
 }
 
+.trash-icon {
+  margin-top: 8px;
+}
+
 .divider {
   width: 100%;
   height: 1px;
-  background-color: #a2d2ff99;
+  background-color: #666;
   margin: 8px 0;
+  opacity: 0.1;
 }
 
 .tab-list {
@@ -140,6 +148,7 @@ function goToChart() {
   justify-content: space-between;
   align-items: center;
   gap: 8px;
+  padding: 0 16px 8px 16px;
 }
 
 .tab-item {
@@ -160,6 +169,6 @@ function goToChart() {
 }
 
 .tab-item.active {
-  color: #2f6be9;
+  color: #FDB100;
 }
 </style>

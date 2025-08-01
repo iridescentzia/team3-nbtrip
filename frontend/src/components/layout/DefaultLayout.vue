@@ -1,53 +1,37 @@
-<script setup>
-</script>
-
 <template>
-  <div class="layout-wrapper">
-    <div class="layout-container">
-
-      <main class="content">
-        <RouterView/>
-      </main>
-      <div class="mid">
-
-      </div>
+  <div class="view-wrapper">
+    <div class="mobile-view">
+      <slot></slot>
     </div>
   </div>
 </template>
 
 <style scoped>
-.layout-wrapper {
+/* 중앙 정렬 */
+.view-wrapper{
   display: flex;
   justify-content: center;
   width: 100%;
   min-height: 100vh;
-  background-color: #f9fafb; /* 기존 Tailwind 'bg-gray-50' */
-  position: relative;
-  overflow: hidden;
-
+  background-color: white;
+  padding: 2rem 0;
+  z-index: 1;
 }
 
-.content {
-  padding-top: 56px;
+/* 모바일 화면 */
+.mobile-view{
+  z-index: 1;
   width: 100%;
-  max-width: 414px;
-  flex: 1;
-  padding: 16px;
-  box-sizing: border-box;
-  //display: flex;
+  max-width: 24rem;
+  background-color: #f8f9fa;
+  display:flex;
+
   flex-direction: column;
-  align-items: center; /* 자식 요소들을 가운데 정렬 */
-}
-
-.layout-container {
-  width: 100%;
-  max-width: 414px; /* 모바일 기준 */
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 /0.25);
+  overflow: hidden;
   position: relative;
-  padding-top: 0px;
-  margin-top: 0px;
-}
-
-.mid {
-  height: 250px;
+  height: 844px;
+  max-height: 100vh;
 }
 </style>

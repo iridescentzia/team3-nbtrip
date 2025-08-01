@@ -5,11 +5,7 @@ import PaymentList from "@/views/paymentlist/PaymentList.vue";
 import axios from 'axios'
 import {onMounted} from 'vue'
 
-onMounted(()=>{
-  axios.get('/api/ping')
-      .then(res => console.log("응답:", res.data))
-      .catch(err => console.error("에러:", err))
-})
+
 </script>
 
 <template>
