@@ -2,7 +2,9 @@ package org.scoula.settlement.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.scoula.settlement.exception.domain.SettlementVO;
+import org.scoula.notification.dto.NotificationDTO;
+import org.scoula.notification.service.NotificationService;
+import org.scoula.settlement.domain.SettlementVO;
 import org.scoula.settlement.dto.SettlementDTO;
 import org.scoula.settlement.service.SettlementService;
 import org.scoula.security.accounting.domain.CustomUser;
@@ -19,9 +21,7 @@ import java.util.NoSuchElementException;
 @Log4j2
 public class SettlementController {
     private final SettlementService settlementService;
-
-    // private final NotificationService notificationService;
-    // private final GroupService groupService;
+    private final NotificationService notificationService;  // 팀원 알림 서비스 주입
 
     /**
      * 정산 1단계: 정산 요약 정보 조회 API
@@ -126,7 +126,7 @@ public class SettlementController {
     /**
      * 5. 정산 요청 생성 (시나리오 3번)
      * 그룹장이 '정산 요청하기' 클릭 시 호출
-     * n빵 계산 서비스 호출 -> settlement에 pending 저장
+     * n빵 계산 서비스 호출 -> settlement에 pending 저장 (알림 발송 X)
      */
     @PostMapping("")
     public ResponseEntity<SettlementDTO.CreateSettlementResponseDto> createSettlementRequest(
@@ -143,14 +143,32 @@ public class SettlementController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        // TODO: 팀원 머지 후 주석 해제 - 그룹원에게 정산 요청 알림 발송
-        // try {
-        //     sendSettlementNotification(userId, tripId, "SETTLEMENT");
-        // } catch (Exception e) {
-        //     log.warn("정산 요청 알림 발송 실패", e);
-        // }
-
+        // 정산 데이터만 생성, 알림은 별도 API에서 처리
+        log.info("정산 요청 생성 완료 (알림 발송 없음) - tripId: {}, fromUserId: {}", tripId, userId);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 정산 요청 알림 발송 API
+     * 프론트엔드에서 "정산요청하기" 버튼 클릭 시 호출
+     */
+    @PostMapping("/{tripId}/notify")
+    public ResponseEntity<String> sendSettlementRequestNotification(
+            @PathVariable int tripId,
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        Integer userId = customUser.getUserId();
+        log.info("🟢POST /api/settlements/{}/notify - 정산 요청 알림 발송: userId={}", tripId, userId);
+
+        try {
+            // 정산 요청 알림 발송
+            sendSettlementNotification(userId, tripId, "SETTLEMENT");
+
+            return ResponseEntity.ok("정산 요청 알림이 발송되었습니다.");
+        } catch (Exception e) {
+            log.error("정산 요청 알림 발송 실패 - tripId: {}, userId: {}, error: {}", tripId, userId, e.getMessage());
+            return ResponseEntity.status(500).body("알림 발송에 실패했습니다.");
+        }
     }
 
     // ==================== 상태 업데이트 API ====================
@@ -181,6 +199,24 @@ public class SettlementController {
         }
 
         int updated = settlementService.updateSettlementStatus(settlementId, status.toUpperCase());
+
+        // 전체 정산 완료 시에만 완료 알림 발송
+        if (updated == 1 && "COMPLETED".equals(status.toUpperCase())) {
+            try {
+                SettlementVO settlement = settlementService.getById(settlementId);
+
+                // 해당 여행의 모든 정산이 완료되었는지 확인
+                if (settlementService.isAllSettlementCompleted(settlement.getTripId())) {
+                    sendSettlementCompletedNotification(loginUserId, settlement.getTripId());
+                    log.info("🎉 전체 정산 완료 알림 발송 완료 - tripId: {}", settlement.getTripId());
+                } else {
+                    log.info("✅ 개별 정산 완료, 전체 정산은 아직 진행 중 - settlementId: {}", settlementId);
+                }
+            } catch (Exception e) {
+                log.warn("정산 완료 알림 발송 실패 - settlementId: {}, error: {}", settlementId, e.getMessage());
+            }
+        }
+
         return (updated == 1)
                 ? ResponseEntity.ok("Status changed to " + status)
                 : ResponseEntity.badRequest().body("Update failed. Invalid settlementId");
@@ -202,40 +238,77 @@ public class SettlementController {
 
         SettlementDTO.TransferResponseDto response = settlementService.transferToUsers(request.getSettlementIds(), loginUserId);
 
+        // 송금 완료 후 전체 정산 완료 체크 (추가)
+        if (response.isSuccess() && !request.getSettlementIds().isEmpty()) {
+            try {
+                // 첫 번째 정산 건으로 tripId 조회
+                SettlementVO firstSettlement = settlementService.getById(request.getSettlementIds().get(0));
+
+                // 전체 정산 완료 확인
+                if (settlementService.isAllSettlementCompleted(firstSettlement.getTripId())) {
+                    sendSettlementCompletedNotification(loginUserId, firstSettlement.getTripId());
+                    log.info("🎉 송금 완료 후 전체 정산 완료 알림 발송 - tripId: {}", firstSettlement.getTripId());
+                }
+            } catch (Exception e) {
+                log.warn("송금 완료 후 전체 정산 완료 체크 실패", e);
+            }
+        }
+
         return response.isSuccess() ? ResponseEntity.ok(response) : ResponseEntity.badRequest().body(response);
     }
 
-    // ==================== 내부 헬퍼 메서드들 ====================
+    // ==================== 내부 헬퍼 메서드들 (팀원 NotificationService 활용) ====================
 
     /**
-     * 정산 관련 알림 발송
+     * 정산 요청 알림 발송 (팀원 NotificationService 활용)
      */
     private void sendSettlementNotification(int fromUserId, int tripId, String notificationType) {
-        // TODO: 팀원 머지 후 주석 해제
-        // try {
-        //     // 그룹 멤버 조회 및 알림 발송 (자신 제외)
-        //     List<Integer> memberIds = groupService.getGroupMembers(tripId).stream()
-        //             .map(GroupMemberDTO::getUserId)
-        //             .filter(id -> !id.equals(fromUserId))
-        //             .collect(Collectors.toList());
-        //
-        //     for (int memberId : memberIds) {
-        //         NotificationDTO dto = NotificationDTO.builder()
-        //                 .userId(memberId)
-        //                 .fromUserId(fromUserId)
-        //                 .tripId(tripId)
-        //                 .notificationType(notificationType)
-        //                 .build();
-        //         notificationService.createNotification(dto);
-        //     }
-        //
-        //     log.info("알림 발송 완료 - tripId: {}, type: {}", tripId, notificationType);
-        // } catch (Exception e) {
-        //     log.error("알림 발송 실패", e);
-        // }
+        try {
+            NotificationDTO dto = NotificationDTO.builder()
+                    .fromUserId(fromUserId)
+                    .tripId(tripId)
+                    .notificationType(notificationType)  // "SETTLEMENT"
+                    .isRead(false)
+                    .build();
 
-        // 임시: 머지 전까지는 로그만 출력
-        log.info("알림 발송 예정 (머지 후 활성화) - tripId: {}, type: {}", tripId, notificationType);
+            // NotificationService가 자동으로 다음을 처리:
+            // 1. trip 멤버 전체 조회 (mapper.findUserIdsByTripId)
+            // 2. DB에 알림 저장 (mapper.createSettlementNotificationForAll)
+            // 3. 각 멤버에게 FCM 푸시 발송 ("정산 요청이 도착했어요")
+            notificationService.createNotification(dto);
+
+            log.info("정산 요청 알림 발송 완료 - fromUserId: {}, tripId: {}", fromUserId, tripId);
+        } catch (Exception e) {
+            log.error("정산 요청 알림 발송 실패 - fromUserId: {}, tripId: {}, error: {}",
+                    fromUserId, tripId, e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * 정산 완료 알림 발송 (팀원 NotificationService 활용)
+     */
+    private void sendSettlementCompletedNotification(int fromUserId, int tripId) {
+        try {
+            NotificationDTO dto = NotificationDTO.builder()
+                    .fromUserId(fromUserId)
+                    .tripId(tripId)
+                    .notificationType("COMPLETED")  // "COMPLETED"
+                    .isRead(false)
+                    .build();
+
+            // NotificationService가 자동으로 다음을 처리:
+            // 1. trip 멤버 전체 조회 (mapper.findUserIdsByTripId)
+            // 2. DB에 알림 저장 (mapper.createCompletedNotification)
+            // 3. 각 멤버에게 FCM 푸시 발송 ("정산이 완료되었어요")
+            notificationService.createNotification(dto);
+
+            log.info("정산 완료 알림 발송 완료 - fromUserId: {}, tripId: {}", fromUserId, tripId);
+        } catch (Exception e) {
+            log.error("정산 완료 알림 발송 실패 - fromUserId: {}, tripId: {}, error: {}",
+                    fromUserId, tripId, e.getMessage());
+            throw e;
+        }
     }
 
     /**

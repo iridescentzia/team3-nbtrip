@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.scoula.config.RootConfig;
-import org.scoula.settlement.exception.domain.SettlementVO;
+import org.scoula.settlement.domain.SettlementVO;
 import org.scoula.settlement.dto.SettlementDTO;
 import org.scoula.settlement.mapper.SettlementMapper;
 import org.springframework.beans.factory.annotation.Autowired;
