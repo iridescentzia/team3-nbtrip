@@ -9,23 +9,9 @@ const agreementStore = useAgreementStore();
 
 // 동의 클릭 시 약관 체크 + 뒤로 가기
 const agreeAndGoBack = () => {
-<<<<<<< HEAD
-  agreementStore.check('push')
-  router.back()
-}
-
-// 회원가입/마이페이지 뷰 전환용
-const props = defineProps({
-  viewOnly : {
-    type: Boolean,
-    default: false
-  }
-})
-=======
   agreementStore.check('push');
   router.back();
 };
->>>>>>> c8246ea3a8ed4215f166f99943bea227a32f1451
 </script>
 
 <template>
@@ -114,14 +100,9 @@ const props = defineProps({
       </div>
     </div>
 
-<<<<<<< HEAD
-    <!-- 하단 버튼 -->
-    <Button v-if="!viewOnly" label="동의합니다." @click="agreeAndGoBack" />
-=======
     <footer class="bottom-fixed">
       <Button label="동의합니다." @click="agreeAndGoBack" />
     </footer>
->>>>>>> c8246ea3a8ed4215f166f99943bea227a32f1451
   </div>
 </template>
 

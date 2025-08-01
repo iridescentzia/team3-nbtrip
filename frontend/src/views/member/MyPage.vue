@@ -74,16 +74,16 @@ const logout = async () => {
       <!-- 프로필 이미지 + 닉네임 -->
       <div class="profile-section">
         <img
-          src="@/assets/img/airplane_left.png"
-          alt="프로필"
-          class="profile-img"
+            src="@/assets/img/airplane_left.png"
+            alt="프로필"
+            class="profile-img"
         />
         <div class="nickname">{{ userInfo.nickname || '김냥이' }}</div>
       </div>
 
       <!-- 아이콘 -->
       <div class="icon-section">
-        <div class="icon-wrapper" @click="goTo('/my/info')">
+        <div class="icon-wrapper" @click="goTo('/mypage/info')">
           <div class="icon-button"><CircleUserRound size="28" /></div>
           <span>회원 정보</span>
         </div>
@@ -101,13 +101,13 @@ const logout = async () => {
 
       <!-- 메뉴 리스트 -->
       <div class="menu-list">
-        <div class="menu-item" @click="goTo('/my/payment')">
+        <div class="menu-item" @click="goTo('/mypage/payment')">
           결제 수단 관리 <ChevronRight class="arrow" />
         </div>
-        <div class="menu-item" @click="goTo('/faq')">
+        <div class="menu-item" @click="goTo('/mypage/faq')">
           공지사항 및 FAQ <ChevronRight class="arrow" />
         </div>
-        <div class="menu-item" @click="goTo('/terms')">
+        <div class="menu-item" @click="goTo('/mypage/terms')">
           이용 약관 <ChevronRight class="arrow" />
         </div>
       </div>

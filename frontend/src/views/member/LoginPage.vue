@@ -22,7 +22,7 @@ const loginForm = ref({
 
 // 로그인 유효성 검사
 const isLoginFormValid = computed(
-  () => loginForm.value.email && loginForm.value.password
+    () => loginForm.value.email && loginForm.value.password
 );
 
 // FCM 토큰
@@ -103,27 +103,27 @@ const handleLogin = async () => {
     <div class="form-area">
       <label class="label">이메일</label>
       <input
-        v-model="loginForm.email"
-        type="email"
-        class="input-box"
-        placeholder="이메일 입력"
-        :disabled="isLoading"
+          v-model="loginForm.email"
+          type="email"
+          class="input-box"
+          placeholder="이메일 입력"
+          :disabled="isLoading"
       />
 
       <label class="label">비밀번호</label>
       <input
-        v-model="loginForm.password"
-        type="password"
-        class="input-box"
-        placeholder="비밀번호 입력"
-        :disabled="isLoading"
-        @keyup.enter="handleLogin"
+          v-model="loginForm.password"
+          type="password"
+          class="input-box"
+          placeholder="비밀번호 입력"
+          :disabled="isLoading"
+          @keyup.enter="handleLogin"
       />
 
       <button
-        class="login-button"
-        :disabled="!isLoginFormValid || isLoading"
-        @click="handleLogin"
+          class="login-button"
+          :disabled="!isLoginFormValid || isLoading"
+          @click="handleLogin"
       >
         {{ isLoading ? '로그인 중...' : '로그인' }}
       </button>

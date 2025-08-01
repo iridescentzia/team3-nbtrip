@@ -44,7 +44,7 @@ const nicknameMessage = ref('');
 
 // 비밀번호 일치 여부
 const isPasswordMatch = computed(
-  () => password.value === passwordConfirm.value
+    () => password.value === passwordConfirm.value
 );
 
 // 은행 코드 리스트(account DB)
@@ -82,14 +82,14 @@ const checkNickname = async () => {
 // 회원가입(POST /api/auth/register)
 const submitForm = async () => {
   if (
-    !nickname.value ||
-    !name.value ||
-    !phoneNumber.value ||
-    !email.value ||
-    !password.value ||
-    !passwordConfirm.value ||
-    !bankCode.value ||
-    !accountNumber.value
+      !nickname.value ||
+      !name.value ||
+      !phoneNumber.value ||
+      !email.value ||
+      !password.value ||
+      !passwordConfirm.value ||
+      !bankCode.value ||
+      !accountNumber.value
   ) {
     alert('모든 항목을 입력해주세요.');
     return;
@@ -144,8 +144,8 @@ const submitForm = async () => {
       </div>
       <div v-if="nicknameMessage" class="nickname-check-message">
         <span :class="nicknameValid ? 'success' : 'error'">{{
-          nicknameMessage
-        }}</span>
+            nicknameMessage
+          }}</span>
       </div>
 
       <!-- 이름 -->
@@ -155,10 +155,10 @@ const submitForm = async () => {
       <!-- 전화번호 -->
       <label class="label">전화번호</label>
       <input
-        v-model="phoneNumber"
-        type="text"
-        class="input-box"
-        placeholder="010-1234-5678"
+          v-model="phoneNumber"
+          type="text"
+          class="input-box"
+          placeholder="010-1234-5678"
       />
 
       <!-- 이메일 -->
@@ -178,10 +178,10 @@ const submitForm = async () => {
       <input v-model="passwordConfirm" type="password" class="input-box" />
       <div class="password-check">
         <span v-if="passwordConfirm && !isPasswordMatch" class="error"
-          >비밀번호가 동일하지 않습니다.</span
+        >비밀번호가 동일하지 않습니다.</span
         >
         <span v-if="passwordConfirm && isPasswordMatch" class="success"
-          >비밀번호가 동일합니다.</span
+        >비밀번호가 동일합니다.</span
         >
       </div>
 
