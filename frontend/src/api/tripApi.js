@@ -2,6 +2,12 @@ import api from '@/api';
 const BASE_URL = '/trips';
 
 export default {
+  async getCurrentTripId() {
+    const { data } = await api.get(`${BASE_URL}/current`);
+    console.log('data:', data);
+    return data;
+  },
+
   async getTripDetail(tripId) {
     const { data } = await api.get(`${BASE_URL}/${tripId}`);
     console.log('data:' + JSON.stringify(data));
