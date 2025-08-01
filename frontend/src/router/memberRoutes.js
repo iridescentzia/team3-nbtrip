@@ -60,5 +60,12 @@ export default [
         path: '/my/update',
         name: 'MyInfoUpdatePage',
         component: () => import('@/views/member/mypage/MyInfoUpdatePage.vue')
+    },
+
+    // 지난 여행
+    {
+        path: '/my/last-trip',
+        name: 'LastTripPage',
+        component: () => import('@/views/member/mypage/LastTripPage.vue')
     }
 ]
