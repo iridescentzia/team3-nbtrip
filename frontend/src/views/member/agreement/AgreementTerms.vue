@@ -1,29 +1,31 @@
 <script setup>
-import Header from '@/components/layout/Header.vue'
-import Button from '@/components/common/Button.vue'
-import { useRouter } from 'vue-router'
-import { useAgreementStore} from "@/stores/agreement.js";
+import Header from '@/components/layout/Header.vue';
+import Button from '@/components/common/Button.vue';
+import { useRouter } from 'vue-router';
+import { useAgreementStore } from '@/stores/agreement.js';
 
-const router = useRouter()
-const agreementStore = useAgreementStore()
+const router = useRouter();
+const agreementStore = useAgreementStore();
 
 // 동의 클릭 시 약관 체크 + 뒤로 가기
 const agreeAndGoBack = () => {
-  agreementStore.check('terms')
-  router.back()
-}
+  agreementStore.check('terms');
+  router.back();
+};
 </script>
 
 <template>
-  <div class="page-container">
-    <Header title="이용 약관 동의" :back-action="agreeAndGoBack"/>
+  <div class="page-content">
+    <Header title="이용 약관 동의" :back-action="agreeAndGoBack" />
 
     <div class="content-area">
       <div class="text">
         <h1>이용 약관 동의 (필수)</h1>
 
         <h3>제1조 (목적)</h3>
-        <p>본 약관은 [N빵 트립] 서비스 이용에 관한 기본적인 사항을 규정합니다.</p>
+        <p>
+          본 약관은 [N빵 트립] 서비스 이용에 관한 기본적인 사항을 규정합니다.
+        </p>
 
         <h3>제2조 (서비스 내용)</h3>
         <ul>
@@ -52,11 +54,17 @@ const agreeAndGoBack = () => {
 
         <h3>제5조 (계좌 등록 및 관리)</h3>
         <ul>
-          <li>본인 명의 계좌만 등록 가능 (현재는 테스트 환경으로 더미 데이터 사용)</li>
+          <li>
+            본인 명의 계좌만 등록 가능 (현재는 테스트 환경으로 더미 데이터 사용)
+          </li>
           <li>회원당 최대 1개의 계좌만 등록 허용</li>
           <li>은행명과 계좌번호 정확히 입력 필수</li>
-          <li>계좌 소유자와 회원 정보 일치 필요 (향후 실제 인증 시스템 도입 예정)</li>
-          <li>서비스 정식 오픈 시 금융기관 연동을 통한 실계좌 인증 절차 적용</li>
+          <li>
+            계좌 소유자와 회원 정보 일치 필요 (향후 실제 인증 시스템 도입 예정)
+          </li>
+          <li>
+            서비스 정식 오픈 시 금융기관 연동을 통한 실계좌 인증 절차 적용
+          </li>
           <li>허위 계좌 정보 입력 시 법적 책임 부담</li>
           <li>계좌 변경 시 기존 계좌 삭제 후 새 계좌 등록 가능</li>
         </ul>
@@ -73,7 +81,9 @@ const agreeAndGoBack = () => {
           <li>결제 오류 시 즉시 신고 의무</li>
           <li>정산 완료 후 이의제기는 7일 이내</li>
           <li>그룹 탈퇴 시 정산 완료 후 가능</li>
-          <li>자동 정산 시 등록된 본인 명의 계좌에서만 입출금 처리 (정식 오픈 시)</li>
+          <li>
+            자동 정산 시 등록된 본인 명의 계좌에서만 입출금 처리 (정식 오픈 시)
+          </li>
           <li>계좌 미등록 시 정산 참여 불가</li>
         </ul>
 
@@ -87,33 +97,35 @@ const agreeAndGoBack = () => {
       </div>
     </div>
 
-    <Button label="동의합니다." @click="agreeAndGoBack" />
+    <footer class="bottom-fixed">
+      <Button label="동의합니다." @click="agreeAndGoBack" />
+    </footer>
   </div>
 </template>
 
 <style scoped>
-.page-container {
-  width: 384px;
-  height: 800px;
-  position: relative;
+.page-content {
+  width: 100%;
+  height: 100%;
   background: #f8fafc;
-  box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
-  overflow: auto;
-  border-radius: 24px;
-  outline: 1px solid black;
-  outline-offset: -1px;
-  margin: 0 auto;
-  padding: 32px 24px;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  overflow: hidden;
 }
 
+/* 본문 스크롤 영역 */
 .content-area {
   flex: 1;
   overflow-y: auto;
   padding: 24px;
+  padding-top: calc(50px + 20px); /* Header 높이만큼 여백 추가 */
+  box-sizing: border-box;
+}
+
+/* 하단 버튼을 화면 맨 아래에 고정 */
+.bottom-fixed {
+  padding: 16px 24px;
+  background-color: #f8fafc;
 }
 
 .text {
