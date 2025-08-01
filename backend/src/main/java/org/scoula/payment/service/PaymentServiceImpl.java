@@ -30,17 +30,17 @@ public class PaymentServiceImpl implements PaymentService {
     /* QR 결제 처리 */
     @Override
     @Transactional
-    public void processPayment(PaymentDTO paymentDTO) {
-        validatePayment(paymentDTO);
+    public void processPayment(PaymentDTO paymentDTO, int userId, int tripId) {
+        validatePayment(paymentDTO, userId, tripId);
 
         // 결제 전 잔액 확인
-        int beforeBalance = accountService.getBalanceByUserId(paymentDTO.getUserId());
+        int beforeBalance = accountService.getBalanceByUserId(userId);
 
         // 사용자 계좌 잔액 차감
-        accountService.decreaseUserBalance(paymentDTO.getUserId(), paymentDTO.getAmount());
+        accountService.decreaseUserBalance(userId, paymentDTO.getAmount());
 
         // 결제 후 잔액 확인(검증)
-        int afterBalance = accountService.getBalanceByUserId(paymentDTO.getUserId());
+        int afterBalance = accountService.getBalanceByUserId(userId);
         if(afterBalance != beforeBalance - paymentDTO.getAmount()) {
             throw new RuntimeException("결제 금액 오류");
         }
@@ -49,18 +49,18 @@ public class PaymentServiceImpl implements PaymentService {
         merchantService.increaseSales(paymentDTO.getMerchantId(), paymentDTO.getAmount());
 
         // 결제 내역 저장
-        PaymentVO paymentVO = savePaymentRecord(paymentDTO, PaymentType.QR, LocalDateTime.now(), paymentDTO.getMerchantId());
+        PaymentVO paymentVO = savePaymentRecord(paymentDTO, PaymentType.QR, LocalDateTime.now(), paymentDTO.getMerchantId(), userId, tripId);
 
         // 결제 참여자 저장 및 금액 분배
-        saveParticipants(paymentDTO, paymentVO, true);
+        saveParticipants(paymentDTO, paymentVO, true, userId);
     }
 
 
     /* 선결제/기타 결제 수동 등록 */
     @Override
     @Transactional
-    public void registerManualPayment(PaymentDTO paymentDTO) {
-        validatePayment(paymentDTO);
+    public void registerManualPayment(PaymentDTO paymentDTO, int userId, int tripId) {
+        validatePayment(paymentDTO, userId, tripId);
 
         // 수동 결제 시 사용자가 날짜/시간 입력하면 병합, 아니면 현재 시간
         LocalDateTime payAt = (paymentDTO.getPaymentDate() != null && paymentDTO.getPaymentTime() != null)
@@ -68,15 +68,15 @@ public class PaymentServiceImpl implements PaymentService {
                 : LocalDateTime.now();
 
         // 결제 내역 저장
-        PaymentVO paymentVO = savePaymentRecord(paymentDTO, paymentDTO.getPaymentType(), payAt, null);
+        PaymentVO paymentVO = savePaymentRecord(paymentDTO, paymentDTO.getPaymentType(), payAt, null, userId, tripId);
 
         // 결제 참여자 저장 및 금액 분배
-        saveParticipants(paymentDTO, paymentVO, false);
+        saveParticipants(paymentDTO, paymentVO, false, userId);
     }
 
 
     /* 검증 */
-    private void validatePayment(PaymentDTO paymentDTO) {
+    private void validatePayment(PaymentDTO paymentDTO, int userId, int tripId) {
         if (paymentDTO.getAmount() <= 0) {
             throw new IllegalArgumentException("결제 금액은 0원보다 커야 합니다.");
         }
@@ -85,7 +85,7 @@ public class PaymentServiceImpl implements PaymentService {
             throw new IllegalArgumentException("참여자는 최소 1명 이상이어야 합니다.");
         }
         boolean payerIncluded = participants.stream()
-                .anyMatch(p -> p.getUserId() == paymentDTO.getUserId());
+                .anyMatch(p -> p.getUserId() == userId);
         if (!payerIncluded) {
             throw new IllegalArgumentException("결제자는 반드시 결제 참여자에 포함되어야 합니다.");
         }
@@ -93,10 +93,10 @@ public class PaymentServiceImpl implements PaymentService {
 
 
     /* 결제 내역 저장 */
-    private PaymentVO savePaymentRecord(PaymentDTO paymentDTO, PaymentType paymentType, LocalDateTime payAt, Integer merchantId) {
+    private PaymentVO savePaymentRecord(PaymentDTO paymentDTO, PaymentType paymentType, LocalDateTime payAt, Integer merchantId, int userId, int tripId) {
         PaymentVO paymentVO = new PaymentVO();
-        paymentVO.setTripId(paymentDTO.getTripId());
-        paymentVO.setUserId(paymentDTO.getUserId());
+        paymentVO.setTripId(tripId);
+        paymentVO.setUserId(userId);
         paymentVO.setAmount(paymentDTO.getAmount());
         paymentVO.setPaymentType(paymentType);
         paymentVO.setPayAt(payAt);
@@ -112,7 +112,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 
     /* 결제 참여자 저장 및 금액 분배 */
-    private void saveParticipants(PaymentDTO paymentDTO, PaymentVO paymentVO, boolean isAutoSplit) {
+    private void saveParticipants(PaymentDTO paymentDTO, PaymentVO paymentVO, boolean isAutoSplit, int userId) {
         List<ParticipantDTO> participants = paymentDTO.getParticipants();
         int participantCount = participants.size();
         int baseSplitAmount = paymentDTO.getAmount() / participantCount;
@@ -126,7 +126,7 @@ public class PaymentServiceImpl implements PaymentService {
                     int splitAmount;
                     if (isAutoSplit || allSplitAmountZero) {
                         splitAmount = baseSplitAmount;
-                        if (Integer.valueOf(p.getUserId()).equals(paymentDTO.getUserId())) {
+                        if (Integer.valueOf(p.getUserId()).equals(userId)) {
                             splitAmount += remainderAmount;
                         }
                     } else {
