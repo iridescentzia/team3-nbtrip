@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -16,8 +17,8 @@ public class TripVO {
     private int tripId;
     private int ownerId;
     private String tripName;
-    private Date startDate;
-    private Date endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private int budget;
     private TripStatus tripStatus;
     private List<TripMemberVO> members;

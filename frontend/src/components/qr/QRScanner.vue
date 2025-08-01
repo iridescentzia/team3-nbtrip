@@ -11,7 +11,8 @@ async function onDetect(result) {
   try {
     const parsed = JSON.parse(raw);
     const merchant = await merchantApi.get(parsed.merchantID);
-    const trip = await tripApi.getTripDetail(1); // 실제 tripId로 교체
+    const tripId = await tripApi.getCurrentTripId();
+    const trip = await tripApi.getTripDetail(tripId);
 
     store.setScannerData({
       merchantID: parsed.merchantID,
