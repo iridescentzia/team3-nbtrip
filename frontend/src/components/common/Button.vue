@@ -17,10 +17,10 @@ defineProps({
     type: String,
     default: 'button',
   },
-})
+});
 
 // 부모 컴포넌트로 전달할 클릭 이벤트
-const emits = defineEmits(['click'])
+const emits = defineEmits(['click']);
 </script>
 
 <template>
@@ -33,7 +33,7 @@ const emits = defineEmits(['click'])
 /* 기본 버튼 스타일 */
 .bottom-button {
   display: block;
-  margin: 64px auto 24px auto;
+  margin: auto auto 20px auto;
 
   width: calc(100% - 32px);
   max-width: 343px;
@@ -66,5 +66,4 @@ const emits = defineEmits(['click'])
   color: #999;
   cursor: not-allowed;
 }
-
 </style>

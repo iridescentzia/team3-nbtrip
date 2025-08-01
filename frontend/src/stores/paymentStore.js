@@ -42,6 +42,12 @@ export const usePaymentStore = defineStore('payment', () => {
   function resetModal() {
     isModalVisible.value = false;
     modalType.value = 1;
+    merchantID.value = null;
+    merchantName.value = '';
+    tripName.value = '';
+    participantsId.value = [];
+    participantsNickname.value = [];
+    selectedParticipants.value = [];
     amount.value = 0;
     reason.value = '';
     payment.value = null;

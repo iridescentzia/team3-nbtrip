@@ -1,10 +1,10 @@
 <script setup>
 import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
-import Header from "@/components/layout/Header2.vue";
-import Button from "@/components/common/Button.vue";
-import { useRoute, useRouter } from "vue-router";
-import catImage from "@/assets/img/crying_cat.png";
+import Header from '@/components/layout/Header2.vue';
+import Button from '@/components/common/Button.vue';
+import { useRoute, useRouter } from 'vue-router';
+import catImage from '@/assets/img/crying_cat.png';
 import { useSettlementStore } from '@/stores/settlementStore';
 
 // ✅ Pinia Store 사용
@@ -31,72 +31,46 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="view-wrapper">
-    <div class="settlement-view">
-      <Header title="정산하기" />
+  <div class="settlement-view">
+    <Header title="정산하기" />
 
-      <main v-if="isLoading" class="content-container loading">
-        <p>여행 정보를 불러오는 중...</p>
-      </main>
+    <main v-if="isLoading" class="content-container loading">
+      <p>여행 정보를 불러오는 중...</p>
+    </main>
 
-      <main v-else-if="error" class="content-container error">
-        <p>{{ error }}</p>
-      </main>
+    <main v-else-if="error" class="content-container error">
+      <p>{{ error }}</p>
+    </main>
 
-      <main v-else class="content-container">
-        <div class="content">
-          <img class="cat-img" :src="catImage" alt="우는 고양이"/>
-          <div class="text-area">
-            <p class="trip-name">{{ mySettlementData?.tripName || '여행' }}</p>
-            <h2 class="main-msg">송금이 일부 실패했습니다.</h2>
-          </div>
+    <main v-else class="content-container">
+      <div class="content">
+        <img class="cat-img" :src="catImage" alt="우는 고양이" />
+        <div class="text-area">
+          <p class="trip-name">{{ mySettlementData?.tripName || '여행' }}</p>
+          <h2 class="main-msg">송금이 일부 실패했습니다.</h2>
         </div>
-      </main>
+      </div>
+    </main>
 
-      <footer class="footer">
-        <Button
-            label="미정산 내역으로 돌아가기"
-            @click="goBack"
-            class="back-button"
-        />
-      </footer>
-    </div>
+    <footer class="footer">
+      <Button
+        label="미정산 내역으로 돌아가기"
+        @click="goBack"
+        class="back-button"
+      />
+    </footer>
   </div>
 </template>
 
 <style scoped>
+/* 전체 레이아웃 */
 .settlement-view {
-  --theme-primary: rgba(255, 209, 102, 0.65);
-  --theme-secondary: rgba(162, 210, 255, 0.65);
-  --theme-bg: #f8f9fa;
-  --theme-text: #333333;
-  --theme-text-light: #888888;
-  --theme-red: #ef4444;
-  --theme-blue: #3a86ff;
-}
-
-.view-wrapper {
-  display: flex;
-  justify-content: center;
   width: 100%;
-  min-height: 100vh;
-  background-color: #ffffff;
-  padding: 2rem 0;
-}
-
-.settlement-view {
-  z-index: 1;
-  width: 100%;
-  max-width: 24rem; /* 384px */
+  height: 100%;
   background-color: var(--theme-bg);
   display: flex;
   flex-direction: column;
-  border-radius: 1.5rem;
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  overflow: hidden;
-  position: relative;
-  height: 844px;
-  max-height: 90vh;
+  position: relative; /* Header의 absolute 포지션 기준점 */
 }
 
 .content-container {

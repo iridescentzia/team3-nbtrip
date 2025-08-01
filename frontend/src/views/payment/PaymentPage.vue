@@ -2,19 +2,32 @@
 import { usePaymentStore } from '@/stores/paymentStore';
 import paymentApi from '@/api/paymentApi';
 import QRScanner from '@/components/qr/QRScanner.vue';
-import { computed } from 'vue';
+import { getMyInfo } from '@/api/memberApi.js';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const store = usePaymentStore();
 
 const canSubmit = computed(() => {
   return store.amount > 0;
 });
 
+// 모달이 열릴 때 참여자 모두 선택되도록
+watch(
+  () => store.isModalVisible && store.modalType === 1,
+  (visible) => {
+    if (visible) {
+      store.selectedParticipants = store.participantsNickname.map(
+        (p) => p.userId
+      );
+    }
+  }
+);
+
 async function submitPayment() {
   try {
     const payload = {
-      tripId: 1,
-      userId: 1,
       merchantId: store.merchantID,
       amount: store.amount,
       paymentType: 'QR',
@@ -80,6 +93,9 @@ async function submitPayment() {
                   :id="`participant-${participant.userId}`"
                   :value="participant.userId"
                   v-model="store.selectedParticipants"
+                  :checked="
+                    store.selectedParticipants.includes(participant.userId)
+                  "
                 />
                 <label :for="`participant-${participant.userId}`">{{
                   participant.nickname

@@ -20,11 +20,12 @@ public class NotificationVO {
     private Integer paymentId; // 결제 ID
     private String notificationType; // 알림 타입
     private Timestamp sendAt; // 발송 시간
+    private Boolean isRead; // 알림 읽음 여부
 
     // join으로 가져오는 값
     private Integer amount;         // 결제 금액
     private String merchantName;    // 가맹점 이름
-    private String groupName;       // 여행 이름
+    private String tripName;       // 여행 이름
     private String fromUserNickname; // 알람 발생 유저 닉네임
     private String memberStatus; // 그룹 참여 상태
 }
