@@ -36,7 +36,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<BankDTO> getBankList() {
         return Arrays.stream(BankCode.values())
-                .map(bankCode -> new BankDTO(bankCode.getCode(), bankCode.name()))
+                .map(bankCode -> new BankDTO(bankCode.getCode(), bankCode.getName()))
                 .collect(Collectors.toList());
     }
 
