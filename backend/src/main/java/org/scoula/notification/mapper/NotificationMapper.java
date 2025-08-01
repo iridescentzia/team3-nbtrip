@@ -31,6 +31,8 @@ public interface NotificationMapper {
     int createGroupEventNotification(NotificationVO vo);
     // trip 멤버 전체에게 정산 요청 알림
     void createSettlementNotificationForAll(NotificationVO vo);
+    // trip 멤버 전체에게 결제 알림
+    void createTransactionNotificationForAll(NotificationVO vo);
 
     // 알림 읽음 처리
     int readNotification(@Param("notificationId") Integer notificationId);
