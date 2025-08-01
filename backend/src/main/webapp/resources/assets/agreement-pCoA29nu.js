@@ -1,1 +1,0 @@
-import{l as r,r as t}from"./index-C9ApI8vq.js";const l=r("agreement",()=>{const e=t({terms:!1,privacy:!1,push:!1});return{agreements:e,check:s=>{e.value.hasOwnProperty(s)&&(e.value[s]=!0)},reset:()=>{e.value={terms:!1,privacy:!1,push:!1}}}});export{l as u};

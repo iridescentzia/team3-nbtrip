@@ -199,6 +199,7 @@ const confirmTransfer = async () => {
   flex-direction: column;
   position: relative; /* Header의 absolute 포지션 기준점 */
 }
+
 /* 메인 콘텐츠 */
 .content-container {
   flex-grow: 1;
