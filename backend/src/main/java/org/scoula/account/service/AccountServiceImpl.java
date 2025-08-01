@@ -7,8 +7,13 @@ import org.scoula.account.domain.BankCode;
 import org.scoula.account.dto.AccountRegisterDTO;
 import org.scoula.account.dto.AccountUpdateDTO;
 import org.scoula.account.dto.AccountViewDTO;
+import org.scoula.account.dto.BankDTO;
 import org.scoula.account.mapper.AccountMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +30,27 @@ public class AccountServiceImpl implements AccountService {
             throw new RuntimeException("존재하지 않는 계좌입니다.");
         }
         return accountVO;
+    }
+
+    // 은행 목록 조회
+    @Override
+    public List<BankDTO> getBankList() {
+        return Arrays.stream(BankCode.values())
+                .map(bankCode -> new BankDTO(bankCode.getCode(), bankCode.name()))
+                .collect(Collectors.toList());
+    }
+
+    // 계좌 조회 - 외부에 노출할 DTO 변환 메서드
+    @Override
+    public AccountViewDTO getAccountByUserId(int userId) {
+        AccountVO accountVO = getVerifiedAccountByUserId(userId);  // 공통 메서드 사용
+        return AccountViewDTO.builder()
+                .accountId(accountVO.getAccountId())
+                .userId(accountVO.getUserId())
+                .accountNumber(accountVO.getAccountNumber())
+                .bankCode(accountVO.getBankCode())
+                .balance(accountVO.getBalance())
+                .build();
     }
 
     // 계좌 등록
@@ -53,19 +79,6 @@ public class AccountServiceImpl implements AccountService {
         accountMapper.updateAccount(accountUpdateDTO);
     }
 
-    // 계좌 조회 - 외부에 노출할 DTO 변환 메서드
-    @Override
-    public AccountViewDTO getAccountByUserId(int userId) {
-        AccountVO accountVO = getVerifiedAccountByUserId(userId);  // 공통 메서드 사용
-        return AccountViewDTO.builder()
-                .accountId(accountVO.getAccountId())
-                .userId(accountVO.getUserId())
-                .accountNumber(accountVO.getAccountNumber())
-                .bankCode(accountVO.getBankCode())
-                .balance(accountVO.getBalance())
-                .build();
-    }
-
     // 사용자 계좌 잔액 차감
     @Override
     public void decreaseUserBalance(int userId, int amount) {
@@ -86,11 +99,5 @@ public class AccountServiceImpl implements AccountService {
     public int getBalanceByUserId(int userId) {
         AccountVO accountVO = getVerifiedAccountByUserId(userId);  // 공통 메서드 사용
         return accountVO.getBalance();
-    }
-
-    // 사용자 계좌 잔액 증가
-    @Override
-    public int increaseUserBalance(int userId, int amount) {
-        return accountMapper.increaseUserBalance(userId, amount);
     }
 }

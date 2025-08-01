@@ -3,10 +3,10 @@ import apiClient from '@/api/index.js';
 const BASE_URL = '/accounts';
 
 export default {
-    // 계좌 등록
-    async registerAccount(accountRegisterDTO) {
-        const { data } = await apiClient.post(`${BASE_URL}`, accountRegisterDTO);
-        console.log('ACCOUNT REGISTER:', data);
+    // 은행 목록 조회
+    async getBankList() {
+        const { data } = await apiClient.get(`${BASE_URL}/banks`);
+        console.log('BANK LIST:', data);
         return data;
     },
 
@@ -14,6 +14,13 @@ export default {
     async getAccountByUserId(userId) {
         const { data } = await apiClient.get(`${BASE_URL}/${userId}`);
         console.log('ACCOUNT GET:', data);
+        return data;
+    },
+
+    // 계좌 등록
+    async registerAccount(accountRegisterDTO) {
+        const { data } = await apiClient.post(`${BASE_URL}`, accountRegisterDTO);
+        console.log('ACCOUNT REGISTER:', data);
         return data;
     },
 
