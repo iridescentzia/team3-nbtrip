@@ -16,22 +16,19 @@ import java.util.Date;
 @Builder
 public class ChartDTO {
 
-
-    private Date payAt;
-    private Integer amount;
-    private Integer tripId;
-
-    private String categoryName;
-    private String categoryId;
-    private String merchantId;
-
     private String category;
 
-    private Double totalAmount;
+    private Double total_amount;
 
     private String date;
 
     private Long count;
+
+    private String tripName;
+
+    private String tripEnd;
+
+    private String tripStart;
 
     /**
      * VO → DTO 변환
@@ -42,7 +39,7 @@ public class ChartDTO {
         }
         return ChartDTO.builder()
                 .category(vo.getCategory())
-                .totalAmount(vo.getTotalAmount())
+                .total_amount(vo.getTotal_amount())
                 .date(vo.getDate())
                 .count(vo.getCount())
                 .build();
@@ -54,7 +51,7 @@ public class ChartDTO {
     public ChartVO toVo() {
         return ChartVO.builder()
                 .category(this.category)
-                .totalAmount(this.totalAmount)
+                .total_amount(this.total_amount)
                 .date(this.date)
                 .count(this.count)
                 .build();
