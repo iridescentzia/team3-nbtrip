@@ -18,7 +18,10 @@ import javax.servlet.*;
 @Configuration
 @EnableWebMvc
 @ComponentScan(basePackages = {
-        "org.scoula"
+        "org.scoula.member.controller",
+        "org.scoula.mypage.controller",
+        "org.scoula.security.accounting.controller",
+        "org.scoula.settlement.controller"
 })
 @Slf4j
 public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitializer implements WebMvcConfigurer {

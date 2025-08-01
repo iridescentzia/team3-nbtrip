@@ -1,11 +1,11 @@
 export default [
   {
-    path: '/settlement/pending',
+    path: '/settlement/:tripId/pending',
     name: 'SettlementPendingNotice',
     component: () => import('@/views/settlement/SettlementPendingNotice.vue'),
   },
   {
-    path: '/settlement/completed',
+    path: '/settlement/:tripId/completed',
     name: 'SettlementCompletedNotice',
     component: () => import('@/views/settlement/SettlementCompletedNotice.vue'),
   },
@@ -20,4 +20,14 @@ export default [
     name: 'settlementRequest',
     component: () => import('@/views/settlement/SettlementRequestView.vue'),
   },
+  {
+    path: '/settlement/:tripId/detail',
+    name: 'settlementDetail',
+    component: () => import('@/views/settlement/SettlementDetailView.vue'),
+  },
+  {
+    path: '/settlement/:tripId/failure',
+    name: 'SettlementFailureNotice',
+    component: () => import('@/views/settlement/SettlementFailureNotice.vue'),
+  }
 ];

@@ -88,10 +88,35 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(
+                // 프론트엔드 SPA 진입점 허용
+                "/",
+                "/index.html",
+
+                // 정적 파일 확장자별 전역 허용
+                "/**/*.js",
+                "/**/*.css",
+                "/**/*.png",
+                "/**/*.jpg",
+                "/**/*.svg",
+
                 // 정적 리소스
                 "/assets/**",
                 "/favicon.ico",
                 "/robots.txt",
+                "/static/**",
+                "/public/**",
+
+                // Vue Router 페이지 경로들 - 페이지 접근 허용
+                "/login",
+                "/register",
+                "/mypage",
+                "/settlement",
+                "/trips",
+                "/merchants",
+                "/accounts",
+                "/payments",
+                "/chart",
+                "/notifications",
 
                 // 시스템 모니터링
                 "/api/health",
@@ -117,9 +142,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .addFilterBefore(corsFilter(), CsrfFilter.class)
-                .addFilterBefore(authenticationErrorFilter, UsernamePasswordAuthenticationFilter.class);
-//                .addFilterBefore(jwtLoginFilter, UsernamePasswordAuthenticationFilter.class)
-//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(authenticationErrorFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtLoginFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // 기본 인증 방식 비활성화
         http
@@ -140,22 +165,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
 
                 // OPTIONS 요청 (CORS Preflight) 항상 허용
-                .antMatchers(HttpMethod.OPTIONS).permitAll()
+                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // 인증 불필요(공개 API)
-                .antMatchers(HttpMethod.POST, "/api/auth/login").permitAll()  // 로그인
-                .antMatchers(HttpMethod.POST, "/api/auth/register").permitAll()  // 회원가입
-                .antMatchers(HttpMethod.GET, "/api/merchants/**").permitAll()  // 가맹점 조회
+                // 페이지 접근 허용 (프론트엔드 라우터)
+                .antMatchers(HttpMethod.POST, "/auth/login").permitAll()  // 로그인
+                .antMatchers(HttpMethod.POST, "/auth/register").permitAll()  // 회원가입
+                .antMatchers(HttpMethod.POST, "/auth/logout").permitAll()  // 로그아웃
+                .antMatchers(HttpMethod.POST, "/users/check-nickname").permitAll()  // 닉네임 중복 확인
 
                 // 인증 필요(보호된 API)
-                .antMatchers("/api/auth/logout").permitAll()  // 인증 관련
-                .antMatchers("/api/users/**").permitAll()  // 사용자 관리
-                .antMatchers("/api/groups/**").permitAll()  // 그룹 관리
-                .antMatchers(HttpMethod.POST, "/api/merchants").permitAll()  // 가맹점 등록
-                .antMatchers("/api/transactions/**").permitAll()  // 거래 관리
-                .antMatchers("/api/settlements/**").permitAll()  // 정산 관리
-                .antMatchers("/api/accounts/**").permitAll()  // 계좌 관리
-                .antMatchers("/api/notifications/**").permitAll()  // 알림 관리
+                .antMatchers("/users/**").authenticated()  // 사용자 정보
+                .antMatchers("/mypage/**").authenticated()  // 마이페이지
+                .antMatchers("/trips/**").authenticated()  // 여행
+                .antMatchers("/merchants/**").authenticated()  // 가맹점
+                .antMatchers("/transactions/**").authenticated()  // 거래
+                .antMatchers("/settlements/**").authenticated()  // 정산
+                .antMatchers("/accounts/**").authenticated()  // 계좌
+                .antMatchers("/chart/**").authenticated()  // 차트
+                .antMatchers("/notifications/**").authenticated()  // 알림
+                .antMatchers("/payments/**").authenticated()  // 결제
                 .anyRequest().permitAll();
     }
 

@@ -5,22 +5,7 @@
 <mapper namespace="org.scoula.payment.mapper.PaymentMapper">
     <!-- 결제 내역 저장 -->
     <insert id="insertPayment" parameterType="org.scoula.payment.domain.PaymentVO" useGeneratedKeys="true" keyProperty="paymentId">
-        INSERT INTO payment (
-            trip_id,
-            merchant_id,
-            user_id,
-            pay_at,
-            amount,
-            memo,
-            payment_type
-        ) VALUES (
-            #{tripId},
-            #{merchantId},
-            #{userId},
-            #{payAt},
-            #{amount},
-            #{memo},
-            #{paymentType}
-)
+        INSERT INTO payment ( trip_id, merchant_id, user_id, pay_at, amount, memo, payment_type )
+        VALUES ( #{tripId}, #{merchantId}, #{userId}, #{payAt}, #{amount}, #{memo}, #{paymentType} )
     </insert>
 </mapper>
