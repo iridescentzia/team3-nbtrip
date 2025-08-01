@@ -28,6 +28,7 @@ public class NotificationDTO {
     private Integer amount;
     private String memberStatus;
 
+    // vo -> dto
     public static NotificationDTO of(NotificationVO vo){
         return vo == null ? null : NotificationDTO.builder()
                 .notificationId(vo.getNotificationId())
@@ -46,6 +47,7 @@ public class NotificationDTO {
                 .build();
     }
 
+    // dto -> vo
     public NotificationVO toVO(){
         return NotificationVO.builder()
                 .notificationId(notificationId)
