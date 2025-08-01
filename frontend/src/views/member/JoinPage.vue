@@ -1,25 +1,25 @@
 <script setup>
-import { ref, computed, onMounted, defineEmits } from 'vue'
-import { registerMember, checkNicknameDuplicate } from '@/api/memberApi.js'
-import Button from "@/components/common/Button.vue";
-import {useRouter} from "vue-router";
-import Header from "@/components/layout/Header.vue";
+import { ref, computed, onMounted, defineEmits } from 'vue';
+import { registerMember, checkNicknameDuplicate } from '@/api/memberApi.js';
+import Button from '@/components/common/Button.vue';
+import { useRouter } from 'vue-router';
+import Header from '@/components/layout/Header.vue';
 
-const router = useRouter()
-const emit = defineEmits(['signup-complete'])
+const router = useRouter();
+const emit = defineEmits(['signup-complete']);
 
 // 폼 입력 상태
-const nickname = ref('')
-const name = ref('')
-const phoneNumber = ref('')
-const email = ref('')
-const password = ref('')
-const passwordConfirm = ref('')
-const bankCode = ref('')
-const accountNumber = ref('')
+const nickname = ref('');
+const name = ref('');
+const phoneNumber = ref('');
+const email = ref('');
+const password = ref('');
+const passwordConfirm = ref('');
+const bankCode = ref('');
+const accountNumber = ref('');
 
 // FCM 토큰
-const fcmToken = ref('dummy-token')  // firebase 연동 전(임시 토큰)
+const fcmToken = ref('dummy-token'); // firebase 연동 전(임시 토큰)
 // const fcmToken = ref('')  // firebase 연동 후
 
 // FCM 토큰 받아오기(firebase 연동 후)
@@ -38,12 +38,14 @@ const fcmToken = ref('dummy-token')  // firebase 연동 전(임시 토큰)
 // })
 
 // 닉네임 중복 확인 상태
-const isNicknameChecked = ref(false)
-const nicknameValid = ref(false)
-const nicknameMessage = ref('')
+const isNicknameChecked = ref(false);
+const nicknameValid = ref(false);
+const nicknameMessage = ref('');
 
 // 비밀번호 일치 여부
-const isPasswordMatch = computed(() => password.value === passwordConfirm.value)
+const isPasswordMatch = computed(
+  () => password.value === passwordConfirm.value
+);
 
 // 은행 코드 리스트(account DB)
 const bankCodes = ref([
@@ -56,42 +58,49 @@ const bankCodes = ref([
   { code: '081', name: '하나은행' },
   { code: '088', name: '신한은행' },
   { code: '090', name: '카카오뱅크' },
-  { code: '092', name: '토스뱅크' }
-])
+  { code: '092', name: '토스뱅크' },
+]);
 
 // 닉네임 중복 확인(POST /api/users/check-nickname)
 const checkNickname = async () => {
   if (!nickname.value.trim()) {
-    alert('닉네임을 입력해주세요.')
-    return
+    alert('닉네임을 입력해주세요.');
+    return;
   }
   try {
-    const res = await checkNicknameDuplicate(nickname.value)
-    nicknameValid.value = true
-    nicknameMessage.value = res.message || '사용 가능한 닉네임입니다.'
-    isNicknameChecked.value = true
+    const res = await checkNicknameDuplicate(nickname.value);
+    nicknameValid.value = true;
+    nicknameMessage.value = res.message || '사용 가능한 닉네임입니다.';
+    isNicknameChecked.value = true;
   } catch (err) {
-    nicknameValid.value = false
-    isNicknameChecked.value = false
-    nicknameMessage.value = err.message || '이미 사용 중인 닉네임입니다.'
+    nicknameValid.value = false;
+    isNicknameChecked.value = false;
+    nicknameMessage.value = err.message || '이미 사용 중인 닉네임입니다.';
   }
-}
+};
 
 // 회원가입(POST /api/auth/register)
 const submitForm = async () => {
-  if (!nickname.value || !name.value || !phoneNumber.value ||
-      !email.value || !password.value || !passwordConfirm.value ||
-      !bankCode.value || !accountNumber.value) {
-    alert('모든 항목을 입력해주세요.')
-    return
+  if (
+    !nickname.value ||
+    !name.value ||
+    !phoneNumber.value ||
+    !email.value ||
+    !password.value ||
+    !passwordConfirm.value ||
+    !bankCode.value ||
+    !accountNumber.value
+  ) {
+    alert('모든 항목을 입력해주세요.');
+    return;
   }
   if (!isNicknameChecked.value || !nicknameValid.value) {
-    alert('닉네임 중복 확인을 해주세요.')
-    return
+    alert('닉네임 중복 확인을 해주세요.');
+    return;
   }
   if (!isPasswordMatch.value) {
-    alert('비밀번호가 일치하지 않습니다.')
-    return
+    alert('비밀번호가 일치하지 않습니다.');
+    return;
   }
   try {
     const res = await registerMember({
@@ -103,21 +112,21 @@ const submitForm = async () => {
       phoneNumber: phoneNumber.value,
       bankCode: bankCode.value,
       accountNumber: accountNumber.value,
-      fcmToken: fcmToken.value
+      fcmToken: fcmToken.value,
     });
     if (res.success) {
-      alert('회원가입이 완료되었습니다!')
-      emit('signup-complete')
+      alert('회원가입이 완료되었습니다!');
+      emit('signup-complete');
     }
   } catch (err) {
-    alert(err.message || '회원가입 실패')
+    alert(err.message || '회원가입 실패');
   }
-}
+};
 </script>
 
-
 <template>
-  <div class="join-container"><br/>
+  <div class="join-content">
+    <br />
     <Header title="회원 정보 입력" :back-action="() => router.back()" />
 
     <div class="form-area">
@@ -129,10 +138,14 @@ const submitForm = async () => {
       <label class="label">닉네임</label>
       <div class="nickname-wrapper">
         <input v-model="nickname" type="text" class="nickname-input" />
-        <button class="nickname-check-button" @click="checkNickname">중복 확인</button>
+        <button class="nickname-check-button" @click="checkNickname">
+          중복 확인
+        </button>
       </div>
       <div v-if="nicknameMessage" class="nickname-check-message">
-        <span :class="nicknameValid ? 'success' : 'error'">{{ nicknameMessage }}</span>
+        <span :class="nicknameValid ? 'success' : 'error'">{{
+          nicknameMessage
+        }}</span>
       </div>
 
       <!-- 이름 -->
@@ -141,7 +154,12 @@ const submitForm = async () => {
 
       <!-- 전화번호 -->
       <label class="label">전화번호</label>
-      <input v-model="phoneNumber" type="text" class="input-box" placeholder="010-1234-5678" />
+      <input
+        v-model="phoneNumber"
+        type="text"
+        class="input-box"
+        placeholder="010-1234-5678"
+      />
 
       <!-- 이메일 -->
       <label class="label">이메일</label>
@@ -159,8 +177,12 @@ const submitForm = async () => {
       <label class="label">비밀번호 확인</label>
       <input v-model="passwordConfirm" type="password" class="input-box" />
       <div class="password-check">
-        <span v-if="passwordConfirm && !isPasswordMatch" class="error">비밀번호가 동일하지 않습니다.</span>
-        <span v-if="passwordConfirm && isPasswordMatch" class="success">비밀번호가 동일합니다.</span>
+        <span v-if="passwordConfirm && !isPasswordMatch" class="error"
+          >비밀번호가 동일하지 않습니다.</span
+        >
+        <span v-if="passwordConfirm && isPasswordMatch" class="success"
+          >비밀번호가 동일합니다.</span
+        >
       </div>
 
       <!-- 은행 선택 -->
@@ -188,26 +210,22 @@ const submitForm = async () => {
 </template>
 
 <style scoped>
-/* 전체 컨테이너 */
-.join-container {
-  width: 384px;
-  height: 800px;
-  margin: 0 auto;
+.join-content {
+  width: 100%;
+  height: 100%;
   background: #f8fafc;
-  border-radius: 24px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  outline: 1px solid black;
-  outline-offset: -1px;
-  overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* 스크롤은 form-area에서 처리 */
 }
 
+/* 폼 영역이 스크롤되도록 수정 */
 .form-area {
-  flex: 1;
-  overflow-y: auto;
+  flex: 1; /* 남은 공간을 모두 차지 */
+  overflow-y: auto; /* 내용이 길어지면 스크롤 */
   padding: 24px;
+  padding-top: calc(30px + 10px); /* Header 높이만큼 여백 추가 */
   box-sizing: border-box;
 }
 

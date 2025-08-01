@@ -13,7 +13,7 @@ const {
   isLoading,
   error,
   toReceiveList,
-  toSendList
+  toSendList,
 } = storeToRefs(settlementStore);
 
 const route = useRoute();
@@ -48,138 +48,114 @@ const handleRequestSettlement = async () => {
 </script>
 
 <template>
-  <div class="view-wrapper">
-    <div class="settlement-view">
-      <Header title="정산하기" :back-action="goBackToSummary"/>
+  <div class="settlement-view">
+    <Header title="정산하기" :back-action="goBackToSummary" />
 
-      <main v-if="isLoading" class="content-container loading">
-        <p>최종 정산 결과를 계산하는 중...</p>
-      </main>
-      <main v-else-if="error" class="content-container error">
-        <p>{{ error }}</p>
-      </main>
+    <main v-if="isLoading" class="content-container loading">
+      <p>최종 정산 결과를 계산하는 중...</p>
+    </main>
+    <main v-else-if="error" class="content-container error">
+      <p>{{ error }}</p>
+    </main>
 
-      <main v-else-if="groupSettlementData" class="content-container">
-        <div class="summary-header">
-          <p class="trip-name">{{ groupSettlementData.tripName }}</p>
-          <h2 class="total-amount">
-            총 {{ groupSettlementData.totalAmount?.toLocaleString() || 0 }}원 사용
-          </h2>
+    <main v-else-if="groupSettlementData" class="content-container">
+      <div class="summary-header">
+        <p class="trip-name">{{ groupSettlementData.tripName }}</p>
+        <h2 class="total-amount">
+          총 {{ groupSettlementData.totalAmount?.toLocaleString() || 0 }}원 사용
+        </h2>
+      </div>
+
+      <!-- 받을 돈 카드 -->
+      <div class="settlement-card">
+        <div class="card-header">
+          <select v-model="selectedMember" class="member-select">
+            <option
+              v-for="member in groupSettlementData.members"
+              :key="member"
+              :value="member"
+            >
+              {{ member }}
+            </option>
+          </select>
+          <span class="card-title">님이 받을 돈</span>
         </div>
-
-        <!-- 받을 돈 카드 -->
-        <div class="settlement-card">
-          <div class="card-header">
-            <select v-model="selectedMember" class="member-select">
-              <option
-                  v-for="member in groupSettlementData.members"
-                  :key="member"
-                  :value="member"
-              >
-                {{ member }}
-              </option>
-            </select>
-            <span class="card-title">님이 받을 돈</span>
-          </div>
-          <div class="transaction-list">
-            <div v-if="toReceiveList.length > 0">
-              <div
-                  v-for="(tx, index) in toReceiveList"
-                  :key="index"
-                  class="transaction-item"
-              >
-                <div class="member-info">
-                  <div class="avatar bg-theme-secondary">
-                    <span>{{ tx.senderNickname?.substring(0, 1) || '?' }}</span>
-                  </div>
-                  <span>{{ tx.senderNickname || '알 수 없음' }}</span>
+        <div class="transaction-list">
+          <div v-if="toReceiveList.length > 0">
+            <div
+              v-for="(tx, index) in toReceiveList"
+              :key="index"
+              class="transaction-item"
+            >
+              <div class="member-info">
+                <div class="avatar bg-theme-secondary">
+                  <span>{{ tx.senderNickname?.substring(0, 1) || '?' }}</span>
                 </div>
-                <span class="amount">{{ tx.amount?.toLocaleString() || 0 }}원</span>
+                <span>{{ tx.senderNickname || '알 수 없음' }}</span>
               </div>
+              <span class="amount"
+                >{{ tx.amount?.toLocaleString() || 0 }}원</span
+              >
             </div>
-            <p v-else class="empty-message">받을 돈이 없습니다.</p>
           </div>
+          <p v-else class="empty-message">받을 돈이 없습니다.</p>
         </div>
+      </div>
 
-        <!-- 보낼 돈 카드 -->
-        <div class="settlement-card">
-          <div class="card-header">
-            <select v-model="selectedMember" class="member-select">
-              <option
-                  v-for="member in groupSettlementData.members"
-                  :key="member"
-                  :value="member"
-              >
-                {{ member }}
-              </option>
-            </select>
-            <span class="card-title">님이 보낼 돈</span>
-          </div>
-          <div class="transaction-list">
-            <div v-if="toSendList.length > 0">
-              <div
-                  v-for="(tx, index) in toSendList"
-                  :key="index"
-                  class="transaction-item"
-              >
-                <div class="member-info">
-                  <div class="avatar bg-theme-primary">
-                    <span>{{ tx.receiverNickname?.substring(0, 1) || '?' }}</span>
-                  </div>
-                  <span>{{ tx.receiverNickname || '알 수 없음' }}</span>
+      <!-- 보낼 돈 카드 -->
+      <div class="settlement-card">
+        <div class="card-header">
+          <select v-model="selectedMember" class="member-select">
+            <option
+              v-for="member in groupSettlementData.members"
+              :key="member"
+              :value="member"
+            >
+              {{ member }}
+            </option>
+          </select>
+          <span class="card-title">님이 보낼 돈</span>
+        </div>
+        <div class="transaction-list">
+          <div v-if="toSendList.length > 0">
+            <div
+              v-for="(tx, index) in toSendList"
+              :key="index"
+              class="transaction-item"
+            >
+              <div class="member-info">
+                <div class="avatar bg-theme-primary">
+                  <span>{{ tx.receiverNickname?.substring(0, 1) || '?' }}</span>
                 </div>
-                <span class="amount">{{ tx.amount?.toLocaleString() || 0 }}원</span>
+                <span>{{ tx.receiverNickname || '알 수 없음' }}</span>
               </div>
+              <span class="amount"
+                >{{ tx.amount?.toLocaleString() || 0 }}원</span
+              >
             </div>
-            <p v-else class="empty-message">보낼 돈이 없습니다.</p>
           </div>
+          <p v-else class="empty-message">보낼 돈이 없습니다.</p>
         </div>
-      </main>
+      </div>
+    </main>
 
-      <footer class="footer">
-        <button @click="handleRequestSettlement" class="next-button">
-          정산 요청 보내기
-        </button>
-      </footer>
-    </div>
+    <footer class="footer">
+      <button @click="handleRequestSettlement" class="next-button">
+        정산 요청 보내기
+      </button>
+    </footer>
   </div>
 </template>
 
 <style scoped>
-/* 테마 색상 변수 */
-.settlement-view {
-  --theme-primary: rgba(255, 209, 102, 0.65);
-  --theme-secondary: rgba(162, 210, 255, 0.65); /* 새로운 색상 추가 */
-  --theme-primary-dark: #e2c05e;
-  --theme-bg: #f8f9fa;
-  --theme-text: #333333;
-  --theme-text-light: #888888;
-}
-
-/* 화면 중앙 정렬을 위한 wrapper 스타일 */
-.view-wrapper {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  min-height: 100vh;
-  background-color: #ffffff;
-  padding: 2rem 0;
-}
-
 /* 전체 레이아웃 */
 .settlement-view {
-  z-index: 1;
   width: 100%;
-  max-width: 24rem; /* 384px */
+  height: 100%;
   background-color: var(--theme-bg);
   display: flex;
   flex-direction: column;
-  border-radius: 1.5rem;
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  overflow: hidden;
-  position: relative;
-  height: 844px;
-  max-height: 90vh;
+  position: relative; /* Header의 absolute 포지션 기준점 */
 }
 
 /* 메인 콘텐츠 */
