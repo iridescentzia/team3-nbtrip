@@ -32,7 +32,6 @@ const router = createRouter({
         ...reportRoutes,
       ],
     },
-
   ],
 });
 export default router;
