@@ -1,0 +1,1 @@
+import{C as r}from"./index-C9ApI8vq.js";const a=r.create({baseURL:"http://localhost:8080/api",headers:{"Content-Type":"application/json"}});a.interceptors.request.use(e=>{const t=localStorage.getItem("accessToken");return t&&(e.headers.Authorization=`Bearer ${t}`),e},e=>Promise.reject(e));export{a};

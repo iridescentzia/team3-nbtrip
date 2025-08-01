@@ -1,12 +1,17 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import Footer from '@/components/layout/Footer.vue'
-import { Briefcase, BriefcaseConveyorBelt, CircleUserRound, ChevronRight } from 'lucide-vue-next'
-import { getMyInfo, logoutMember } from "@/api/memberApi.js"; // ✅ getMyInfo와 logoutMember import
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import Footer from '@/components/layout/Footer.vue';
+import {
+  Briefcase,
+  BriefcaseConveyorBelt,
+  CircleUserRound,
+  ChevronRight,
+} from 'lucide-vue-next';
+import { getMyInfo, logoutMember } from '@/api/memberApi.js'; // ✅ getMyInfo와 logoutMember import
 
-const router = useRouter()
-const userInfo = ref({ nickname: '', name: '' })
+const router = useRouter();
+const userInfo = ref({ nickname: '', name: '' });
 
 // 마운트 시 사용자 정보 불러오기
 onMounted(async () => {
@@ -35,7 +40,7 @@ onMounted(async () => {
 });
 
 // 페이지 이동
-const goTo = (path) => router.push(path)
+const goTo = (path) => router.push(path);
 
 // ✅ 로그아웃 - memberApi의 logoutMember 함수 사용
 const logout = async () => {
@@ -57,18 +62,22 @@ const logout = async () => {
     localStorage.removeItem('refreshToken');
     router.push('/login');
   }
-}
+};
 </script>
 
 <template>
-  <div class="mypage-wrapper">
+  <div class="mypage-content">
     <div class="content">
       <!-- 상단 제목 -->
       <header class="header"><h1>마이페이지</h1></header>
 
       <!-- 프로필 이미지 + 닉네임 -->
       <div class="profile-section">
-        <img src="@/assets/img/airplane_left.png" alt="프로필" class="profile-img" />
+        <img
+          src="@/assets/img/airplane_left.png"
+          alt="프로필"
+          class="profile-img"
+        />
         <div class="nickname">{{ userInfo.nickname || '김냥이' }}</div>
       </div>
 
@@ -93,13 +102,13 @@ const logout = async () => {
       <!-- 메뉴 리스트 -->
       <div class="menu-list">
         <div class="menu-item" @click="goTo('/my/payment')">
-          결제 수단 관리 <ChevronRight class="arrow"/>
+          결제 수단 관리 <ChevronRight class="arrow" />
         </div>
         <div class="menu-item" @click="goTo('/faq')">
-          공지사항 및 FAQ <ChevronRight class="arrow"/>
+          공지사항 및 FAQ <ChevronRight class="arrow" />
         </div>
         <div class="menu-item" @click="goTo('/terms')">
-          이용 약관 <ChevronRight class="arrow"/>
+          이용 약관 <ChevronRight class="arrow" />
         </div>
       </div>
 
@@ -108,32 +117,24 @@ const logout = async () => {
     </div>
 
     <!-- 공통 푸터 -->
-    <Footer class="footer"/>
+    <Footer class="footer" />
   </div>
 </template>
 
 <style scoped>
-.mypage-wrapper {
-  width: 384px;
-  height: 800px;
-  position: relative;
+.mypage-content {
+  width: 100%;
+  height: 100%;
   background: #f8fafc;
-  box-shadow: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
-  overflow: auto;
-  border-radius: 24px;
-  outline: 1px black solid;
-  outline-offset: -1px;
-  margin: 0 auto;
-  padding: 32px 32px 0;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* 스크롤은 main-content에서 처리 */
 }
 
 .content {
   flex: 1;
-  display: flex;
-  flex-direction: column;
+  overflow-y: auto;
+  padding: 0px 32px 0px 32px;
   min-height: 0;
 }
 
@@ -142,7 +143,7 @@ const logout = async () => {
   font-size: 20px;
   font-weight: bold;
   color: #333;
-  margin-bottom: 16px;
+  margin-bottom: 32px;
 }
 
 .header h1 {
@@ -157,7 +158,7 @@ const logout = async () => {
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  margin: 12px 0 24px;
+  margin: 36px 0 24px 0;
   padding-left: 8px;
   gap: 20px;
 }
@@ -247,7 +248,6 @@ const logout = async () => {
 }
 
 .footer {
-  padding: 12px 0 16px;
   margin-top: auto;
 }
 </style>

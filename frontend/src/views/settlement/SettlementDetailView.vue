@@ -14,7 +14,7 @@ const {
   showTransferModal,
   totalReceiveAmount,
   totalSendAmount,
-  netBalance
+  netBalance,
 } = storeToRefs(settlementStore);
 
 const route = useRoute();
@@ -58,7 +58,9 @@ const confirmTransfer = async () => {
       router.push(`/settlement/${tripId}/pending`);
     } else {
       // 1건이라도 실패
-      alert(`송금 실패: ${transferResult.successCount}건 성공, ${transferResult.failedCount}건 실패`);
+      alert(
+        `송금 실패: ${transferResult.successCount}건 성공, ${transferResult.failedCount}건 실패`
+      );
       router.push(`/settlement/${tripId}/failure`);
     }
   } catch (err) {
@@ -70,163 +72,133 @@ const confirmTransfer = async () => {
 </script>
 
 <template>
-  <div class="view-wrapper">
-    <div class="settlement-view">
-      <Header title="정산하기" />
+  <div class="settlement-view">
+    <Header title="정산하기" />
 
-      <main v-if="isLoading" class="content-container loading">
-        <p>내 정산 내역을 불러오는 중...</p>
-      </main>
-      <main v-else-if="error" class="content-container error">
-        <p>{{ error }}</p>
-      </main>
+    <main v-if="isLoading" class="content-container loading">
+      <p>내 정산 내역을 불러오는 중...</p>
+    </main>
+    <main v-else-if="error" class="content-container error">
+      <p>{{ error }}</p>
+    </main>
 
-      <main v-else-if="mySettlementData" class="content-container">
-        <div class="summary-header">
-          <p class="trip-name">{{ mySettlementData.tripName }}</p>
-          <h2 class="total-amount">
-            총 {{ mySettlementData.totalAmount?.toLocaleString() || 0 }}원 사용
-          </h2>
-        </div>
+    <main v-else-if="mySettlementData" class="content-container">
+      <div class="summary-header">
+        <p class="trip-name">{{ mySettlementData.tripName }}</p>
+        <h2 class="total-amount">
+          총 {{ mySettlementData.totalAmount?.toLocaleString() || 0 }}원 사용
+        </h2>
+      </div>
 
-        <!-- 받을 돈 카드 -->
-        <div class="settlement-card">
-          <p class="card-title text-theme-text">받을 돈</p>
-          <div class="transaction-list">
+      <!-- 받을 돈 카드 -->
+      <div class="settlement-card">
+        <p class="card-title text-theme-text">받을 돈</p>
+        <div class="transaction-list">
+          <div
+            v-if="
+              mySettlementData.toReceive &&
+              mySettlementData.toReceive.length > 0
+            "
+          >
             <div
-                v-if="mySettlementData.toReceive && mySettlementData.toReceive.length > 0"
+              v-for="tx in mySettlementData.toReceive"
+              :key="tx.settlementId"
+              class="transaction-item"
             >
-              <div
-                  v-for="tx in mySettlementData.toReceive"
-                  :key="tx.settlementId"
-                  class="transaction-item"
-              >
-                <div class="member-info">
-                  <div class="avatar">
-                    <span>{{ tx.senderNickname?.substring(0, 1) || '?' }}</span>
-                  </div>
-                  <span class="font-semibold text-sm text-theme-text">
-                    {{ tx.senderNickname || '알 수 없음' }}
-                  </span>
+              <div class="member-info">
+                <div class="avatar">
+                  <span>{{ tx.senderNickname?.substring(0, 1) || '?' }}</span>
                 </div>
-                <span class="amount text-theme-text">
-                  {{ tx.amount?.toLocaleString() || 0 }}원
+                <span class="font-semibold text-sm text-theme-text">
+                  {{ tx.senderNickname || '알 수 없음' }}
                 </span>
               </div>
+              <span class="amount text-theme-text">
+                {{ tx.amount?.toLocaleString() || 0 }}원
+              </span>
             </div>
-            <p v-else class="empty-message text-theme-text">
-              받을 돈이 없습니다.
-            </p>
           </div>
+          <p v-else class="empty-message text-theme-text">
+            받을 돈이 없습니다.
+          </p>
         </div>
+      </div>
 
-        <!-- 보낼 돈 카드 -->
-        <div class="settlement-card">
-          <p class="card-title">보낼 돈</p>
-          <div class="transaction-list">
+      <!-- 보낼 돈 카드 -->
+      <div class="settlement-card">
+        <p class="card-title">보낼 돈</p>
+        <div class="transaction-list">
+          <div
+            v-if="mySettlementData.toSend && mySettlementData.toSend.length > 0"
+          >
             <div
-                v-if="mySettlementData.toSend && mySettlementData.toSend.length > 0"
+              v-for="tx in mySettlementData.toSend"
+              :key="tx.settlementId"
+              class="transaction-item"
             >
-              <div
-                  v-for="tx in mySettlementData.toSend"
-                  :key="tx.settlementId"
-                  class="transaction-item"
-              >
-                <div class="member-info">
-                  <div class="avatar">
-                    <span>{{ tx.receiverNickname?.substring(0, 1) || '?' }}</span>
-                  </div>
-                  <span class="font-semibold text-sm">
-                    {{ tx.receiverNickname || '알 수 없음' }}
-                  </span>
+              <div class="member-info">
+                <div class="avatar">
+                  <span>{{ tx.receiverNickname?.substring(0, 1) || '?' }}</span>
                 </div>
-                <span class="amount">{{ tx.amount?.toLocaleString() || 0 }}원</span>
+                <span class="font-semibold text-sm">
+                  {{ tx.receiverNickname || '알 수 없음' }}
+                </span>
               </div>
+              <span class="amount"
+                >{{ tx.amount?.toLocaleString() || 0 }}원</span
+              >
             </div>
-            <p v-else class="empty-message">보낼 돈이 없습니다.</p>
           </div>
+          <p v-else class="empty-message">보낼 돈이 없습니다.</p>
         </div>
-      </main>
+      </div>
+    </main>
 
-      <footer class="footer">
-        <button
-            @click="handleTransferClick"
-            class="next-button"
-            :disabled="totalSendAmount === 0"
-        >
-          송금하기
-        </button>
-      </footer>
-    </div>
+    <footer class="footer">
+      <button
+        @click="handleTransferClick"
+        class="next-button"
+        :disabled="totalSendAmount === 0"
+      >
+        송금하기
+      </button>
+    </footer>
+  </div>
 
-    <!-- ✅ 송금 확인 모달 -->
-    <div v-if="showTransferModal" class="modal-overlay" @click="cancelTransfer">
-      <div class="transfer-modal" @click.stop>
-        <!-- 아이콘 -->
-        <div class="modal-icon">
-        </div>
+  <!-- ✅ 송금 확인 모달 -->
+  <div v-if="showTransferModal" class="modal-overlay" @click="cancelTransfer">
+    <div class="transfer-modal" @click.stop>
+      <!-- 아이콘 -->
+      <div class="modal-icon"></div>
 
-        <!-- 메인 메시지 -->
-        <h3 class="modal-title">송금하시겠습니까?</h3>
+      <!-- 메인 메시지 -->
+      <h3 class="modal-title">송금하시겠습니까?</h3>
 
-        <!-- 설명 텍스트 -->
-        <p class="modal-description">
-          송금 버튼을 누르면 정산이 완료되며,<br/>
-          되돌릴 수 없습니다.
-        </p>
+      <!-- 설명 텍스트 -->
+      <p class="modal-description">
+        송금 버튼을 누르면 정산이 완료되며,<br />
+        되돌릴 수 없습니다.
+      </p>
 
-        <!-- 버튼들 -->
-        <div class="modal-buttons">
-          <button @click="cancelTransfer" class="modal-cancel-btn">
-            취소
-          </button>
-          <button @click="confirmTransfer" class="modal-confirm-btn">
-            확인
-          </button>
-        </div>
+      <!-- 버튼들 -->
+      <div class="modal-buttons">
+        <button @click="cancelTransfer" class="modal-cancel-btn">취소</button>
+        <button @click="confirmTransfer" class="modal-confirm-btn">확인</button>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* 테마 색상 변수 */
-.settlement-view {
-  --theme-primary: rgba(255, 209, 102, 0.65);
-  --theme-secondary: rgba(162, 210, 255, 0.65);
-  --theme-bg: #f8f9fa;
-  --theme-text: #333333;
-  --theme-text-light: #888888;
-  --theme-red: #ef4444;
-  --theme-blue: #3a86ff;
-}
-
-/* 화면 중앙 정렬을 위한 wrapper 스타일 */
-.view-wrapper {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  min-height: 100vh;
-  background-color: #ffffff;
-  padding: 2rem 0;
-}
-
 /* 전체 레이아웃 */
 .settlement-view {
-  z-index: 1;
   width: 100%;
-  max-width: 24rem; /* 384px */
+  height: 100%;
   background-color: var(--theme-bg);
   display: flex;
   flex-direction: column;
-  border-radius: 1.5rem;
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  overflow: hidden;
-  position: relative;
-  height: 844px;
-  max-height: 90vh;
+  position: relative; /* Header의 absolute 포지션 기준점 */
 }
-
 /* 메인 콘텐츠 */
 .content-container {
   flex-grow: 1;
@@ -395,21 +367,21 @@ const confirmTransfer = async () => {
   background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
-  align-items: flex-end;  /* ✅ 하단 정렬 */
+  align-items: flex-end; /* ✅ 하단 정렬 */
   z-index: 1000;
   animation: fadeIn 0.3s ease-out;
 }
 
 /* ✅ 모달 - 전체 너비, 하단에서 올라옴 */
 .transfer-modal {
-  width: 100%;  /* ✅ 전체 너비 */
+  width: 100%; /* ✅ 전체 너비 */
   max-width: 325px;
   height: auto;
   min-height: 230px;
   background: white;
   border-radius: 1.5rem;
-  box-shadow: 0px -4px 32px rgba(0, 0, 0, 0.24);  /* ✅ 위쪽 그림자 */
-  padding: 28px 40px 36px 40px;  /* 하단 패딩 추가 */
+  box-shadow: 0px -4px 32px rgba(0, 0, 0, 0.24); /* ✅ 위쪽 그림자 */
+  padding: 28px 40px 36px 40px; /* 하단 패딩 추가 */
   position: relative;
   animation: slideUpFromBottom 0.3s ease-out;
 }
@@ -447,7 +419,7 @@ const confirmTransfer = async () => {
   gap: 12px;
   justify-content: center;
   width: 100%;
-  max-width: 400px;  /* 버튼 최대 너비 제한 */
+  max-width: 400px; /* 버튼 최대 너비 제한 */
   margin: 0 auto;
 }
 
@@ -524,10 +496,10 @@ const confirmTransfer = async () => {
 /* ✅ 큰 화면에서도 적절한 크기 유지 */
 @media (min-width: 768px) {
   .transfer-modal {
-    max-width: 325px;  /* 태블릿/데스크톱에서는 최대 너비 제한 */
+    max-width: 325px; /* 태블릿/데스크톱에서는 최대 너비 제한 */
     margin: 0 auto;
-    border-radius: 16px;  /* 큰 화면에서는 모든 모서리 둥글게 */
-    margin-bottom: 2rem;  /* 하단 여백 */
+    border-radius: 16px; /* 큰 화면에서는 모든 모서리 둥글게 */
+    margin-bottom: 2rem; /* 하단 여백 */
   }
 }
 
