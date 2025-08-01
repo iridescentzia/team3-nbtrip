@@ -81,7 +81,7 @@ export default [
     // 결제 수단 수정
     {
         path: '/mypage/updatePayment',
-            name: 'MyPaymentUpdatePage',
+        name: 'MyPaymentUpdatePage',
         component: () => import('@/views/member/mypage/MyPaymentUpdatePage.vue')
     },
 
@@ -119,4 +119,13 @@ export default [
         component: () => import('@/views/member/agreement/AgreementPush.vue'),
         props: { viewOnly: true }
     },
+
+    // ============ 여행 ============
+
+    // 지난 여행
+    {
+        path: '/my/last-trip',
+        name: 'LastTripPage',
+        component: () => import('@/views/member/mypage/LastTripPage.vue')
+    }
 ]

@@ -32,4 +32,10 @@ export default {
     );
     return allDates;
   },
+
+  // 전체 여행 목록 조회
+  async fetchTrips() {
+    const { data } = await api.get('/trips');
+    return data;
+  },
 };
