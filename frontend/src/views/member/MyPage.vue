@@ -8,7 +8,7 @@ import {
   CircleUserRound,
   ChevronRight,
 } from 'lucide-vue-next';
-import { getMyInfo, logoutMember } from '@/api/memberApi.js'; // ✅ getMyInfo와 logoutMember import
+import { getMyInfo, logoutMember } from '@/api/memberApi.js';
 
 const router = useRouter();
 const userInfo = ref({ nickname: '', name: '' });
@@ -50,8 +50,6 @@ const logout = async () => {
 
     // 토큰 정리
     localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-
     console.log('로그아웃 성공, 로그인 페이지로 이동');
     router.push('/login');
   } catch (e) {
@@ -59,7 +57,6 @@ const logout = async () => {
 
     // 에러가 발생해도 토큰은 정리하고 로그인 페이지로 이동
     localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
     router.push('/login');
   }
 };

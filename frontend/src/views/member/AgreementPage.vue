@@ -4,7 +4,7 @@ import Header from '@/components/layout/Header.vue';
 import Button from '@/components/common/Button.vue';
 import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAgreementStore } from '@/stores/agreement.js';
+import { useAgreementStore } from '@/stores/agreementStore.js';
 import { ChevronRight } from 'lucide-vue-next';
 
 const router = useRouter();

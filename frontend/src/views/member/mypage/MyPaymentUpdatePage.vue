@@ -4,30 +4,15 @@ import { useRouter } from 'vue-router'
 import Header from '@/components/layout/Header.vue'
 import Button from '@/components/common/Button.vue'
 import { getMyInfo } from '@/api/memberApi.js'
-// import { getAccount, updateAccount } from '@/api/accountApi.js'
-// import { getBankList } from '@/api/bankApi.js'
+// import AccountApi from '@/api/AccountApi.js';
 
 const router = useRouter()
 const userId = ref(null)
 
 // 입력 필드
 const accountNumber = ref('')
-const bankName = ref('')
-// const bankList = ref([])
-
-// 더미데이터 사용
-const bankList = ref([
-  { code: '003', name: '기업은행' },
-  { code: '004', name: '국민은행' },
-  { code: '011', name: '농협은행' },
-  { code: '020', name: '우리은행' },
-  { code: '023', name: 'SC제일은행' },
-  { code: '027', name: '한국시티은행' },
-  { code: '081', name: '하나은행' },
-  { code: '088', name: '신한은행' },
-  { code: '090', name: '카카오뱅크' },
-  { code: '092', name: '토스뱅크' }
-])
+const bankCode = ref('')
+const bankList = ref([])
 
 // 메시지
 const errorMessage = ref('')
@@ -39,38 +24,94 @@ onMounted(async () => {
     const userRes = await getMyInfo()
     userId.value = userRes.data.userId
 
-    // const accountRes = await getAccount(userId.value)
-    // accountNumber.value = accountRes.data.accountNumber
-    // bankName.value = convertCodeToName(accountRes.data.bankCode)
+    // 은행 목록 조회
+    await loadBankList()
 
-    // const bankRes = await getBankList()
-    // bankList.value = bankRes // [{ code, name }]
+    // 계좌 정보 조회
+    await loadAccountInfo()
 
-    // 더미 데이터 사용
-    accountNumber.value = '00000000000000'
-    bankName.value = '국민은행'
   } catch (err) {
-    errorMessage.value = err.message || '계좌 정보를 불러오지 못했습니다.'
+    errorMessage.value = err.message || '정보를 불러오지 못했습니다.'
   }
 })
 
-// 은행 코드 → 이름 변환
-const convertCodeToName = (code) => {
-  const bank = bankList.value.find(b => b.code === code)
-  return bank?.name || ''
+// 은행 목록 조회
+const loadBankList = async () => {
+  try {
+    const banks = await AccountApi.getBankList()
+    bankList.value = banks
+    console.log('은행 목록 조회 성공:', banks)
+  } catch (error) {
+    console.error('은행 목록 조회 실패:', error)
+    // API 실패 시 기본 은행 목록 사용
+    bankList.value = [
+      { bankCode: '003', bankName: '기업은행' },
+      { bankCode: '004', bankName: '국민은행' },
+      { bankCode: '011', bankName: '농협은행' },
+      { bankCode: '020', bankName: '우리은행' },
+      { bankCode: '023', bankName: 'SC제일은행' },
+      { bankCode: '027', bankName: '한국시티은행' },
+      { bankCode: '081', bankName: '하나은행' },
+      { bankCode: '088', bankName: '신한은행' },
+      { bankCode: '090', bankName: '카카오뱅크' },
+      { bankCode: '092', bankName: '토스뱅크' }
+    ]
+  }
+}
+
+// 계좌 정보 조회
+const loadAccountInfo = async () => {
+  try {
+    const accountInfo = await AccountApi.getAccountByUserId(userId.value)
+    accountNumber.value = accountInfo.accountNumber
+    bankCode.value = accountInfo.bankCode
+    console.log('계좌 정보 조회 성공:', accountInfo)
+  } catch (error) {
+    console.error('계좌 정보 조회 실패:', error)
+    if (error.response?.status === 404) {
+      // 계좌가 등록되지 않은 경우
+      console.log('등록된 계좌가 없습니다.')
+    } else {
+      errorMessage.value = '계좌 정보를 불러오지 못했습니다.'
+    }
+  }
+}
+
+// 은행명 조회 헬퍼 함수 (표시용)
+const getBankName = (code) => {
+  const bank = bankList.value.find(b => b.bankCode === code)
+  return bank?.bankName || ''
 }
 
 // 저장 버튼 클릭
 const saveAccount = async () => {
+  if (!bankCode.value || !accountNumber.value) {
+    errorMessage.value = '은행과 계좌번호를 모두 입력해주세요.'
+    successMessage.value = ''
+    return
+  }
+
   try {
-    // await updateAccount(userId.value, {
-    //   accountNumber: accountNumber.value,
-    //   bankName: bankName.value
-    // })
-    console.log('테스트용 저장됨: ', { userId: userId, accountNumber: accountNumber.value, bankName: bankName.value })
+    // 계좌번호 유효성 검사
+    if (!/^\d{10,14}$/.test(accountNumber.value)) {
+      errorMessage.value = '계좌번호는 10~14자리 숫자만 입력 가능합니다.'
+      successMessage.value = ''
+      return
+    }
+
+    const accountUpdateDTO = {
+      bankCode: bankCode.value,
+      accountNumber: accountNumber.value,
+      accountAlias: null // 별명은 null로 설정
+    }
+
+    await AccountApi.updateAccount(userId.value, accountUpdateDTO)
+    console.log('계좌 정보 업데이트 성공')
+
     successMessage.value = '계좌 정보가 저장되었습니다.'
     errorMessage.value = ''
   } catch (err) {
+    console.error('계좌 정보 업데이트 실패:', err)
     errorMessage.value = err.message || '저장에 실패했습니다.'
     successMessage.value = ''
   }

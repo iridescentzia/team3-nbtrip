@@ -4,7 +4,7 @@ import { registerMember, checkNicknameDuplicate } from '@/api/memberApi.js';
 import Button from '@/components/common/Button.vue';
 import { useRouter } from 'vue-router';
 import Header from '@/components/layout/Header.vue';
-import {requestPermissionAndGetToken} from "@/firebase.js";
+// import accountApi from "@/api/accountApi.js";
 
 const router = useRouter();
 const emit = defineEmits(['signup-complete']);
@@ -18,24 +18,6 @@ const password = ref('');
 const passwordConfirm = ref('');
 const bankCode = ref('');
 const accountNumber = ref('');
-
-// FCM 토큰
-const fcmToken = ref('')  // firebase 연동 후
-
-// FCM 토큰 받아오기(firebase 연동 후)
-onMounted(async () => {
-  try {
-    const token = await requestPermissionAndGetToken();
-    if (token) {
-      fcmToken.value = token;
-      console.log('FCM 토큰 발급 성공:', token);
-    } else {
-      console.warn('FCM 토큰을 가져오지 못했습니다.');
-    }
-  } catch (err) {
-    console.error('FCM 토큰 발급 오류:', err);
-  }
-});
 
 // 닉네임 중복 확인 상태
 const isNicknameChecked = ref(false);
@@ -111,25 +93,37 @@ const accountMessage = computed(() =>
         : ''
 );
 
-// 은행 선택 시 코드 설정
-// watch(bankName, () => {
-//   const selected = bankList.value.find(b => b.name === bankName.value);
-//   bankCode.value = selected ? selected.code : '';
-// });
+// 은행 목록(accountApi)
+const bankList = ref([]);
 
-// 은행 코드 리스트(account DB)
-const bankCodes = ref([
-  { code: '003', name: '기업은행' },
-  { code: '004', name: '국민은행' },
-  { code: '011', name: '농협은행' },
-  { code: '020', name: '우리은행' },
-  { code: '023', name: 'SC제일은행' },
-  { code: '027', name: '한국시티은행' },
-  { code: '081', name: '하나은행' },
-  { code: '088', name: '신한은행' },
-  { code: '090', name: '카카오뱅크' },
-  { code: '092', name: '토스뱅크' },
-]);
+// 컴포넌트 마운트 시 은행 목록 조회
+onMounted(async() => {
+  await loadBankList();
+})
+
+// 은행 목록 조회
+const loadBankList = async () => {
+  try {
+    const banks = await accountApi.getBankList();
+    bankList.value = banks;
+    console.log('은행 목록 조회 성공:', banks);
+  } catch (error) {
+    console.error('은행 목록 조회 실패:', error);
+    // API 실패 시 기본 은행 목록 사용
+    bankList.value = [
+      { bankCode: '003', bankName: '기업은행' },
+      { bankCode: '004', bankName: '국민은행' },
+      { bankCode: '011', bankName: '농협은행' },
+      { bankCode: '020', bankName: '우리은행' },
+      { bankCode: '023', bankName: 'SC제일은행' },
+      { bankCode: '027', bankName: '한국시티은행' },
+      { bankCode: '081', bankName: '하나은행' },
+      { bankCode: '088', bankName: '신한은행' },
+      { bankCode: '090', bankName: '카카오뱅크' },
+      { bankCode: '092', bankName: '토스뱅크' },
+    ];
+  }
+};
 
 // 회원가입(POST /api/auth/register)
 const submitForm = async () => {
@@ -163,6 +157,8 @@ const submitForm = async () => {
       return;
     }
     try {
+      console.log('📝 N빵 트립 회원가입 시작');
+
     const res = await registerMember({
       email: email.value,
       password: password.value,
@@ -172,15 +168,17 @@ const submitForm = async () => {
       phoneNumber: phoneNumber.value,
       bankCode: bankCode.value,
       accountNumber: accountNumber.value,
-      fcmToken: fcmToken.value,
     });
-    if (res.success) {
-      alert('회원가입이 완료되었습니다!');
-      router.push('/login');
+
+      if (res.success) {
+        console.log('✅ 회원가입 완료');
+        alert('회원가입이 완료되었습니다! 로그인해주세요.');
+        router.push('/login');
+      }
+    } catch (err) {
+      console.error('❌ 회원가입 실패:', err);
+      alert(err.message || '회원가입 실패');
     }
-  } catch (err) {
-    alert(err.message || '회원가입 실패');
-  }
 };
 </script>
 
@@ -265,8 +263,8 @@ const submitForm = async () => {
       <div class="select-box">
         <select v-model="bankCode" class="input-box">
           <option disabled value="">은행을 선택하세요</option>
-          <option v-for="bank in bankCodes" :key="bank.code" :value="bank.code">
-            {{ bank.name }}
+          <option v-for="bank in bankList" :key="bank.bankCode" :value="bank.bankCode">
+            {{ bank.bankName }}
           </option>
         </select>
         <div class="dropdown-icon"></div>

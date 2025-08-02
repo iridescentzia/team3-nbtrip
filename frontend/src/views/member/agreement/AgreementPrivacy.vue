@@ -2,7 +2,7 @@
 import Header from '@/components/layout/Header.vue';
 import Button from '@/components/common/Button.vue';
 import { useRouter, useRoute } from 'vue-router';
-import { useAgreementStore } from '@/stores/agreement.js';
+import { useAgreementStore } from '@/stores/agreementStore.js';
 
 const router = useRouter();
 const agreementStore = useAgreementStore();
