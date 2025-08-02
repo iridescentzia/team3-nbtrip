@@ -27,6 +27,8 @@ public class NotificationDTO {
     private String fromUserNickname;
     private Integer amount;
     private String memberStatus;
+    private String paymentType; // PREPAID, QR, OTHER
+    private String actionType;  // CREATE, UPDATE
 
     public static NotificationDTO of(NotificationVO vo){
         return vo == null ? null : NotificationDTO.builder()
@@ -43,6 +45,8 @@ public class NotificationDTO {
                 .fromUserNickname(vo.getFromUserNickname())
                 .amount(vo.getAmount())
                 .memberStatus(vo.getMemberStatus())
+                .paymentType(vo.getPaymentType())
+                .actionType(vo.getActionType())
                 .build();
     }
 
@@ -61,6 +65,8 @@ public class NotificationDTO {
                 .merchantName(merchantName)
                 .fromUserNickname(fromUserNickname)
                 .amount(amount)
+                .paymentType(paymentType)
+                .actionType(actionType)
                 .build();
     }
 }

@@ -16,7 +16,9 @@
                n.payment_id AS paymentId,
                p.amount AS amount,
                COALESCE(m.merchant_name, p.memo) AS merchantName,
+               p.payment_type AS paymentType,
                n.notification_type AS notificationType,
+               NULL AS actionType,
                n.is_read AS isRead,
                n.send_at AS sendAt
         FROM notification n
@@ -49,7 +51,9 @@
                n.payment_id AS paymentId,
                p.amount AS amount,
                COALESCE(m.merchant_name, p.memo) AS merchantName,
+               p.payment_type AS paymentType,
                n.notification_type AS notificationType,
+               NULL AS actionType,
                n.is_read AS isRead,
                n.send_at AS sendAt
         FROM notification n
@@ -115,6 +119,15 @@
         FROM trip_member
         WHERE trip_id = #{tripId}
     </select>
+
+    <!-- 리마인더 알림 대상 조회 -->
+    <select id="findUsersNeedingReminder" resultType="int">
+        SELECT DISTINCT sender_id
+        FROM settlement
+        WHERE settlement_status != 'COMPLETED'
+      AND amount > 0
+    </select>
+
 
     <!-- 알림 생성 -->
     <insert id="createNotification" parameterType="org.scoula.notification.domain.NotificationVO">

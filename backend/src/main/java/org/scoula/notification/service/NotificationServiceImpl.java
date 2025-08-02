@@ -82,7 +82,12 @@ public class NotificationServiceImpl implements NotificationService {
         String type = dto.getNotificationType().toUpperCase();
 
         // 결제 (TRANSACTION) 알림 -> trip 멤버 전체 insert
+        // 푸시 알림 x
         if (type.equals("TRANSACTION")) {
+            // 결제 생성인지 수정인지 구분해서 actionType 세팅
+            if (dto.getActionType() == null || dto.getActionType().isBlank()) {
+                dto.setActionType("CREATE"); // 기본값 생성
+            }
             mapper.createTransactionNotificationForAll(dto.toVO());
             return;
         }
@@ -173,4 +178,40 @@ public class NotificationServiceImpl implements NotificationService {
     public void readNotification(Integer notificationId) {
         mapper.readNotification(notificationId);
     }
+
+    @Override
+    public void sendReminderNotifications() {
+        log.info("리마인더 푸시 알림 작업 시작");
+
+        // 1. 정산 미완료 사용자 조회
+        List<Integer> userIds = mapper.findUsersNeedingReminder();
+
+        for (Integer userId : userIds) {
+            // 2. 알림 DB 저장
+            NotificationDTO dto = NotificationDTO.builder()
+                    .userId(userId)
+                    .notificationType("REMINDER")
+                    .fromUserId(null) // 시스템 발송이므로 null 또는 특정 관리자 ID
+                    .build();
+
+            mapper.createNotification(dto.toVO());
+
+            // 3. FCM 토큰 조회
+            String fcmToken = mapper.findFcmTokenByUserId(userId);
+            if (fcmToken != null && !fcmToken.isBlank()) {
+                try {
+                    fcmService.sendPushNotification(
+                            fcmToken,
+                            "정산 알림이에요",
+                            "정산하지 않은 내역이 있어요. 확인 부탁드립니다."
+                    );
+                } catch (Exception e) {
+                    log.error("REMINDER 푸시 실패: userId={}", userId, e);
+                }
+            }
+        }
+
+        log.info("리마인더 푸시 알림 작업 완료");
+    }
+
 }

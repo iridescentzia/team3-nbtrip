@@ -23,6 +23,9 @@ public interface NotificationMapper {
     // tripId로 멤버 userId 조회 (푸시용) -> 푸시 알림 보낼 대상 조회
     List<Integer> findUserIdsByTripId(@Param("tripId") Integer tripId);
 
+    // 정산 안한 맴버 조회
+    List<Integer> findUsersNeedingReminder();
+
     // 단일 알림 생성
     int createNotification(NotificationVO vo);
     //trip 맴버 전체에게 completed 알림

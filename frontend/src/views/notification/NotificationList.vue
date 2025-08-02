@@ -61,7 +61,10 @@ const getMessage = (n) => {
 
   switch (n.notificationType) {
     case 'TRANSACTION':
-      return `${user}님이 '${place}'에서 \n${formatAmount(n.amount)}원을 결제했습니다.`;
+      const isUpdate = n.actionType === 'UPDATE';
+      return isUpdate
+        ? `${user}님이 '${place}'결제 내역을 수정했습니다.`
+        : `${user}님이 '${place}'에서 \n${formatAmount(n.amount)}원을 결제했습니다.`; 
 
     case 'SETTLEMENT':
       return `${user}님이 정산 요청을 보냈습니다.\n정산을 확인하시겠습니까?`;
