@@ -2,6 +2,7 @@ package org.scoula.trip.service;
 
 
 import org.scoula.trip.domain.TripMemberStatus;
+import org.scoula.trip.domain.TripStatus;
 import org.scoula.trip.dto.TripCreateDTO;
 import org.scoula.trip.dto.TripDTO;
 import org.scoula.trip.dto.TripMemberDTO;
@@ -19,4 +20,6 @@ public interface TripService {
     int changeTripStatus(int tripId);
     TripDTO createTrip(TripCreateDTO tripCreateDTO);
     boolean isOwner(int tripId, int userId);
+    List<TripDTO> getTripsByStatus(int userId, TripStatus status);
+
 }

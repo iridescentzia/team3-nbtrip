@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import org.scoula.member.dto.MemberSearchResponseDTO;
 import org.scoula.trip.domain.TripMemberStatus;
 import org.scoula.trip.domain.TripMemberVO;
+import org.scoula.trip.domain.TripStatus;
 import org.scoula.trip.domain.TripVO;
 import org.scoula.trip.dto.TripCreateDTO;
 import org.scoula.trip.dto.TripDTO;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -79,5 +81,15 @@ public class TripServiceImpl implements TripService {
             inviteMember(tripVO.getTripId(), memberSearchResponseDTO.getUserId(), TripMemberStatus.INVITED);
         }
         return get(tripVO.getTripId());
+    }
+
+    @Override
+    public List<TripDTO> getTripsByStatus(int userId, TripStatus status) {
+        log.info("상태별 여행 목록 조회 - userId: {}, status: {}", userId, status);
+        List<TripVO> trips = mapper.getTripsByStatus(userId, status.name());
+        log.info("조회된 여행 수: "+ trips.size());
+        return trips.stream()
+                .map(TripDTO::of)
+                .collect(Collectors.toList());
     }
 }

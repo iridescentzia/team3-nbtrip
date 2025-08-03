@@ -71,6 +71,15 @@
         FROM trip
         WHERE trip_id = #{tripId}
     </select>
+    <!-- 상태별 여행 목록 조회 -->
+    <select id="getTripsByStatus" resultMap="joinedTripsMap">
+        SELECT t.*
+        FROM trip_member tm
+                 LEFT JOIN trip t ON tm.trip_id = t.trip_id
+        WHERE tm.user_id = #{userId}
+          AND tm.member_status = 'JOINED'
+          AND t.trip_status = #{status}
+    </select>
 
     <resultMap id="tripMap" type="org.scoula.trip.domain.TripVO">
         <id property="tripId" column="trip_id" />

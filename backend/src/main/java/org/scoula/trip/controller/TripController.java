@@ -3,6 +3,7 @@ package org.scoula.trip.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.scoula.trip.domain.TripMemberStatus;
+import org.scoula.trip.domain.TripStatus;
 import org.scoula.trip.dto.TripCreateDTO;
 import org.scoula.security.accounting.domain.CustomUser;
 import org.scoula.trip.dto.TripDTO;
@@ -111,4 +112,12 @@ public class TripController {
         tripCreateDTO.setOwnerId(customUser.getUserId());
         return ResponseEntity.ok().body(service.createTrip(tripCreateDTO));
     }
+
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<TripDTO>> getTripsByStatus(@PathVariable TripStatus status, @AuthenticationPrincipal CustomUser customUser) {
+        int userId = customUser.getUserId();
+        List<TripDTO> trips = service.getTripsByStatus(userId, status);
+        return ResponseEntity.ok(trips);
+    }
+
 }

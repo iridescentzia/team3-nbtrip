@@ -25,9 +25,6 @@ const load = async () => {
   } catch (e) {
     console.error('비활성화 날짜 불러오기 실패:', e);
   }
-  data.startDate = data.startDate.join('-');
-  data.endDate = data.endDate.join('-');
-
   tripDetail.value = data;
   tripStatus.value = data.tripStatus;
 

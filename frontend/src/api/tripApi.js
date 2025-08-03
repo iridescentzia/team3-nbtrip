@@ -81,4 +81,9 @@ export default {
         const { data } = await api.get(`${BASE_URL}/getId`);
         return data;
     },
+    async getTripsByStatus(status) {
+        const { data } = await api.get(`${BASE_URL}/status/${status}`);
+        return data;
+    }
+
 }
