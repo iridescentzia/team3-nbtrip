@@ -7,18 +7,30 @@ import Header from "@/components/layout/Header.vue";
 import { Lightbulb } from 'lucide-vue-next';
 
 const store = useTravelCreateStore();
+const userId = ref();
 const inputValue = ref('');
 const showList = ref(false);
 const options = ref([]);
 const addedItems = ref([]);
 
-function debounce(fn, delay) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delay);
-  };
-}
+// function debounce(fn, delay) {
+//   var timer;
+//   return (...args) => {
+//     clearTimeout(timer);
+//     timer = setTimeout(() => fn(...args), delay);
+//   };
+// }
+//
+//
+// const debouncedFetch = debounce((value) => {
+//   getOptions(value);
+// }, 300);
+
+var timer;
+const debouncedFetch = value => {
+  clearTimeout(timer);
+  timer = setTimeout(() => getOptions(value), 300);
+};
 
 async function getOptions(query) {
   if (!query) {
@@ -33,9 +45,10 @@ async function getOptions(query) {
   }
 }
 
-const debouncedFetch = debounce((value) => {
-  getOptions(value);
-}, 300);
+async function fetchUserId() {
+  userId.value = await tripApi.getUserId();
+}
+
 
 function onInput(e) {
   inputValue.value = e.target.value;
@@ -49,7 +62,7 @@ function onButtonClick(option) {
   const alreadyAdded = addedItems.value.some(
       (item) => item.userId === option.userId
   );
-  if (!alreadyAdded && option.userId !== 1) {
+  if (!alreadyAdded && option.userId !== userId.value) {
     addedItems.value.push(option);
   }
   inputValue.value = '';
@@ -73,7 +86,6 @@ async function createTrip() {
   try {
     console.log(store.tripName);
     const payload = {
-      ownerId: 1, //
       tripName: store.tripName,
       startDate: store.startDate,
       endDate: store.endDate,
@@ -83,15 +95,16 @@ async function createTrip() {
     };
 
     const response = await tripApi.createTrip(payload);
-    console.log("여행 생성 성공:", response);
-    alert("여행이 생성되었습니다!");
+    console.log('여행 생성 성공:', response);
+    alert('여행이 생성되었습니다!');
   } catch (error) {
-    console.error("여행 생성 실패:", error);
+    console.error('여행 생성 실패:', error);
   }
 }
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
+  fetchUserId();
 });
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);

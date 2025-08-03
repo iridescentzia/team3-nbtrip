@@ -74,7 +74,11 @@ export default {
     },
     // 전체 여행 목록 조회
     async fetchTrips() {
-        const { data } = await api.get('/trips');
+        const { data } = await api.get(`${BASE_URL}`);
+        return data;
+    },
+    async getUserId() {
+        const { data } = await api.get(`${BASE_URL}/getId`);
         return data;
     },
 }

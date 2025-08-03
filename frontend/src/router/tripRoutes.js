@@ -1,5 +1,15 @@
 export default [
     {
+        path: '/trip',
+        name: 'tripList',
+        component: () => import('../views/trip/TripList.vue'),
+    },
+    {
+        path: '/trip/:tripId',
+        name: 'tripDetail',
+        component: () => import('../views/trip/TripDetail.vue'),
+    },
+    {
         path: '/trip/create',
         name: 'tripCreate',
         component: () => import('../views/trip/TripCreate.vue'),
@@ -11,7 +21,7 @@ export default [
     },
     {
         path: '/trip/join/:tripId',
-        name: 'tripInvite',
+        name: 'tripJoin',
         component: () => import('../views/trip/TripJoin.vue'),
     },
     {

@@ -9,7 +9,7 @@ import org.scoula.trip.domain.TripMemberVO;
 import org.scoula.trip.domain.TripStatus;
 import org.scoula.trip.domain.TripVO;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -19,8 +19,8 @@ import java.util.List;
 public class TripCreateDTO {
     private int ownerId;
     private String tripName;
-    private Date startDate;
-    private Date endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private int budget;
     private TripStatus tripStatus;
     List<MemberSearchResponseDTO> members;

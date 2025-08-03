@@ -45,7 +45,14 @@ public class TripController {
                     .body(0);
         }
     }
-
+    //여행 생성 전 로그인한 ID 가져오기
+    @GetMapping("/getId")
+    public ResponseEntity<Integer> getId(@AuthenticationPrincipal CustomUser customUser) {
+        if (customUser != null) {
+            return ResponseEntity.ok(customUser.getUserId());
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(0);
+    }
     //그룹 1개의 정보(멤버 리스트 포함)를 그룹 ID로 찾아 가져오기
     @GetMapping("/{tripId}")
     public ResponseEntity<TripDTO> getTripByID(@PathVariable int tripId) {
@@ -60,14 +67,13 @@ public class TripController {
 
     //Security 구현 전이라 로그인한 유저는 1번이라 가정
     @GetMapping("/{tripId}/isOwner")
-    public ResponseEntity<Boolean> isOwner(@PathVariable int tripId) {
-        return ResponseEntity.ok().body(service.isOwner(tripId, 1));
+    public ResponseEntity<Boolean> isOwner(@AuthenticationPrincipal CustomUser customUser ,@PathVariable int tripId) {
+        return ResponseEntity.ok().body(service.isOwner(tripId, customUser.getUserId()));
     }
     //유저가 참여중인 여행 리스트 유저 ID로 찾아 가져오기
-    //로그인 구현 전이라 임시로 1번의 정보를 가져오도록 구현
     @GetMapping("")
-    public ResponseEntity<List<TripDTO>> getJoinedTripList() {
-        return ResponseEntity.ok().body(service.getJoinedTrips(1));
+    public ResponseEntity<List<TripDTO>> getJoinedTripList(@AuthenticationPrincipal CustomUser customUser) {
+        return ResponseEntity.ok().body(service.getJoinedTrips(customUser.getUserId()));
     }
     //그룹 ID인 그룹에 유저 ID인 유저 초대하기
     @PostMapping("/{tripId}/invite/{userId}")
@@ -76,30 +82,33 @@ public class TripController {
     }
     //그룹 ID인 그룹에 참여하기
     @PutMapping("/{tripId}/join")
-    public ResponseEntity<Integer> joinTrip(@PathVariable int tripId){
-        return ResponseEntity.ok().body(service.joinTrip(tripId, 2));
+    public ResponseEntity<Integer> joinTrip(@AuthenticationPrincipal CustomUser customUser,@PathVariable int tripId){
+        return ResponseEntity.ok().body(service.joinTrip(tripId, customUser.getUserId()));
     }
     //그룹 ID인 그룹에 유저 ID인 유저의 상태 LEFT로 변경하기
     @PutMapping("/{tripId}/members/{userId}/status")
-    public ResponseEntity<Integer> changeMemberStatus(@PathVariable int tripId, @PathVariable int userId){
-       return ResponseEntity.ok().body(service.changeMemberStatus(tripId, userId));
+    public ResponseEntity<Integer> changeMemberStatus(@AuthenticationPrincipal CustomUser customUser, @PathVariable int tripId, @PathVariable int userId){
+
+        if(service.isOwner(tripId, customUser.getUserId())){
+            return ResponseEntity.ok().body(service.changeMemberStatus(tripId, userId));
+        }
+        else{
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);
+        }
     }
     //그룹 ID인 그룹의 상태 CLOSED로 변경하기
     @PutMapping("/{tripId}/status")
-    public ResponseEntity<Integer> changeMemberStatus(@PathVariable int tripId){
-        return ResponseEntity.ok().body(service.changeTripStatus(tripId));
+    public ResponseEntity<Integer> changeTripStatus(@AuthenticationPrincipal CustomUser customUser,@PathVariable int tripId){
+        if(service.isOwner(tripId, customUser.getUserId())){
+            return ResponseEntity.ok().body(service.changeTripStatus(tripId));
+        }
+        else{
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);
+        }
     }
     @PostMapping("")
-    public ResponseEntity<TripDTO> createTrip(@RequestBody TripCreateDTO tripCreateDTO) {
-//        TripDTO testDTO = TripDTO.builder()
-//                .ownerId(2)
-//                .tripName("테스트 여행명")
-//                .startDate(new Date())
-//                .endDate(new Date())
-//                .tripStatus(TripStatus.ACTIVE)
-//                .budget(100000)
-//                .members(service.getTripMembers(2).stream().map(TripMemberDTO::toVO).toList())
-//                .build();
+    public ResponseEntity<TripDTO> createTrip(@AuthenticationPrincipal CustomUser customUser, @RequestBody TripCreateDTO tripCreateDTO) {
+        tripCreateDTO.setOwnerId(customUser.getUserId());
         return ResponseEntity.ok().body(service.createTrip(tripCreateDTO));
     }
 }

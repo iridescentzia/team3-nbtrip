@@ -54,7 +54,6 @@ public class TripServiceImpl implements TripService {
         return get(tripId);
     }
 
-
     @Override
     public int changeMemberStatus(int tripId, int userId) {
         return mapper.changeMemberStatus(tripId, userId);
