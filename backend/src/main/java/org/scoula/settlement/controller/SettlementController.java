@@ -257,10 +257,10 @@ public class SettlementController {
         return response.isSuccess() ? ResponseEntity.ok(response) : ResponseEntity.badRequest().body(response);
     }
 
-    // ==================== 내부 헬퍼 메서드들 (팀원 NotificationService 활용) ====================
+    // ==================== 내부 헬퍼 메서드들 ====================
 
     /**
-     * 정산 요청 알림 발송 (팀원 NotificationService 활용)
+     * 정산 요청 알림 발송 (NotificationService 활용)
      */
     private void sendSettlementNotification(int fromUserId, int tripId, String notificationType) {
         try {
@@ -286,7 +286,7 @@ public class SettlementController {
     }
 
     /**
-     * 정산 완료 알림 발송 (팀원 NotificationService 활용)
+     * 정산 완료 알림 발송 (NotificationService 활용)
      */
     private void sendSettlementCompletedNotification(int fromUserId, int tripId) {
         try {
