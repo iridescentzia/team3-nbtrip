@@ -30,13 +30,55 @@ onMounted(async () => {
   }
 });
 
-// ✅ 송금하기 버튼 클릭 - 모달 표시
-const handleTransferClick = () => {
-  try {
-    settlementStore.openTransferModal();
-  } catch (err) {
-    alert(err.message);
+// 버튼 상태를 위한 계산된 속성 추가
+const buttonState = computed(() => {
+  const hasSendAmount = totalSendAmount.value > 0;
+  const hasReceiveAmount = totalReceiveAmount.value > 0;
+
+  if (hasSendAmount) {
+    // 보낼 돈이 있는 경우
+    return {
+      text: '송금하기',
+      action: 'transfer',
+      disabled: false
+    };
+  } else if (hasReceiveAmount) {
+    // 보낼 돈은 없고 받을 돈만 있는 경우
+    return {
+      text: '확인',
+      action: 'confirm',
+      disabled: false
+    };
+  } else {
+    // 보낼 돈도 받을 돈도 없는 경우
+    return {
+      text: '확인',
+      action: 'confirm',
+      disabled: false
+    };
   }
+});
+
+// ✅ 송금하기 버튼 클릭
+const handleButtonClick = () => {
+  if (buttonState.value.action === 'transfer') {
+    // 송금하기 버튼 동작 (기존 로직)
+    try {
+      settlementStore.openTransferModal();
+    } catch (err) {
+      alert(err.message);
+    }
+  } else if (buttonState.value.action === 'confirm') {
+    // 확인 버튼 동작 (홈으로 이동)
+    goHome();
+  }
+};
+
+// 홈으로 이동하는 함수 추가
+const goHome = () => {
+  // Store 데이터 정리 후 홈으로 이동
+  settlementStore.clearMySettlementData();
+  router.push('/');
 };
 
 // ✅ 모달 취소
@@ -51,21 +93,28 @@ const confirmTransfer = async () => {
   try {
     const transferResult = await settlementStore.executeTransfer();
 
-    // 송금 결과에 따른 페이지 이동
-    if (transferResult.failedCount == 0) {
-      // 모든 송금 성공
-      alert('모든 송금이 완료되었습니다.');
+    if (transferResult.failedCount > 0) {
+      router.push(`/settlement/${tripId}/failure`);
+      return;
+    }
+
+    // 송금 후 최신 정산 상태 재조회
+    await settlementStore.fetchMySettlement(tripId);
+
+    // 받을 돈이 아직 미완료 상태인지 확인
+    const hasIncompleteToReceive = mySettlementData.value?.toReceive?.some(
+        tx => tx.status !== 'COMPLETED'
+    ) || false;
+
+    if (hasIncompleteToReceive) {
+      // 송금 완료 + 받을 돈 미완료 → pending
       router.push(`/settlement/${tripId}/pending`);
     } else {
-      // 1건이라도 실패
-      alert(
-        `송금 실패: ${transferResult.successCount}건 성공, ${transferResult.failedCount}건 실패`
-      );
-      router.push(`/settlement/${tripId}/failure`);
+      // 송금 완료 + 받을 돈 완료 → completed
+      router.push(`/settlement/${tripId}/completed`);
     }
+
   } catch (err) {
-    console.error('송금 실패:', err);
-    alert('송금 중 오류가 발생했습니다.');
     router.push(`/settlement/${tripId}/failure`);
   }
 };
@@ -156,17 +205,17 @@ const confirmTransfer = async () => {
 
     <footer class="footer">
       <button
-        @click="handleTransferClick"
+        @click="handleButtonClick"
         class="next-button"
-        :disabled="totalSendAmount === 0"
+        :disabled="buttonState.disabled"
       >
-        송금하기
+        {{buttonState.text}}
       </button>
     </footer>
   </div>
 
-  <!-- ✅ 송금 확인 모달 -->
-  <div v-if="showTransferModal" class="modal-overlay" @click="cancelTransfer">
+  <!-- ✅ 송금하기 모달 -->
+  <div v-if="showTransferModal && buttonState.action === 'transfer'" class="modal-overlay" @click="cancelTransfer">
     <div class="transfer-modal" @click.stop>
       <!-- 아이콘 -->
       <div class="modal-icon"></div>
@@ -183,7 +232,7 @@ const confirmTransfer = async () => {
       <!-- 버튼들 -->
       <div class="modal-buttons">
         <button @click="cancelTransfer" class="modal-cancel-btn">취소</button>
-        <button @click="confirmTransfer" class="modal-confirm-btn">확인</button>
+        <button @click="confirmTransfer" class="modal-confirm-btn">송금</button>
       </div>
     </div>
   </div>
