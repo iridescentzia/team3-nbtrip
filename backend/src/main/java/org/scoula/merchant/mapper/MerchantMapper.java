@@ -1,4 +1,16 @@
 package org.scoula.merchant.mapper;
 
-public class MerchantMapper {
+import org.apache.ibatis.annotations.Param;
+import org.scoula.merchant.domain.MerchantCategoryVO;
+import org.scoula.merchant.domain.MerchantVO;
+
+public interface MerchantMapper {
+    MerchantVO getMerchant(int id);
+
+    MerchantCategoryVO getMerchantCategory(int categoryId);
+
+    void createMerchant(MerchantVO merchant);
+
+    // 사업자 매출 증가
+    int increaseSales(@Param("merchant_id") int merchantId, @Param("amount") int amount);
 }

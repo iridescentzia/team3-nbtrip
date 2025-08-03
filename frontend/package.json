@@ -9,14 +9,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vuepic/vue-datepicker": "^11.0.2",
     "axios": "^1.10.0",
+    "chart.js": "^4.5.0",
     "lucide-vue-next": "^0.525.0",
     "pinia": "^3.0.3",
+    "qrcode.vue": "^3.6.0",
     "vue": "^3.5.17",
+    "vue-chartjs": "^5.3.2",
+    "vue-qrcode-reader": "^5.7.3",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.11",
     "@vitejs/plugin-vue": "^6.0.0",
     "autoprefixer": "^10.4.21",
     "vite": "^7.0.0",

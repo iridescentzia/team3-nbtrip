@@ -1,11 +1,11 @@
 <script setup>
-import { House, Scan, Plane, User } from 'lucide-vue-next'
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { House, Scan, Plane, User } from 'lucide-vue-next';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 // vue router 인스턴스
-const router = useRouter()
-const route = useRoute()
+const router = useRouter();
+const route = useRoute();
 
 // footer 탭 정보
 const navItems = [
@@ -16,10 +16,10 @@ const navItems = [
     path: '/home',
   },
   {
-    name: 'group',
+    name: 'trip',
     label: '여행',
     icon: Plane,
-    path: '/group',
+    path: '/trip',
   },
   {
     name: 'payment',
@@ -33,19 +33,19 @@ const navItems = [
     icon: User,
     path: '/mypage',
   },
-]
+];
 
 // 현재 활성화된 탭
 const activeTab = computed(() => {
-  return route.path
-})
+  return route.path;
+});
 
 // 탭 클릭 시 실행되는 handler 함수
 const handlerTabClick = (item) => {
   if (route.path !== item.path) {
-    router.push(item.path)
+    router.push(item.path);
   }
-}
+};
 </script>
 
 <template>
@@ -58,9 +58,7 @@ const handlerTabClick = (item) => {
       :class="{ active: activeTab === item.path }"
       @click="handlerTabClick(item)"
     >
-      <div class="icon">
-        <component :is="item.icon" /><br />
-      </div>
+      <div class="icon"><component :is="item.icon" /><br /></div>
       <span class="label">{{ item.label }}</span>
     </div>
   </footer>
@@ -69,13 +67,12 @@ const handlerTabClick = (item) => {
 <style scoped>
 /* 하단 네비게이션 바 컨테이너 */
 .footer {
-  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  margin: 0 auto;        /* PC에서 가운데 정렬 */
+  margin: 0 auto; /* PC에서 가운데 정렬 */
   width: 100%;
-  max-width: 375px;      /* 모바일 최대 폭 */
+  max-width: 375px; /* 모바일 최대 폭 */
   height: 69px;
   background-color: #ffffff;
   border-top: 1px solid #e2e8f0;
@@ -84,6 +81,7 @@ const handlerTabClick = (item) => {
   align-items: center;
   font-family: 'IBM Plex Sans KR', sans-serif;
   z-index: 100;
+  padding: 4px;
 }
 
 /* 개별 탭 아이템 스타일 */

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { FileChartColumn, Trash2 } from 'lucide-vue-next';
+import { useRouter } from 'vue-router';
 
 const props = defineProps({
   tripName: String,
@@ -20,6 +21,14 @@ const activeTab = ref(tabs[0]);
 function selectTab(tab) {
   activeTab.value = tab;
 }
+
+// 아이콘 클릭 시 차트 페이지로 이동
+function goToChart() {
+  router.push({
+    name: 'chart',
+    params: { tripId: 1 },
+  });
+}
 </script>
 
 <template>
@@ -30,13 +39,13 @@ function selectTab(tab) {
       <div class="title-date">
         <div class="title-row">
           <div class="trip-name">{{ props.tripName }}</div>
-          <FileChartColumn class="icon" />
+          <FileChartColumn class="icon" @click="goToChart" />
         </div>
         <div class="trip-date">{{ formattedDate }}</div>
       </div>
 
       <!-- 오른쪽: 휴지통 아이콘 -->
-      <Trash2 class="icon" />
+      <Trash2 class="icon trash-icon" />
     </div>
 
     <!-- 카드 구분선 -->
@@ -45,11 +54,11 @@ function selectTab(tab) {
     <!-- 탭 목록 -->
     <div class="tab-list">
       <div
-          v-for="tab in tabs"
-          :key="tab"
-          class="tab-item"
-          :class="{ active: activeTab === tab }"
-          @click="selectTab(tab)"
+        v-for="tab in tabs"
+        :key="tab"
+        class="tab-item"
+        :class="{ active: activeTab === tab }"
+        @click="selectTab(tab)"
       >
         {{ tab }}
       </div>
@@ -61,24 +70,26 @@ function selectTab(tab) {
 .travel-card {
   width: 100%;
   max-width: 343px;
-  margin: 30px auto 0 auto;
-  padding: 16px 16px;
+  margin: 0 auto 1rem auto;
+  padding: 0;
   box-sizing: border-box;
-
   border-radius: 16px;
-  background: linear-gradient(to bottom, #a2d2ff80, #b9ddff80, #ffffff80);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   font-family: 'IBM Plex Sans KR', sans-serif;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+
+  background: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
+  padding: 16px;
 }
 
 .title-date {
@@ -90,19 +101,21 @@ function selectTab(tab) {
 .title-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  /*gap: 8px;*/
+  /* justify-content: space-between; */
 }
 
 .trip-name {
   color: #000;
-  font-size: 20px;
-  font-weight: 750;
+  font-size: 24px;
+  font-weight: 1000;
   margin: 0;
+  margin-right:5px;
 }
 
 .trip-date {
-  color: #666;
-  font-size: 14px;
+  color: #6D6D6D;
+  font-size: 15px;
   opacity: 0.8;
 }
 
@@ -118,11 +131,16 @@ function selectTab(tab) {
   color: #333;
 }
 
+.trash-icon {
+  margin-top: 8px;
+}
+
 .divider {
   width: 100%;
   height: 1px;
-  background-color: #a2d2ff99;
+  background-color: #666;
   margin: 8px 0;
+  opacity: 0.1;
 }
 
 .tab-list {
@@ -130,6 +148,7 @@ function selectTab(tab) {
   justify-content: space-between;
   align-items: center;
   gap: 8px;
+  padding: 0 16px 8px 16px;
 }
 
 .tab-item {
@@ -150,6 +169,6 @@ function selectTab(tab) {
 }
 
 .tab-item.active {
-  color: #2f6be9;
+  color: #FDB100;
 }
 </style>
