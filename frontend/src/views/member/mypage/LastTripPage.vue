@@ -1,5 +1,25 @@
 <script setup>
+import {ref, onMounted} from "vue";
+import {useRouter} from "vue-router";
+import tripApi from "@/api/tripApi.js";
+import TravelListCard from "@/components/mypage/TravelListCard.vue";
 
+const trips = ref([])
+const router = useRouter()
+
+// 여행 상세 페이지 이동
+const gotoTripDetail = (tripId) => {
+  router.push(`/trips/${tripId}`)
+}
+
+// 지난 여행 목록 불러오기
+onMounted(async () => {
+  try {
+    trips.value = await tripApi.getTripsByStatus('CLOSED')
+  } catch (err) {
+    console.log('지난 여행 조회 실패: ', err)
+  }
+})
 </script>
 
 <template>
@@ -17,12 +37,10 @@
             :start-date="trip.startDate"
             :end-date="trip.endDate"
             :trip-id="trip.tripId"
-            @click="goToTripDetail"
+            @click="goToTripDetail(trip.tripId)"
         />
       </div>
-
     </div>
-
   </div>
 </template>
 

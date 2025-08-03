@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import Header from '@/components/layout/Header.vue'
 import Button from '@/components/common/Button.vue'
 import { getMyInfo } from '@/api/memberApi.js'
-// import AccountApi from '@/api/AccountApi.js';
+import accountApi from '@/api/accountApi.js';
 
 const router = useRouter()
 const userId = ref(null)
@@ -38,7 +38,7 @@ onMounted(async () => {
 // 은행 목록 조회
 const loadBankList = async () => {
   try {
-    const banks = await AccountApi.getBankList()
+    const banks = await accountApi.getBankList()
     bankList.value = banks
     console.log('은행 목록 조회 성공:', banks)
   } catch (error) {
@@ -62,7 +62,7 @@ const loadBankList = async () => {
 // 계좌 정보 조회
 const loadAccountInfo = async () => {
   try {
-    const accountInfo = await AccountApi.getAccountByUserId(userId.value)
+    const accountInfo = await accountApi.getAccountByUserId(userId.value)
     accountNumber.value = accountInfo.accountNumber
     bankCode.value = accountInfo.bankCode
     console.log('계좌 정보 조회 성공:', accountInfo)
@@ -105,7 +105,7 @@ const saveAccount = async () => {
       accountAlias: null // 별명은 null로 설정
     }
 
-    await AccountApi.updateAccount(userId.value, accountUpdateDTO)
+    await accountApi.updateAccount(userId.value, accountUpdateDTO)
     console.log('계좌 정보 업데이트 성공')
 
     successMessage.value = '계좌 정보가 저장되었습니다.'
@@ -124,10 +124,10 @@ const saveAccount = async () => {
 
     <div class="form">
       <label class="label">은행</label>
-      <select v-model="bankName" class="select-box">
+      <select v-model="bankCode" class="select-box">
         <option disabled value="">은행을 선택하세요</option>
-        <option v-for="bank in bankList" :key="bank.code" :value="bank.name">
-          {{ bank.name }}
+        <option v-for="bank in bankList" :key="bank.bankCode" :value="bank.bankCode">
+          {{ bank.bankName }}
         </option>
       </select><br>
 

@@ -1,10 +1,10 @@
 <script setup>
 import { ref, computed, onMounted, defineEmits, watch } from 'vue';
-import { registerMember, checkNicknameDuplicate } from '@/api/memberApi.js';
+import { registerMember, checkNicknameDuplicate, getMyInfo, loginMember } from '@/api/memberApi.js';
 import Button from '@/components/common/Button.vue';
 import { useRouter } from 'vue-router';
 import Header from '@/components/layout/Header.vue';
-// import accountApi from "@/api/accountApi.js";
+import accountApi from "@/api/accountApi.js";
 
 const router = useRouter();
 const emit = defineEmits(['signup-complete']);
@@ -106,9 +106,7 @@ const loadBankList = async () => {
   try {
     const banks = await accountApi.getBankList();
     bankList.value = banks;
-    console.log('은행 목록 조회 성공:', banks);
   } catch (error) {
-    console.error('은행 목록 조회 실패:', error);
     // API 실패 시 기본 은행 목록 사용
     bankList.value = [
       { bankCode: '003', bankName: '기업은행' },
@@ -116,7 +114,7 @@ const loadBankList = async () => {
       { bankCode: '011', bankName: '농협은행' },
       { bankCode: '020', bankName: '우리은행' },
       { bankCode: '023', bankName: 'SC제일은행' },
-      { bankCode: '027', bankName: '한국시티은행' },
+      { bankCode: '027', bankName: '한국씨티은행' },
       { bankCode: '081', bankName: '하나은행' },
       { bankCode: '088', bankName: '신한은행' },
       { bankCode: '090', bankName: '카카오뱅크' },
@@ -157,8 +155,8 @@ const submitForm = async () => {
       return;
     }
     try {
-      console.log('📝 N빵 트립 회원가입 시작');
 
+      // 1. 회원가입 요청
     const res = await registerMember({
       email: email.value,
       password: password.value,
@@ -171,8 +169,29 @@ const submitForm = async () => {
     });
 
       if (res.success) {
-        console.log('✅ 회원가입 완료');
-        alert('회원가입이 완료되었습니다! 로그인해주세요.');
+        const loginRes = await loginMember({
+          email: email.value,
+          password: password.value
+        });
+        const accessToken = loginRes.accessToken;
+        localStorage.setItem('accessToken', accessToken);
+
+        // 2. 로그인 상태에서 userId 조회 (JWT 기반)
+        const userRes = await getMyInfo();
+        const userId = userRes.data.userId;
+
+        // 3. 계좌 등록 API 호출
+        const selectedBank = bankList.value.find(b => b.bankCode === bankCode.value);
+
+        const accountRegisterDTO = {
+          userId: userId,
+          accountNumber: accountNumber.value,
+          bankCode: bankCode.value,
+          bankName: selectedBank ? selectedBank.bankName : ''
+        };
+
+        await accountApi.registerAccount(accountRegisterDTO);
+        alert('회원가입 완료! 로그인해주세요.');
         router.push('/login');
       }
     } catch (err) {

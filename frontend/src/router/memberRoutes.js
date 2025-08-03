@@ -100,6 +100,13 @@ export default [
         props: { viewOnly: true }
     },
 
+    // 지난 여행
+    {
+        path: '/mypage/last-trip',
+        name: 'LastTripPage',
+        component: () => import('@/views/member/mypage/LastTripPage.vue')
+    },
+
     // ============ 약관 상세 보기 (viewOnly) ============
     {
         path: '/terms',

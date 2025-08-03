@@ -85,7 +85,7 @@ const logout = async () => {
           <span>회원 정보</span>
         </div>
         <!--      <div class="icon-wrapper" @click="goTo('/trips?status=ready')">-->
-        <div class="icon-wrapper">
+        <div class="icon-wrapper" @click="goTo('/mypage/last-trip')">
           <div class="icon-button"><Briefcase size="28" /></div>
           <span>예정된 여행</span>
         </div>

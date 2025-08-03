@@ -149,7 +149,7 @@ public class MemberController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(false, "서버 오류가 발생했습니다"));
         }
-    } // ✅ 회원가입 메서드 올바른 종료
+    }
 
     // 3. 정보 조회(GET /api/users/{userId})
     @GetMapping("/users/{userId}")
