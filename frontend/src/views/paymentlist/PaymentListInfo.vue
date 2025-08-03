@@ -24,7 +24,10 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['init-total']);
+
 // URL에서 tripId 추출
+// paymentlistStore로 분리해야 함
 const route = useRoute();
 const tripId = Number(route.params.tripId); 
 const payments = ref([]); // 서버에서 받아온 전체 결제 내역
@@ -53,6 +56,11 @@ function formatSub(payer, time) {
   return `${payer} · ${meridiem} ${h}:${m}`;
 }
 
+// 필터와 무관한 전체 지출 총액
+const originalTotalAmount = computed(()=>
+  payments.value.reduce((sum, item) => sum + item.amount, 0)
+)
+
 // 컴포넌트 마운트 시 서버에서 결제 내역 호출
 onMounted(async () => {
   try {
@@ -62,6 +70,7 @@ onMounted(async () => {
 
     if (Array.isArray(result.paymentData)) {
       payments.value = result.paymentData;
+      emit('init-total', originalTotalAmount.value)
     } else {
       console.warn('paymentData가 배열이 아님', result);
     }

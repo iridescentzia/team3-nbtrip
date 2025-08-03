@@ -1,8 +1,7 @@
 <template>
-  <!-- <DefaultLayout> -->
     <Header title="진행 중인 여행" />
     <div class="content-container">
-      <!-- 현재 tripId = 1 -->
+      <!-- 현재 userId = 1인 여행만 보임 (TripController) -->
       <TravelCard
         v-if="tripStore.currentTrip"
         :trip-name="tripStore.currentTrip.tripName"
@@ -11,12 +10,11 @@
         showEdit
       />
 
-      <div v-else>현재 진행 중인 여행이 없습니다.</div>
-      <!-- <Summary :amount="1000" :budget="20000"></Summary> -->
+      <div v-else>현재 진행 중인 여행이 없습니다.</div>     
 
       <Summary
         v-if="tripStore.currentTrip"
-        :amount="1000000"
+        :amount="totalAmount"
         :budget="tripStore.currentTrip.budget"
       >
       </Summary>
@@ -27,9 +25,11 @@
         @date-filtered="onDateFiltered" 
       />  
 
-      <PaymentListInfo :date-range="selectedDateRange" />
+      <PaymentListInfo 
+        :date-range="selectedDateRange" 
+        @init-total="onInitTotal" 
+      />
     </div>
-  <!-- </DefaultLayout> -->
 </template>
 
 <script setup>
@@ -78,6 +78,7 @@ const formatDate = (dateArray) => {
 
 // Filter.vue에서 emit된 날짜 범위를 저장할 ref
 const selectedDateRange = ref({ start: '', end: '' })
+const totalAmount = ref(0)
 
 // Filter.vue로부터 'date-filtered' 이벤트 전달받는 핸들러
 function onDateFiltered(range) {
@@ -86,13 +87,11 @@ function onDateFiltered(range) {
   selectedDateRange.value = range
 }
 
-// watch(
-//   () => tripStore.currentTrip,
-//   (newTrip) => {
-//     console.log('[watch] currentTrip 변경됨:', newTrip);
-//   },
-//   { immediate: true }
-// );
+// PaymentListInfo에서 전체 총액을 보내줄 때만 저장
+function onInitTotal(amount){
+  totalAmount.value = amount
+}
+
 
 onMounted(async () => {
   await tripStore.fetchTrips();
@@ -102,13 +101,6 @@ onMounted(async () => {
     console.log(`Trip[${index}]`, trip);
     
   });
-
-  // const now = Date.now();
-  // tripStore.trips.forEach((trip)=>{
-  //   console.log(
-  //     `[tripId: ${trip.tripId}] status: ${trip.tripStatus}, start: ${trip.startDate}, end: ${trip.endDate}, now: ${now}`
-  //   );
-  // })
 
   await tripStore.fetchCurrentTripMembers()
   console.log('currentTrip:', tripStore.currentTrip);
@@ -123,4 +115,26 @@ onMounted(async () => {
   overflow-y: auto;
   padding-top: 56px;
 }
+
+/* 스크롤바 */
+.content-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content-container::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 50px;
+}
+
+.content-container::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 50px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.content-container::-webkit-scrollbar-thumb:hover {
+  background-color: #888;
+}
+
 </style>
