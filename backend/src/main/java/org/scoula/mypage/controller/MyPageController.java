@@ -11,10 +11,9 @@ import org.scoula.mypage.dto.ApiResponse;
 import org.scoula.mypage.dto.PasswordChangeRequestDTO;
 import org.scoula.mypage.dto.UserUpdateRequestDTO;
 import org.scoula.mypage.service.MyPageService;
-import org.scoula.security.util.JwtProcessor;
+import org.scoula.security.accounting.domain.CustomUser;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -22,23 +21,24 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/mypage")
+@RequestMapping("/api/mypage")
 public class MyPageController {
     private final MyPageService myPageService;
     private final MemberService memberService;
-    private final JwtProcessor jwtProcessor;
-    private final HttpServletRequest request;
+//    private final JwtProcessor jwtProcessor;
+//    private final HttpServletRequest request;
 
     // 내 정보 조회(GET /api/mypage)
     @GetMapping
-    public ResponseEntity<ApiResponse<MemberResponseDTO>> getMyProfile(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<ApiResponse<MemberResponseDTO>> getMyProfile(@AuthenticationPrincipal CustomUser customUser) {
         try {
-            if (userDetails == null) {
-                log.warn("인증 정보가 없습니다. (userDetails == null)");
+            if (customUser == null) {
+                log.warn("인증 정보가 없습니다. (customUser == null)");
                 return ResponseEntity.status(401).body(ApiResponse.error("로그인이 필요합니다."));
             }
-            String userEmail = userDetails.getUsername();
-            Integer userId = extractUserIdFromToken();
+
+            String userEmail = customUser.getUsername();
+            Integer userId = customUser.getUserId();
             log.info("마이페이지 - 내 정보 조회: email = {}, userId = {}", userEmail, userId);
 
             MemberResponseDTO userInfo = memberService.getMemberInfo(userId);
@@ -52,11 +52,15 @@ public class MyPageController {
     // 프로필 정보 수정(PUT /api/mypage)
     @PutMapping
     public ResponseEntity<ApiResponse<String>> updateMyInfo(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal CustomUser customUser,
             @Valid @RequestBody UserUpdateRequestDTO updateRequest) {
         try {
-            String userEmail = userDetails.getUsername();
-            Integer userId = extractUserIdFromToken();
+            if (customUser == null) {
+                return ResponseEntity.status(401).body(ApiResponse.error("로그인이 필요합니다."));
+            }
+
+            String userEmail = customUser.getUsername();
+            Integer userId = customUser.getUserId();
             log.info("회원정보 수정 요청: email={}, userId={}", userEmail, userId);
 
             boolean result = myPageService.updateUserInfo(userId, updateRequest);
@@ -74,11 +78,15 @@ public class MyPageController {
     // 비밀번호 변경(PUT /api/mypage)
     @PutMapping("/password")
     public ResponseEntity<ApiResponse<String>> changePassword(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal CustomUser customUser,
             @Valid @RequestBody PasswordChangeRequestDTO passwordDTO) {
         try {
-            String userEmail = userDetails.getUsername();
-            Integer userId = extractUserIdFromToken();
+            if (customUser == null) {
+                return ResponseEntity.status(401).body(ApiResponse.error("로그인이 필요합니다."));
+            }
+
+            String userEmail = customUser.getUsername();
+            Integer userId = customUser.getUserId();
             log.info("비밀번호 변경 요청: email={}, userId={}", userEmail, userId);
 
             boolean result = myPageService.changePassword(userId, passwordDTO);
@@ -93,41 +101,19 @@ public class MyPageController {
         }
     }
 
-    // JWT에서 userId 추출 메서드
-    private Integer extractUserIdFromToken() {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.error("Authorization 헤더가 없거나 형식이 잘못되었습니다.");
-            throw new RuntimeException("JWT 토큰이 없습니다.");
-        }
-
-        String token = authHeader.substring(7);
-        if (!jwtProcessor.validateToken(token)) {
-            log.error("유효하지 않은 JWT 토큰입니다.");
-            throw new RuntimeException("유효하지 않은 JWT 토큰입니다.");
-        }
-
-        Integer userId = jwtProcessor.getUserId(token);
-        if (userId == null) {
-            log.error("JWT 토큰에서 userId를 추출할 수 없습니다.");
-            throw new RuntimeException("JWT 토큰에서 사용자 ID를 찾을 수 없습니다.");
-        }
-
-        return userId;
-    }
-
     // 비밀번호 검증
     @PostMapping("/verify-password")
     public ResponseEntity<ApiResponse<String>> verifyPassword(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal CustomUser customUser,
             @RequestBody Map<String, String> body) {
         try {
-            if (userDetails == null) {
+            if (customUser == null) {
                 return ResponseEntity.status(401).body(ApiResponse.error("로그인이 필요합니다."));
             }
 
-            Integer userId = extractUserIdFromToken();
+            Integer userId = customUser.getUserId();
             String currentPassword = body.get("currentPassword");
+            log.info("비밀번호 검증 요청: userId={}", userId);
 
             boolean isMatch = myPageService.verifyCurrentPassword(userId, currentPassword);
             if (isMatch) {
@@ -136,6 +122,7 @@ public class MyPageController {
                 return ResponseEntity.status(401).body(ApiResponse.error("비밀번호가 일치하지 않습니다."));
             }
         } catch (Exception e) {
+            log.error("비밀번호 확인 실패: {}", e.getMessage());
             return ResponseEntity.badRequest().body(ApiResponse.error("비밀번호 확인 중 오류 발생"));
         }
     }

@@ -5,12 +5,28 @@ import java.util.List;
 
 
 public interface NotificationService {
-    // 특정 유저의 모든 알림
+    // 전체 알림
     List<NotificationDTO> getNotificationsByUserId(Integer userId);
-    // 특정 유저의 특정 타입 알림
-    List<NotificationDTO> getNotificationsByUserIdAndType(Integer userId, String type);
-    // 특정 유저의 여러 타입 알림 조회 (UI 카테고리용)
+
+    // 결제 알림
+    List<NotificationDTO> getTransactionNotifications(Integer userId);
+
+    // 정산 알림
+    List<NotificationDTO> getSettlementNotifications(Integer userId);
+
+    // 그룹 알림
+    List<NotificationDTO> getGroupNotifications(Integer userId);
+
+    // 카테고리별 (ALL, TRANSACTION, SETTLEMENT, INVITE)
     List<NotificationDTO> getNotificationsByCategory(Integer userId, String category);
+
     // 알림 생성
     void createNotification(NotificationDTO dto);
+
+    // 그룹 카테고리 알림 생성(초대, 누가 나감, 누가 들어옴)
+    void createGroupEventNotification(Integer fromUserId, Integer tripId, String type);
+
+    // 알림 읽음 처리
+    void readNotification(Integer notificationId);
+
 }

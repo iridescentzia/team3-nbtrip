@@ -1,6 +1,6 @@
 import api from '@/api';
 
-const BASE_URL = '/api/merchants';
+const BASE_URL = '/merchants';
 
 export default {
   async get(id) {

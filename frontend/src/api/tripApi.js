@@ -2,13 +2,18 @@ import api from '@/api'
 const BASE_URL = '/trips'
 
 export default {
+    async getCurrentTripId() {
+        const { data } = await api.get(`${BASE_URL}/current`);
+        console.log('data:', data);
+        return data;
+    },
     async getTripDetail(tripId){
         const { data } = await api.get(`${BASE_URL}/${tripId}`);
         console.log("get tripDetail: " + tripId);
         return data
     },
     async createTrip(params) {
-        console.log("보내는 데이터:", params);
+        console.log('보내는 데이터:', params);
         await api.post(`${BASE_URL}/`, params);
     },
     async getDisabledDates(){
@@ -27,7 +32,7 @@ export default {
             }
         });
         console.log("data:", allDates.map(date =>
-            date.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })
+            date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
         ));
         return allDates;
     },
@@ -44,7 +49,7 @@ export default {
         ]);
 
         console.log(`주어진 일정: ${startDate} ~ ${endDate}`);
-        console.log("period:", JSON.stringify(period));
+        console.log('period:', JSON.stringify(period));
 
         // 겹치는 날짜 있는지 확인
         for (const [start, end] of period) {
@@ -66,5 +71,10 @@ export default {
     async searchNickname(Nickname){
         const { data } = await api.get(`/users/search/${Nickname}`);
         return data;
-    }
+    },
+    // 전체 여행 목록 조회
+    async fetchTrips() {
+        const { data } = await api.get('/trips');
+        return data;
+    },
 }

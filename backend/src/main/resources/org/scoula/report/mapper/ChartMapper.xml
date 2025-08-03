@@ -8,49 +8,60 @@
     <!-- VO 필드 매핑 -->
     <resultMap id="ChartResultMap" type="org.scoula.report.domain.ChartVO">
         <result property="category"    column="category" />
-        <result property="totalAmount" column="total_amount" />
+        <result property="total_amount" column="total_amount" />
         <result property="date"        column="date" />
         <result property="count"       column="count" />
     </resultMap>
 
     <!-- 도넛 차트: 카테고리별 합계 -->
     <select id="selectDonutChart"
-            parameterType="long"
+            parameterType="int"
             resultMap="ChartResultMap">
         SELECT
-            mc.category_name   AS category,
-            SUM(p.amount)      AS total_amount,
-            NULL               AS date,
-    NULL               AS count
-        FROM payment AS p
-            JOIN merchant AS m
-        ON p.merchant_id = m.merchant_id
-            JOIN merchant_category AS mc
-            ON m.category_id = mc.category_id
+            COALESCE(mc.category_name, '기타') AS category,
+            SUM(p.amount) AS total_amount
+        FROM payment p
+                 LEFT JOIN merchant m ON p.merchant_id = m.merchant_id
+                 LEFT JOIN merchant_category mc ON m.category_id = mc.category_id
         WHERE p.trip_id = #{tripId}
-        GROUP BY mc.category_name;
+        GROUP BY COALESCE(mc.category_name, '기타');
     </select>
 
     <!-- 라인 차트: 날짜별 건수 및 합계 -->
     <select id="selectLineChart"
-            parameterType="long"
+            parameterType="int"
             resultMap="ChartResultMap">
+        WITH RECURSIVE date_range AS (
+            SELECT t.start_date AS date, t.end_date
+        FROM trip t
+        WHERE t.trip_id = #{tripId}
+
+        UNION ALL
+
+        SELECT DATE_ADD(date_range.date, INTERVAL 1 DAY), date_range.end_date
+        FROM date_range
+        WHERE DATE_ADD(date_range.date, INTERVAL 1 DAY) &lt;= date_range.end_date
+            )
         SELECT
-            NULL                                    AS category,
-            SUM(p.amount)                           AS total_amount,
-            DATE_FORMAT(p.pay_at, '%Y-%m-%d')       AS date,
-      COUNT(*)                                AS count
-        FROM payment p
-        WHERE p.trip_id = #{tripId}
-        GROUP BY DATE_FORMAT(p.pay_at, '%Y-%m-%d')
-        ORDER BY DATE_FORMAT(p.pay_at, '%Y-%m-%d')
+            d.date AS date,
+        COALESCE(SUM(p.amount), 0) AS total_amount,
+        COUNT(p.payment_id) AS count
+        FROM date_range d
+            LEFT JOIN payment p
+        ON DATE(p.pay_at) = d.date
+            AND p.trip_id = #{tripId}
+        GROUP BY d.date
+        ORDER BY d.date;
     </select>
 
-    <!-- 추가: trip_status 조회 -->
-    <select id="getTripStatus" parameterType="long" resultType="string">
-        SELECT trip_status
+    <!-- 추가: trip_Info 조회 -->
+    <select id="selectTripInfo" resultType="org.scoula.report.dto.TripInfoDTO">
+        SELECT
+            trip_name AS tripName,
+            DATE_FORMAT(start_date, '%Y.%m.%d') AS startDate,
+            DATE_FORMAT(end_date, '%Y.%m.%d') AS endDate
         FROM trip
-        WHERE id = #{tripId}
+        WHERE trip_id = #{tripId}
     </select>
 
 </mapper>

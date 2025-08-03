@@ -3,8 +3,8 @@ import { onMounted } from 'vue';
 import Header from '../../components/layout/Header2.vue';
 import { getSettlementSummary, requestSettlement } from '@/api/settlementApi';
 import { useRoute, useRouter } from 'vue-router';
-import {storeToRefs} from "pinia";
-import {useSettlementStore} from "@/stores/settlementStore.js";
+import { storeToRefs } from 'pinia';
+import { useSettlementStore } from '@/stores/settlementStore.js';
 
 const settlementStore = useSettlementStore();
 const { summaryData, isLoading, error } = storeToRefs(settlementStore);
@@ -29,7 +29,7 @@ onMounted(async () => {
   } catch (err) {
     console.error('정산 요약 정보 로딩 실패:', err);
 
-    if(err.response?.status === 403) {
+    if (err.response?.status === 403) {
       error.value = '그룹장만 정산을 요청할 수 있습니다.';
 
       // 3초 후 여행 상세 페이지로 리다이렉트
@@ -66,97 +66,67 @@ const goToNextStep = async () => {
     alert('정산 생성에 실패했습니다.');
   }
 };
-
 </script>
 
 <template>
-  <!-- 화면 중앙 정렬을 위한 wrapper -->
-  <div class="view-wrapper">
-    <div class="settlement-view">
-      <!-- Header.vue 컴포넌트 사용 -->
-      <Header title="정산하기" />
+  <div class="settlement-view">
+    <!-- Header.vue 컴포넌트 사용 -->
+    <Header title="정산하기" />
 
-      <main v-if="isLoading" class="content-container loading">
-        <div class="spinner"></div>
-        <p>데이터를 불러오는 중...</p>
-      </main>
+    <main v-if="isLoading" class="content-container loading">
+      <div class="spinner"></div>
+      <p>데이터를 불러오는 중...</p>
+    </main>
 
-      <main v-else-if="error" class="content-container error">
-        <p>{{ error }}</p>
-      </main>
+    <main v-else-if="error" class="content-container error">
+      <p>{{ error }}</p>
+    </main>
 
-      <main v-else-if="summaryData" class="content-container">
-        <div class="summary-header">
-          <p class="trip-name">{{ summaryData.tripName }}</p>
-          <h2 class="total-amount">
-            총 {{ summaryData.totalAmount?.toLocaleString() || 0 }}원 사용
-          </h2>
-        </div>
+    <main v-else-if="summaryData" class="content-container">
+      <div class="summary-header">
+        <p class="trip-name">{{ summaryData.tripName }}</p>
+        <h2 class="total-amount">
+          총 {{ summaryData.totalAmount?.toLocaleString() || 0 }}원 사용
+        </h2>
+      </div>
 
-        <div class="member-payment-card">
-          <h3 class="card-title">멤버별 결제 내역</h3>
-          <div class="member-list">
-            <div
-                v-for="member in summaryData.memberPayments"
-                :key="member.nickname"
-                class="member-item"
-            >
-              <div class="member-info">
-                <div class="member-avatar">
-                  <span>{{ member.nickname.substring(0, 1) || '?'}}</span>
-                </div>
-                <span class="member-name">{{ member.nickname }}</span>
+      <div class="member-payment-card">
+        <h3 class="card-title">멤버별 결제 내역</h3>
+        <div class="member-list">
+          <div
+            v-for="member in summaryData.memberPayments"
+            :key="member.nickname"
+            class="member-item"
+          >
+            <div class="member-info">
+              <div class="member-avatar">
+                <span>{{ member.nickname.substring(0, 1) || '?' }}</span>
               </div>
-              <p class="member-amount">
-                {{ member.amount?.toLocaleString() || 0 }}원
-              </p>
+              <span class="member-name">{{ member.nickname }}</span>
             </div>
+            <p class="member-amount">
+              {{ member.amount?.toLocaleString() || 0 }}원
+            </p>
           </div>
         </div>
-      </main>
+      </div>
+    </main>
 
-      <footer class="footer">
-        <button @click="goToNextStep" class="next-button">다음</button>
-      </footer>
-    </div>
+    <footer class="footer">
+      <button @click="goToNextStep" class="next-button">다음</button>
+    </footer>
   </div>
 </template>
 
 <style scoped>
-/* 테마 색상 변수 */
-.settlement-view {
-  --theme-primary: rgba(255, 209, 102, 0.65);
-  --theme-primary-dark: #e2c05e;
-  --theme-bg: #f8f9fa;
-  --theme-text: #333333;
-  --theme-text-light: #888888;
-}
-
-/* 화면 중앙 정렬을 위한 wrapper 스타일 */
-.view-wrapper {
-  display: flex;
-  justify-content: center;
-  /* align-items: center; */
-  width: 100%;
-  min-height: 100vh; /* 화면 전체 높이를 차지하도록 */
-  background-color: #ffffff;
-  padding: 2rem 0; /* 위아래 여백 추가 */
-}
-
 /* 전체 레이아웃 */
 .settlement-view {
-  z-index: 1;
   width: 100%;
-  max-width: 24rem; /* 384px */
+  height: 100%;
   background-color: var(--theme-bg);
   display: flex;
   flex-direction: column;
-  border-radius: 1.5rem; /* 둥근 모서리 */
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); /* 그림자 효과 */
-  overflow: hidden; /* 둥근 모서리 적용을 위해 */
-  position: relative; /* Header 컴포넌트의 fixed 포지션 기준점 */
-  height: 844px; /* 특정 스마트폰 높이를 기준으로 고정 */
-  max-height: 90vh; /* 화면 높이의 90%를 넘지 않도록 설정 */
+  position: relative; /* Header의 absolute 포지션 기준점 */
 }
 
 /* 메인 콘텐츠 */
