@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import tripApi from '@/api/tripApi.js';
 import paymentlistApi from '@/api/paymentlistApi.js'
+import { Info } from 'lucide-vue-next';
 
 
 // ✅ props.tripId 받아오기
@@ -49,7 +50,7 @@ onMounted(async () => {
   trip.value = detail;
 
   const res = await paymentlistApi.getPaymentList(props.tripId);
-  console.log('🔥 res:', res);
+  console.log('res:', res);
 
   if (res?.paymentData && Array.isArray(res.paymentData)) {
     paymentList.value = res.paymentData;
@@ -70,8 +71,10 @@ onMounted(async () => {
     <div class="amount-row">
         <span class="amount-text">현재 사용 금액</span>
         <div class="amount"> 
-            {{formattedAmount}}
+          {{formattedAmount}}
+          <Info class="info-icon" />
         </div>
+        
     </div>
 
     <div class="progress-bar">
@@ -96,7 +99,7 @@ onMounted(async () => {
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
-  
+  font-family: 'IBM Plex Sans KR', sans-serif;
 }
 
 .trip-name {
@@ -113,6 +116,7 @@ onMounted(async () => {
 }
 
 .amount-row {
+  
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -124,8 +128,18 @@ onMounted(async () => {
     color: #666;
 }
 .amount{
-    font-size: 30px;     /* 💡 폰트 크기 키움 */
-    font-weight: bold;   /* 💡 볼드체로 */
+    font-size: 30px;
+    font-weight: bold;
+
+    display: flex;
+    align-items: center;
+    gap: 30px; 
+}
+
+.info-icon{
+  color:#AAAAAA;
+  width:18px;
+  padding-bottom:5px;
 }
 
 .progress-bar {

@@ -1,4 +1,7 @@
 <script setup>
+// import { ref, onMounted } from 'vue';
+// import accountApi from '@/api/accountApi.js';
+
 defineProps({
   bankName: String,
   accountNumber: String,
@@ -8,6 +11,18 @@ defineProps({
 const formatCurrency = (value) => {
   return value.toLocaleString();
 }
+
+// const props = defineProps({
+//   userId: Number,
+// });
+
+// const account = ref(null);
+
+// onMounted(async () => {
+//   const res = await accountApi.getAccount(props.userId);
+//   console.log('계좌 정보:', res);
+//   account.value = res;
+// });
 </script>
 
 <template>

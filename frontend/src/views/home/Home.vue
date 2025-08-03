@@ -162,7 +162,6 @@ const goToMyPage = () => router.push("/mypage");
   justify-content: space-between;
   align-items: center;
   margin-bottom: 50px;
-  
 }
 .greeting-box {
   display: flex;
@@ -191,9 +190,9 @@ const goToMyPage = () => router.push("/mypage");
 
 .icon-group {
   display: flex;
-  flex-direction: row; /* 아이콘 가로 정렬 */
+  flex-direction: row;
   align-items: center;
-  gap: 15px; /* 아이콘 사이 간격 */
+  gap: 15px; 
 }
 
 
