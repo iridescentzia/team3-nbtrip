@@ -125,9 +125,29 @@
         SELECT DISTINCT sender_id
         FROM settlement
         WHERE settlement_status != 'COMPLETED'
-      AND amount > 0
+        AND amount > 0
     </select>
 
+    <!-- 리마인더 대상의 trip_id 하나 가져오기 -->
+    <select id="findTripIdForUserPendingSettlement" parameterType="int" resultType="int">
+        SELECT s.trip_id
+        FROM settlement s
+        WHERE (s.sender_id = #{userId} OR s.receiver_id = #{userId})
+        AND s.settlement_status != 'COMPLETED'
+        AND s.amount > 0
+        ORDER BY s.settlement_id DESC
+        LIMIT 1
+    </select>
+
+    <!-- 해당 trip의 정산 요청자 ID -->
+    <select id="findSettlementRequester" parameterType="int" resultType="int">
+        SELECT s.sender_id
+        FROM settlement s
+        WHERE s.trip_id = #{tripId}
+          AND s.settlement_status != 'COMPLETED'
+        ORDER BY s.settlement_id DESC
+        LIMIT 1
+    </select>
 
     <!-- 알림 생성 -->
     <insert id="createNotification" parameterType="org.scoula.notification.domain.NotificationVO">

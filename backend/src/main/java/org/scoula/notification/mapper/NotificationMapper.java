@@ -25,6 +25,10 @@ public interface NotificationMapper {
 
     // 정산 안한 맴버 조회
     List<Integer> findUsersNeedingReminder();
+    // 리마인더 대상 trip_id 조회
+    Integer findTripIdForUserPendingSettlement(@Param("userId") Integer userId);
+    // 해당 trip의 정산 요청자 조회
+    Integer findSettlementRequester(@Param("tripId") Integer tripId);
 
     // 단일 알림 생성
     int createNotification(NotificationVO vo);

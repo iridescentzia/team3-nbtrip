@@ -4,13 +4,10 @@ import { storeToRefs } from 'pinia';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { ChevronDown, ChevronRight } from 'lucide-vue-next';
 import Header from '@/components/layout/Header.vue';
-// import { useAuthStore } from '@/stores/auth';
 
 // 로그인한 사용자 ID로 변경
-const userId = 2; 
-// const authStore = useAuthStore();
-// const { user } = storeToRefs(authStore);
-// const userId = user.value.userId;
+// const userId = 2; 
+
 
 const notificationStore = useNotificationStore();
 const { notifications } = storeToRefs(notificationStore);
@@ -34,9 +31,10 @@ const selectCategory = (tab) => {
   showDropdown.value = false;
 
   //테스트
-  notificationStore.getNotifications(userId, tab.value);
+  // notificationStore.getNotifications(userId, tab.value);
+
   // 실제
-  // notificationStore.getNotifications(tab.value);
+  notificationStore.getNotifications(tab.value);
 };
 
 const handleCardClick = (n) => {
@@ -50,9 +48,10 @@ const formatAmount = (value) => {
 
 onMounted(() => {
   // 테스트
-  notificationStore.getNotifications(userId);
+  // notificationStore.getNotifications(userId);
+  
   // 실제 적용
-  // notificationStore.getNotifications()
+  notificationStore.getNotifications()
 });
 
 const getMessage = (n) => {

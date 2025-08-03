@@ -151,22 +151,6 @@ public class NotificationServiceImpl implements NotificationService {
             }
         }
 
-        // 리마인더 알림 단일 푸시 전송
-        if (type.equals("REMINDER")) {
-            String fcmToken = mapper.findFcmTokenByUserId(dto.getUserId());
-            if (fcmToken != null && !fcmToken.isBlank()) {
-                try {
-                    fcmService.sendPushNotification(
-                            fcmToken,
-                            "정산 알림이에요",
-                            "정산하지 않은 내역이 있어요. 확인 부탁드립니다."
-                    );
-                } catch (Exception e) {
-                    log.error("REMINDER 푸시 실패: userId={}", dto.getUserId(), e);
-                }
-            }
-        }
-
         // 기본 알림 db에 저장 (INVITE, REMINDER 등)
         mapper.createNotification(dto.toVO());
 
@@ -179,6 +163,7 @@ public class NotificationServiceImpl implements NotificationService {
         mapper.readNotification(notificationId);
     }
 
+    // 리마인더 푸시알림
     @Override
     public void sendReminderNotifications() {
         log.info("리마인더 푸시 알림 작업 시작");
@@ -187,17 +172,23 @@ public class NotificationServiceImpl implements NotificationService {
         List<Integer> userIds = mapper.findUsersNeedingReminder();
 
         for (Integer userId : userIds) {
+            Integer tripId = mapper.findTripIdForUserPendingSettlement(userId);
+            Integer fromUserId = tripId != null ? mapper.findSettlementRequester(tripId) : null;
             // 2. 알림 DB 저장
             NotificationDTO dto = NotificationDTO.builder()
                     .userId(userId)
+                    .tripId(tripId)
+                    .fromUserId(fromUserId)
                     .notificationType("REMINDER")
-                    .fromUserId(null) // 시스템 발송이므로 null 또는 특정 관리자 ID
                     .build();
 
+
+            log.info("리마인더 생성 대상: userId={}, tripId={}, fromUserId={}", userId, tripId, fromUserId);
             mapper.createNotification(dto.toVO());
 
             // 3. FCM 토큰 조회
             String fcmToken = mapper.findFcmTokenByUserId(userId);
+            log.info("리마인더 전송 대상 userId={}, fcmToken={}", userId, fcmToken);
             if (fcmToken != null && !fcmToken.isBlank()) {
                 try {
                     fcmService.sendPushNotification(
@@ -208,6 +199,8 @@ public class NotificationServiceImpl implements NotificationService {
                 } catch (Exception e) {
                     log.error("REMINDER 푸시 실패: userId={}", userId, e);
                 }
+            } else {
+                log.warn("리마인더 대상 userId={} 는 FCM 토큰이 없음", userId);
             }
         }
 
