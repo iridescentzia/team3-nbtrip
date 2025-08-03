@@ -9,6 +9,7 @@ import {
   ChevronRight,
 } from 'lucide-vue-next';
 import { getMyInfo, logoutMember } from '@/api/memberApi.js';
+import tripApi from "@/api/tripApi.js";
 
 const router = useRouter();
 const userInfo = ref({ nickname: '', name: '' });
@@ -60,6 +61,15 @@ const logout = async () => {
     router.push('/login');
   }
 };
+
+// 지난 여행, 예정된 여행
+const readyTrips = ref([]);
+const closedTrips = ref([]);
+
+onMounted(async () => {
+  readyTrips.value = await tripApi.getTripsByStatus('READY');
+  closedTrips.value = await tripApi.getTripsByStatus('CLOSED');
+})
 </script>
 
 <template>
@@ -85,12 +95,12 @@ const logout = async () => {
           <span>회원 정보</span>
         </div>
         <!--      <div class="icon-wrapper" @click="goTo('/trips?status=ready')">-->
-        <div class="icon-wrapper" @click="goTo('/mypage/last-trip')">
+        <div class="icon-wrapper" @click="goTo('/mypage/ready-trip')">
           <div class="icon-button"><Briefcase size="28" /></div>
           <span>예정된 여행</span>
         </div>
         <!--      <div class="icon-wrapper" @click="goTo('/trips?status=closed')">-->
-        <div class="icon-wrapper">
+        <div class="icon-wrapper" @click="goTo('/mypage/closed-trip')">
           <div class="icon-button"><BriefcaseConveyorBelt size="28" /></div>
           <span>지난 여행</span>
         </div>

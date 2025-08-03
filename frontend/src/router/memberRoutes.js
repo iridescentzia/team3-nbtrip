@@ -102,9 +102,16 @@ export default [
 
     // 지난 여행
     {
-        path: '/mypage/last-trip',
-        name: 'LastTripPage',
-        component: () => import('@/views/member/mypage/LastTripPage.vue')
+        path: '/mypage/closed-trip',
+        name: 'LastTripListPage',
+        component: () => import('@/views/member/mypage/ClosedTripListPage.vue')
+    },
+
+    // 예정된 여행
+    {
+        path: '/mypage/ready-trip',
+        name: 'ClosedTripListPage',
+        component: () => import('@/views/member/mypage/ReadyTripListPage.vue')
     },
 
     // ============ 약관 상세 보기 (viewOnly) ============
@@ -133,6 +140,6 @@ export default [
     {
         path: '/my/last-trip',
         name: 'LastTripPage',
-        component: () => import('@/views/member/mypage/LastTripPage.vue')
+        component: () => import('@/views/member/mypage/ClosedTripListPage.vue')
     }
 ]
