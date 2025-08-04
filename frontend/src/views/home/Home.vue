@@ -46,14 +46,7 @@ onMounted(async () => {
     }
 
     // 미정산 내역
-<<<<<<< HEAD
     const response = await getMyUnsettledTrips();
-=======
-    const token = localStorage.getItem('accessToken');
-    const response = await axios.get('/api/settlements/unsettled/me', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
->>>>>>> ecce82160e04246cc008eb51d62744a45ea97b6f
     unsettledList.value = response.data;
 
     // // getMyInfo() 사용 (userId 파라미터 불필요)
