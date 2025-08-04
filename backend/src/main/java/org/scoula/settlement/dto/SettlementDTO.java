@@ -1,6 +1,9 @@
 package org.scoula.settlement.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -184,5 +187,18 @@ public class SettlementDTO {
         private int pendingCount;
         private int processingCount;
         private int completedCount;
+    }
+
+    /**
+     * [NEW] 홈 화면에 표시될 미정산 여행 정보를 담는 DTO
+     */
+    @Data
+    public static class UnsettledTripInfo {
+        private int tripId;
+        private String tripName;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+        private Date startDate;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+        private Date endDate;;
     }
 }

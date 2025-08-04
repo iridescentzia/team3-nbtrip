@@ -40,21 +40,21 @@ const buttonState = computed(() => {
     return {
       text: '송금하기',
       action: 'transfer',
-      disabled: false
+      disabled: false,
     };
   } else if (hasReceiveAmount) {
     // 보낼 돈은 없고 받을 돈만 있는 경우
     return {
       text: '확인',
       action: 'confirm',
-      disabled: false
+      disabled: false,
     };
   } else {
     // 보낼 돈도 받을 돈도 없는 경우
     return {
       text: '확인',
       action: 'confirm',
-      disabled: false
+      disabled: false,
     };
   }
 });
@@ -113,9 +113,10 @@ const confirmTransfer = async () => {
     await settlementStore.fetchMySettlement(tripId);
 
     // 받을 돈이 아직 미완료 상태인지 확인
-    const hasIncompleteToReceive = mySettlementData.value?.toReceive?.some(
-        tx => tx.status !== 'COMPLETED'
-    ) || false;
+    const hasIncompleteToReceive =
+      mySettlementData.value?.toReceive?.some(
+        (tx) => tx.status !== 'COMPLETED'
+      ) || false;
 
     if (hasIncompleteToReceive) {
       // 송금 완료 + 받을 돈 미완료 → pending
@@ -124,7 +125,6 @@ const confirmTransfer = async () => {
       // 송금 완료 + 받을 돈 완료 → completed
       router.push(`/settlement/${tripId}/completed`);
     }
-
   } catch (err) {
     router.push(`/settlement/${tripId}/failure`);
   }
@@ -154,12 +154,17 @@ const confirmTransfer = async () => {
       <div class="settlement-card">
         <p class="card-title text-theme-text">받을 돈</p>
         <div class="transaction-list">
-          <div v-if="mySettlementData.toReceive && mySettlementData.toReceive.length > 0">
+          <div
+            v-if="
+              mySettlementData.toReceive &&
+              mySettlementData.toReceive.length > 0
+            "
+          >
             <div
-                v-for="tx in mySettlementData.toReceive"
-                :key="tx.settlementId"
-                class="transaction-item"
-                :class="getTransactionClass(tx.status)"
+              v-for="tx in mySettlementData.toReceive"
+              :key="tx.settlementId"
+              class="transaction-item"
+              :class="getTransactionClass(tx.status)"
             >
               <div class="member-info">
                 <div class="avatar">
@@ -170,7 +175,10 @@ const confirmTransfer = async () => {
                     {{ tx.senderNickname || '알 수 없음' }}
                   </span>
                   <!-- ✅ COMPLETED 배지만 표시 -->
-                  <span v-if="tx.status === 'COMPLETED'" class="status-badge completed">
+                  <span
+                    v-if="tx.status === 'COMPLETED'"
+                    class="status-badge completed"
+                  >
                     ✓ 받음
                   </span>
                 </div>
@@ -180,7 +188,9 @@ const confirmTransfer = async () => {
               </span>
             </div>
           </div>
-          <p v-else class="empty-message text-theme-text">받을 돈이 없습니다.</p>
+          <p v-else class="empty-message text-theme-text">
+            받을 돈이 없습니다.
+          </p>
         </div>
       </div>
 
@@ -188,12 +198,14 @@ const confirmTransfer = async () => {
       <div class="settlement-card">
         <p class="card-title">보낼 돈</p>
         <div class="transaction-list">
-          <div v-if="mySettlementData.toSend && mySettlementData.toSend.length > 0">
+          <div
+            v-if="mySettlementData.toSend && mySettlementData.toSend.length > 0"
+          >
             <div
-                v-for="tx in mySettlementData.toSend"
-                :key="tx.settlementId"
-                class="transaction-item"
-                :class="getTransactionClass(tx.status)"
+              v-for="tx in mySettlementData.toSend"
+              :key="tx.settlementId"
+              class="transaction-item"
+              :class="getTransactionClass(tx.status)"
             >
               <div class="member-info">
                 <div class="avatar">
@@ -204,7 +216,10 @@ const confirmTransfer = async () => {
                     {{ tx.receiverNickname || '알 수 없음' }}
                   </span>
                   <!-- ✅ COMPLETED 배지만 표시 -->
-                  <span v-if="tx.status === 'COMPLETED'" class="status-badge completed">
+                  <span
+                    v-if="tx.status === 'COMPLETED'"
+                    class="status-badge completed"
+                  >
                     ✓ 보냄
                   </span>
                 </div>
@@ -221,17 +236,21 @@ const confirmTransfer = async () => {
 
     <footer class="footer">
       <button
-          @click="handleButtonClick"
-          class="next-button"
-          :disabled="buttonState.disabled"
+        @click="handleButtonClick"
+        class="next-button"
+        :disabled="buttonState.disabled"
       >
-        {{buttonState.text}}
+        {{ buttonState.text }}
       </button>
     </footer>
   </div>
 
   <!-- ✅ 송금하기 모달 -->
-  <div v-if="showTransferModal && buttonState.action === 'transfer'" class="modal-overlay" @click="cancelTransfer">
+  <div
+    v-if="showTransferModal && buttonState.action === 'transfer'"
+    class="modal-overlay"
+    @click="cancelTransfer"
+  >
     <div class="transfer-modal" @click.stop>
       <!-- 아이콘 -->
       <div class="modal-icon"></div>
@@ -332,7 +351,7 @@ const confirmTransfer = async () => {
 /* 미처리 (기본) */
 .transaction-pending {
   background-color: white;
-  border: 1px solid #e5e7eb;
+  /* border: 1px solid #e5e7eb; */
 }
 
 /* 완료됨 */
