@@ -4,13 +4,11 @@ import tripApi from '@/api/tripApi.js';
 import paymentlistApi from '@/api/paymentlistApi.js'
 import { Info } from 'lucide-vue-next';
 
-
-// ✅ props.tripId 받아오기
 const props = defineProps({
-  tripId: Number
+  trip: Object
 });
 
-const trip = ref(null);
+const trip = ref(props.trip);
 const paymentList = ref([]);
 
 // tripName
@@ -45,16 +43,12 @@ const progressPercentage = computed(() => {
 const isOverBudget = computed(() => usedAmount.value >= budget.value);
 
 onMounted(async () => {
-  const detail = await tripApi.getTripDetail(props.tripId);
-  console.log('tripApi 응답 detail:', detail);
-  trip.value = detail;
-
-  const res = await paymentlistApi.getPaymentList(props.tripId);
+  const res = await paymentlistApi.getPaymentList(trip.value.tripId);
   console.log('res:', res);
 
   if (res?.paymentData && Array.isArray(res.paymentData)) {
     paymentList.value = res.paymentData;
-    console.log(`[tripId=${props.tripId}] 결제 내역:`, paymentList.value);
+    console.log(`[tripId=${trip.value.tripId}] 결제 내역:`, paymentList.value);
   } else {
     console.warn('❌ 결제 데이터 형식이 예상과 다름:', res);
   }
