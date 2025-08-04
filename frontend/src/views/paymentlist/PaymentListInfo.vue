@@ -5,7 +5,7 @@
       v-for="(item, index) in filteredPayments"
       :key="index"
       :title="item.memo"
-      :sub="formatSub(item.userId, item.payAt)"
+      :sub="formatSub(item.nickname, item.payAt)"
       :amount="item.amount"
     />
   </div>
@@ -50,23 +50,30 @@ const filteredPayments = computed(() => {
   if(start || end){
       result = result.filter(p => {
       // ISO 문자열에서 yyyy-MM-dd 부분만 비교
-      const payDate = p.payAt.slice(0, 10)
-      if (start && end)   return payDate >= start && payDate <= end
-      if (start)          return payDate >= start
-      if (end)            return payDate <= end
+      const payDate = new Date(p.payAt)
+      const startDate = start ? new Date(start) : null;
+      const endDate = end ? new Date(end) : null;
+
+        // 끝 날짜를 하루의 마지막 시각으로 보정
+        if (endDate) {
+          endDate.setHours(23, 59, 59, 999);
+        }
+
+      if (startDate && endDate) return payDate >= startDate && payDate <= endDate;
+      if (startDate) return payDate >= startDate;
+      if (endDate) return payDate <= endDate;
     });
 
   }
   console.log('날짜 필터 후 수:', result.length);
 
   // 결제 참여자 필터
- if (props.selectedParticipants.length > 0) {
-  const selectedIds = props.selectedParticipants.map(Number); // 문자열을 숫자로 변환
-  result = result.filter(p => selectedIds.includes(p.userId));
-  console.log('참여자 필터링: userIds =', props.selectedParticipants, '→ 숫자 배열 =', selectedIds);
-console.log('현재 결제 항목 userId:', result.map(r => r.userId));
-
-}
+  if (props.selectedParticipants.length > 0) {
+    const selectedIds = props.selectedParticipants.map(String); 
+    result = result.filter(p => selectedIds.includes(String(p.userId)));
+    console.log("불러온 payments:", payments.value);
+    console.log("userId 타입 체크:", payments.value.map(p => typeof p.userId)); // → 'number'만 나오면 OK
+  }
 
   return result;
 })
@@ -102,6 +109,7 @@ onMounted(async () => {
     if (Array.isArray(result.paymentData)) {
       payments.value = result.paymentData;
       emit('init-total', originalTotalAmount.value)
+      console.log("result.paymentData: ", result.paymentData)
     } else {
       console.warn('paymentData가 배열이 아님', result);
     }
@@ -114,7 +122,6 @@ onMounted(async () => {
 <style scoped>
 .wrapper {
   padding: 20px 0;
-  /* background-color: #f5f5f5; */
   min-height: 100vh;
 }
 </style>

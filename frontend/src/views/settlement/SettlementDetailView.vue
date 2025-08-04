@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia';
 import Header from '../../components/layout/Header2.vue';
 import { useSettlementStore } from '@/stores/settlementStore';
 import { useRoute, useRouter } from 'vue-router';
+import { SquareCheckBig } from 'lucide-vue-next';
 
 // ✅ Pinia Store 사용
 const settlementStore = useSettlementStore();
@@ -81,17 +82,6 @@ const goHome = () => {
   router.push('/');
 };
 
-// ✅ 상태별 클래스 함수 (PROCESSING 제거)
-const getTransactionClass = (status) => {
-  switch (status) {
-    case 'COMPLETED':
-      return 'transaction-completed';
-    case 'PENDING':
-    default:
-      return 'transaction-pending';
-  }
-};
-
 // ✅ 모달 취소
 const cancelTransfer = () => {
   settlementStore.closeTransferModal();
@@ -164,23 +154,22 @@ const confirmTransfer = async () => {
               v-for="tx in mySettlementData.toReceive"
               :key="tx.settlementId"
               class="transaction-item"
-              :class="getTransactionClass(tx.status)"
             >
               <div class="member-info">
                 <div class="avatar">
                   <span>{{ tx.senderNickname?.substring(0, 1) || '?' }}</span>
                 </div>
                 <div class="member-text">
-                  <span class="font-semibold text-sm text-theme-text">
-                    {{ tx.senderNickname || '알 수 없음' }}
-                  </span>
-                  <!-- ✅ COMPLETED 배지만 표시 -->
-                  <span
-                    v-if="tx.status === 'COMPLETED'"
-                    class="status-badge completed"
-                  >
-                    ✓ 받음
-                  </span>
+                  <div class="name-with-badge">
+                    <span class="font-semibold text-sm text-theme-text">
+                      {{ tx.senderNickname || '알 수 없음' }}
+                    </span>
+                    <!-- 상태가 COMPLETED일 때만 체크 아이콘 표시 -->
+                    <SquareCheckBig
+                      v-if="tx.status === 'COMPLETED'"
+                      class="status-icon"
+                    />
+                  </div>
                 </div>
               </div>
               <span class="amount text-theme-text">
@@ -205,23 +194,22 @@ const confirmTransfer = async () => {
               v-for="tx in mySettlementData.toSend"
               :key="tx.settlementId"
               class="transaction-item"
-              :class="getTransactionClass(tx.status)"
             >
               <div class="member-info">
                 <div class="avatar">
                   <span>{{ tx.receiverNickname?.substring(0, 1) || '?' }}</span>
                 </div>
                 <div class="member-text">
-                  <span class="font-semibold text-sm">
-                    {{ tx.receiverNickname || '알 수 없음' }}
-                  </span>
-                  <!-- ✅ COMPLETED 배지만 표시 -->
-                  <span
-                    v-if="tx.status === 'COMPLETED'"
-                    class="status-badge completed"
-                  >
-                    ✓ 보냄
-                  </span>
+                  <div class="name-with-badge">
+                    <span class="font-semibold text-sm">
+                      {{ tx.receiverNickname || '알 수 없음' }}
+                    </span>
+                    <!-- 상태가 COMPLETED일 때만 체크 아이콘 표시 -->
+                    <SquareCheckBig
+                      v-if="tx.status === 'COMPLETED'"
+                      class="status-icon"
+                    />
+                  </div>
                 </div>
               </div>
               <span class="amount">
@@ -343,21 +331,9 @@ const confirmTransfer = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
+  padding: 6px;
   border-radius: 8px;
   transition: all 0.2s ease;
-}
-
-/* 미처리 (기본) */
-.transaction-pending {
-  background-color: white;
-  /* border: 1px solid #e5e7eb; */
-}
-
-/* 완료됨 */
-.transaction-completed {
-  background-color: #d1fae5; /* 연한 초록색 */
-  border: 1px solid #10b981;
 }
 
 /* ✅ 멤버 정보 레이아웃 */
@@ -371,6 +347,12 @@ const confirmTransfer = async () => {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+.name-with-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* 이름과 배지 사이 간격 */
 }
 
 .avatar {
@@ -388,11 +370,6 @@ const confirmTransfer = async () => {
   color: white;
 }
 
-/* ✅ 상태별 아바타 색상 */
-.transaction-completed .avatar {
-  background-color: #10b981 !important;
-}
-
 .font-semibold {
   font-weight: 600;
 }
@@ -404,17 +381,10 @@ const confirmTransfer = async () => {
   font-size: 1.125rem;
 }
 
-/* ✅ 상태 배지 */
-.status-badge {
-  font-size: 0.75rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 600;
-}
-
-.status-badge.completed {
-  background-color: #10b981;
-  color: white;
+.status-icon {
+  width: 16px;
+  height: 16px;
+  color: #9ca3af; /* 회색 톤 */
 }
 
 .empty-message {

@@ -152,8 +152,9 @@ public class NotificationServiceImpl implements NotificationService {
 
             // 기본 알림 db에 저장 (INVITE, REMINDER 등)
             mapper.createNotification(dto.toVO());
-        }
 
+
+        }
     }
 
     // 알림 읽음 처리
