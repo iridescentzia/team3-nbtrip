@@ -31,7 +31,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public void processPayment(PaymentDTO paymentDTO, int userId, int tripId) {
-        validatePayment(paymentDTO, userId, tripId);
+        validatePayment(paymentDTO, userId);
 
         // 결제 전 잔액 확인
         int beforeBalance = accountService.getBalanceByUserId(userId);
@@ -60,15 +60,18 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public void registerManualPayment(PaymentDTO paymentDTO, int userId, int tripId) {
-        validatePayment(paymentDTO, userId, tripId);
+        validatePayment(paymentDTO, userId);
 
         // 수동 결제 시 사용자가 날짜/시간 입력하면 병합, 아니면 현재 시간
         LocalDateTime payAt = (paymentDTO.getPaymentDate() != null && paymentDTO.getPaymentTime() != null)
                 ? LocalDateTime.of(paymentDTO.getPaymentDate(), paymentDTO.getPaymentTime())
                 : LocalDateTime.now();
 
+        // 카테고리(merchantId)
+        int merchantId = paymentDTO.getMerchantId();
+
         // 결제 내역 저장
-        PaymentVO paymentVO = savePaymentRecord(paymentDTO, paymentDTO.getPaymentType(), payAt, null, userId, tripId);
+        PaymentVO paymentVO = savePaymentRecord(paymentDTO, paymentDTO.getPaymentType(), payAt, merchantId, userId, tripId);
 
         // 결제 참여자 저장 및 금액 분배
         saveParticipants(paymentDTO, paymentVO, false, userId);
@@ -76,7 +79,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 
     /* 검증 */
-    private void validatePayment(PaymentDTO paymentDTO, int userId, int tripId) {
+    private void validatePayment(PaymentDTO paymentDTO, int userId) {
         if (paymentDTO.getAmount() <= 0) {
             throw new IllegalArgumentException("결제 금액은 0원보다 커야 합니다.");
         }
@@ -93,15 +96,15 @@ public class PaymentServiceImpl implements PaymentService {
 
 
     /* 결제 내역 저장 */
-    private PaymentVO savePaymentRecord(PaymentDTO paymentDTO, PaymentType paymentType, LocalDateTime payAt, Integer merchantId, int userId, int tripId) {
+    private PaymentVO savePaymentRecord(PaymentDTO paymentDTO, PaymentType paymentType, LocalDateTime payAt, int merchantId, int userId, int tripId) {
         PaymentVO paymentVO = new PaymentVO();
         paymentVO.setTripId(tripId);
+        paymentVO.setMerchantId(merchantId);
         paymentVO.setUserId(userId);
         paymentVO.setAmount(paymentDTO.getAmount());
         paymentVO.setPaymentType(paymentType);
         paymentVO.setPayAt(payAt);
         paymentVO.setMemo(paymentDTO.getMemo());
-        paymentVO.setMerchantId(merchantId);
 
         int inserted = paymentMapper.insertPayment(paymentVO);
         if (inserted == 0) {

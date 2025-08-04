@@ -33,7 +33,7 @@ public enum BankCode {
     }
 
     public String getCode() { return code; }
-//    public String getName() { return name; }
+    public String getName() { return name; }
 
     public static BankCode fromName(String name) {
         BankCode bankCode = NAME_MAP.get(name);
@@ -42,13 +42,4 @@ public enum BankCode {
         }
         return bankCode;
     }
-
-//    public static BankCode fromName(String name) {
-//        for(BankCode bankCode : values()) {
-//            if(bankCode.name.equals(name)) {
-//                return bankCode;
-//            }
-//        }
-//        throw new IllegalArgumentException("잘못된 은행 이름입니다.: " + name);
-//    }
 }
