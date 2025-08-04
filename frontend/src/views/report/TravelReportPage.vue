@@ -181,11 +181,10 @@ onMounted(async () => {
   background: #fff;
 }
 .travel-report-page {
-  max-width: 414px;
+  max-width: 100%;
   margin: 0 auto;
   margin-top: 56px;
   background-color: #f9fafb;
-  min-height: 100vh;
   box-sizing: border-box;
 }
 
@@ -246,6 +245,8 @@ onMounted(async () => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   font-size: 14px;
   color: #333;
+  min-height: 140; /* ✅ 추가 */
+  min-width: 200;
 }
 
 .ai-report h3 {

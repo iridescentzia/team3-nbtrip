@@ -83,7 +83,7 @@ async function generateAIReport() {
       prompt += `최저 지출: ${highlight.lowest.date} (${highlight.lowest.total_amount}원)\n`;
     }
 
-    prompt += `이 데이터를 분석해 간단한 한국어 코멘트를 150자 이내로 작성해주세요.\n`;
+    prompt += `이 데이터를 분석해 간단한 한국어 코멘트를 145자 이내로 작성해주세요.\n`;
 
     const result = await getAIComment(prompt);
     comment.value =
