@@ -2,7 +2,7 @@ package org.scoula.settlement.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.scoula.settlement.exception.domain.SettlementVO;
+import org.scoula.settlement.domain.SettlementVO;
 import org.scoula.settlement.dto.SettlementDTO;
 import java.util.List;
 
