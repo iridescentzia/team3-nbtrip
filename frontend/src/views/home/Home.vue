@@ -1,5 +1,4 @@
 <script setup>
-<<<<<<< HEAD
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import AccountCard from './AccountCard.vue'
@@ -16,32 +15,6 @@ import {
   Wallet,
 } from "lucide-vue-next";
 
-=======
-import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { storeToRefs } from 'pinia';
-
-import AccountCard from './AccountCard.vue';
-import TravelInformationCard from './TravelInformationCard.vue';
-import SettlementCard from './SettlementCard.vue';
-import Footer from '@/components/layout/Footer.vue';
-
-import tripApi from '@/api/tripApi.js';
-import axios from 'axios';
-import { useAuthStore } from '@/stores/authStore.js';
-import { getMyUnsettledTrips } from '@/api/settlementApi.js';
-// import {getMyInfo} from '@/api/memberApi.js'
-
-import {
-  Bell,
-  CalendarPlus,
-  BellRing,
-  PlaneTakeoff,
-  Wallet,
-} from 'lucide-vue-next';
-
-// const userInfo = ref({ userId: null, nickname: '', name: '' });
->>>>>>> beb059f2a020a1b8d87a1eba79aaab837dc33daf
 const router = useRouter();
 
 const userInfo = ref({ nickname: '', name: '' })
@@ -52,7 +25,6 @@ const unsettledList = ref([]);
 // API 호출
 onMounted(async () => {
   try {
-<<<<<<< HEAD
 
     const token = localStorage.getItem('accessToken');
     const res = await getMyInfo();
@@ -65,8 +37,6 @@ onMounted(async () => {
       console.error('유저 정보 조회 실패:', res?.message || '데이터 없음');
     }
 
-=======
->>>>>>> beb059f2a020a1b8d87a1eba79aaab837dc33daf
     // 여행 목록
     const tripRes = await tripApi.fetchTrips();
     if (Array.isArray(tripRes)) {
@@ -77,47 +47,11 @@ onMounted(async () => {
     
 
     // 미정산 내역
-<<<<<<< HEAD
     const response = await axios.get('/api/settlements/unsettled/me', {
       headers: { Authorization: `Bearer ${token}` }
     });
     unsettledList.value = response.data;
 
-=======
-    const response = await getMyUnsettledTrips();
-    unsettledList.value = response.data;
-
-    // // getMyInfo() 사용 (userId 파라미터 불필요)
-    // const userRes = await getMyInfo();
-    // console.log('응답 결과:', userRes);
-    // // ✅ getMyInfo() 사용 (userId 파라미터 불필요)
-    // const userRes = await getMyInfo();
-    // console.log('응답 결과:', userRes);
-    // // ✅ 응답 구조에 맞게 수정
-    // if (userRes?.success && userRes?.data) {
-    //   userInfo.value = userRes.data;
-    //   console.log('사용자 정보 설정 완료:', userInfo.value);
-    // } else {
-    //   console.error('유저 정보 조회 실패:', userRes?.message || '데이터 없음');
-    // }
-
-    // // 여행 목록 가져오기
-    // const tripRes = await tripApi.fetchTrips();
-    // if (Array.isArray(tripRes)) {
-    //   console.log('전체 여행 목록:', tripRes);
-
-    //   // 진행 중인 여행 필터링 (ACTIVE + 내가 참여한 여행)
-    //   ongoingTrips.value = tripRes.filter(trip =>{
-    //       console.log('trip.tripStatus:', trip.tripStatus);
-    //       const isActive = trip.tripStatus === 'ACTIVE';
-    //       console.log(`[${trip.tripName}] isActive: ${isActive}`);
-    //       return isActive
-    // });
-
-    // } else {
-    //   console.error('여행 목록 조회 실패:', tripRes?.message || '데이터 없음');
-    // }
->>>>>>> beb059f2a020a1b8d87a1eba79aaab837dc33daf
   } catch (err) {
     console.error('API 에러:', err);
     if (err.message?.includes('인증') || err.message?.includes('토큰')) {
@@ -133,11 +67,7 @@ console.log(localStorage.getItem('accessToken'))
 
 const goToNotification = () => router.push('/notification');
 // const goToGroupCreate = () => router.push("/groupcreate");
-<<<<<<< HEAD
 const goToMyPage = () => router.push("/mypage");
-=======
-const goToMyPage = () => router.push('/mypage');
->>>>>>> beb059f2a020a1b8d87a1eba79aaab837dc33daf
 </script>
 
 <template>
@@ -195,17 +125,9 @@ const goToMyPage = () => router.push('/mypage');
             <Wallet class="main-icon" />
             <span class="section-title">내 계좌</span>
           </div>
-<<<<<<< HEAD
           <AccountCard class="card" 
           v-if="userInfo.userId" 
           :user-id="userInfo.userId"
-=======
-          <AccountCard
-            class="card"
-            bankName="카카오뱅크"
-            accountNumber="111111111"
-            :balance="1000000"
->>>>>>> beb059f2a020a1b8d87a1eba79aaab837dc33daf
           />
         </section>
       </div>
