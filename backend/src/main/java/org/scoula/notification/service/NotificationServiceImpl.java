@@ -1,7 +1,7 @@
 package org.scoula.notification.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;;
+import lombok.extern.log4j.Log4j2;
 import org.scoula.notification.domain.NotificationVO;
 import org.scoula.notification.dto.NotificationDTO;
 import org.scoula.notification.mapper.NotificationMapper;

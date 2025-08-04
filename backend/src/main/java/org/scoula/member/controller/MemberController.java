@@ -17,6 +17,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -216,6 +217,10 @@ public class MemberController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(false, "FCM 토큰 저장 중 오류가 발생했습니다"));
         }
+    }
+    @GetMapping("/users/search/{nickname}")
+    public ResponseEntity<List<MemberSearchResponseDTO>> searchUsersByNickname(@PathVariable("nickname") String nickname) {
+        return ResponseEntity.ok(memberService.searchMembersByNickname(nickname));
     }
 
     // JWT 토큰에서 userId 추출 메서드

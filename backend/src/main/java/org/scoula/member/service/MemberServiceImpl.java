@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -325,5 +326,11 @@ public class MemberServiceImpl implements MemberService {
             log.error("사용자 ID 조회 중 오류 발생 - 닉네임 : {}, 오류 : {}", nickname, e.getMessage(), e);
             throw new UserNotFoundException("해당 닉네임의 사용자를 찾을 수 없습니다.");
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MemberSearchResponseDTO> searchMembersByNickname(String nickname) {
+        return memberMapper.searchUserByNickname(nickname).stream().map(MemberSearchResponseDTO::of).toList();
     }
 }
