@@ -10,6 +10,8 @@ import Home from '@/views/home/Home.vue';
 import settlementRoutes from '@/router/settlementRoutes.js';
 import memberRoutes from '@/router/memberRoutes.js';
 import paymentRoutes from './payment';
+import SettlementSummaryView from '../views/settlement/SettlementSummaryView.vue';
+import SettlementRequestView from '../views/settlement/SettlementRequestView.vue';
 import paymentlistRoutes from "@/router/paymentlistRoutes.js";
 import tripRoutes from "@/router/tripRoutes.js";
 import notificationRoutes from '@/router/notificationRoutes.js';
@@ -28,6 +30,7 @@ const router = createRouter({
         ...memberRoutes,
         ...paymentRoutes,
         ...paymentlistRoutes,
+        ...notificationRoutes,
         ...tripRoutes,
         ...reportRoutes,
       ],
