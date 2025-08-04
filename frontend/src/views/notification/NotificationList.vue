@@ -1,19 +1,53 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { ChevronDown, ChevronRight } from 'lucide-vue-next';
 import Header from '@/components/layout/Header.vue';
 
-// 로그인한 사용자 ID로 변경
-// const userId = 2; 
-
+const router = useRouter();
+const goBack = () => {
+  router.back();
+};
 
 const notificationStore = useNotificationStore();
 const { notifications } = storeToRefs(notificationStore);
 
 const showDropdown = ref(false);
 const selectedLabel = ref('전체');
+
+const goToPage = (n) => {
+
+  switch (n.notificationType) {
+    case 'TRANSACTION':
+      // 결제 상세 페이지로 이동
+      if (n.paymentId) {
+        router.push(`/paymentlist/${n.tripId}`);
+      }
+      break;
+    case 'SETTLEMENT':
+    case 'COMPLETED':
+    case 'REMINDER':
+      // 정산 요청 페이지
+      router.push(`/settlement/${n.tripId}`);
+      break;
+    case 'INVITE':
+      if (!n.memberStatus) {
+        router.push(`/trip/join/${n.tripId}`)
+      } else {
+        router.push(`/trip/${n.tripId}`)
+      }
+      break;
+      
+    case 'GROUP_EVENT':
+      // 그룹 상세 페이지
+      router.push(`/trip/${n.tripId}`);
+      break;
+    default:
+      alert('지원하지 않는 알림 유형입니다.');
+  }
+};
 
 const tabs = [
   { label: '전체', value: 'ALL' },
@@ -30,10 +64,6 @@ const selectCategory = (tab) => {
   selectedLabel.value = tab.label;
   showDropdown.value = false;
 
-  //테스트
-  // notificationStore.getNotifications(userId, tab.value);
-
-  // 실제
   notificationStore.getNotifications(tab.value);
 };
 
@@ -47,11 +77,10 @@ const formatAmount = (value) => {
 };
 
 onMounted(() => {
-  // 테스트
-  // notificationStore.getNotifications(userId);
-  
-  // 실제 적용
   notificationStore.getNotifications()
+  .then(() => {
+      console.log('notifications:', notifications.value);
+    })
 });
 
 const getMessage = (n) => {
@@ -91,132 +120,131 @@ const getMessage = (n) => {
 </script>
 
 <template>
-  <div class="layout-wrapper">
-    <Header title="알림"/>
-    <!-- 드롭다운 고정 -->
-    <div class="dropdown sticky-category">
-      <button class="dropdown-btn" @click="toggleDropdown">
-        {{ selectedLabel }}
-        <ChevronDown class="dropdown-icon" />
-      </button>
-      <ul v-if="showDropdown" class="dropdown-menu">
-        <li v-for="tab in tabs" :key="tab.value" @click="selectCategory(tab)">
-          {{ tab.label }}
-        </li>
-      </ul>
-      <hr />
-    </div>
-    <br>
-    <!-- 카드 리스트 스크롤 영역 -->
-    <main class="scroll-area">
-      <div class="notification-card"
-           v-for="n in notifications"
-           :key="n.notificationId"
-           :class="{'read': n.isRead}"
-           @click="handleCardClick(n)">
-        <div class="card-content">
-          <p class="card-title" v-if="n.notificationType !== 'INVITE' || n.memberStatus === 'JOINED' || n.memberStatus === 'LEFT'">
-            [{{ n.tripName }}]
-          </p>
-          <p class="card-body">{{ getMessage(n) }}</p>
-          <p class="card-time">{{ n.sendAt.split('.')[0].substring(0, 16) }}</p>
-        </div>
-        <ChevronRight class="card-arrow" />
+  <div class="notification-content">
+    <div class="header-section">
+      <Header title="알림" :backAction="goBack"/>
+      
+      <div class="dropdown-wrapper">
+        <button class="dropdown-toggle" @click="toggleDropdown">
+          {{ selectedLabel }}
+          <ChevronDown class="icon" />
+        </button>
+        <ul v-if="showDropdown" class="dropdown-list">
+          <li v-for="tab in tabs" :key="tab.value" @click="selectCategory(tab)">
+           {{ tab.label }}
+          </li>
+        </ul>
       </div>
-    </main>
+      <div class="dropdown-divider"></div>
+    </div>
+
+    <!-- 카드 리스트 스크롤 영역 -->
+    <div class="scroll">
+      <main class="scroll-area">
+        <div class="notification-card"
+             v-for="n in notifications"
+             :key="n.notificationId"
+             :class="{'read': n.isRead}"
+             @click="handleCardClick(n)">
+          <div class="card-content">
+            <p class="card-title" v-if="n.notificationType !== 'INVITE' || n.memberStatus === 'JOINED' || n.memberStatus === 'LEFT'">
+              [{{ n.tripName }}]
+            </p>
+            <p class="card-body">{{ getMessage(n) }}</p>
+            <p class="card-time">{{ n.sendAt.split('.')[0].substring(0, 16) }}</p>
+          </div>
+          <ChevronRight class="card-arrow" @click.stop="goToPage(n)"/>
+        </div>
+      </main>
+    </div>
   </div>
+  
+      
+   
 </template>
 
 <style scoped>
-
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap');
-
-* {
-  font-family: 'IBM Plex Sans KR', sans-serif;
-}
-
-/* 전체 레이아웃 */
-.layout-wrapper {
+.notification-content{
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  background-color: #f9fafb;
-  width: 100%;
-  height: 100vh;
+  background: #f8fafc;
   overflow: hidden;
+  font-family: 'IBM Plex Sans KR', sans-serif;
+}
+.header-section{
+  margin-right: 14px;
+  margin-left: 14px;
+  margin-bottom: 20%;
 }
 
-/* 드롭다운 고정 */
-.sticky-category {
-  position: fixed;
-  top: 56px; /* 헤더 높이 */
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 32px);
-  max-width: 414px;
-  background: #f9fafb;
-  z-index: 150;
-  padding: 8px 23px;
-  box-sizing: border-box;
-}
-
-/* 카드 스크롤 영역 */
-.scroll-area {
-  overflow-y: auto;
-  width: 100%;
-  max-width: 414px;
-  padding: 120px 16px 16px; /* 헤더(56px) + 드롭다운 높이 확보 */
-  box-sizing: border-box;
-  flex: 1;
-}
-
-/* 드롭다운 스타일 */
-.dropdown-btn {
+.dropdown-wrapper {
+  background: #f8fafc;
   font-size: 14px;
+  margin: 60px 0;
   width: 100%;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 15px;
-  background-color: #f9fafb;
-  text-align: left;
-  cursor: pointer;
+  display: flex;
+  position: relative;
+}
+.dropdown-toggle {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  background: #f8fafc;
+  border: 1px #ccc;
+  border-radius: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-
-.dropdown-icon {
-  width: 18px;
-  height: 18px;
-}
-
-.dropdown-menu {
-  font-size: 14px;
+.dropdown-list {
   position: absolute;
-  top: 60%;
+  top: 20%;
   width: 40%;
-  text-align: center;
-  border: 1px solid #ddd;
-  border-radius: 15px;
-  background: #fff;
-  list-style: none;
-  margin: 4px 0 0;
+  margin: 0;
   padding: 0;
+  text-align: center;
+  background-color: #fff;
+  border-radius: 15px;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  list-style: none;
+  z-index: 9999;
 }
-
-.dropdown-menu li {
-  padding: 10px;
+.dropdown-list li {
+  padding: 12px;
   cursor: pointer;
 }
-
-.dropdown-menu li:hover {
+.dropdown-list li:hover {
   background-color: #f0f0f0;
 }
 
-/* 카드 스타일 */
+.dropdown-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #babec4; 
+  margin-top: -60px; 
+}
+
+.icon{
+  width: 20px;
+  height: 20px;
+}
+
+.scroll{
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 1%;
+  border-radius: 1.5rem;
+}
+
 .notification-card {
   background: #fff;
-  padding: 14px 12px;
+  padding: 14px 14px;
+  margin-right: 1%;
+  margin-left: 1%;
+  
   border-bottom: 1px solid #e5e7eb; /* 리스트 느낌 */
   display: flex;
   justify-content: space-between;
