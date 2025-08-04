@@ -1,10 +1,7 @@
 <template>
-  <div 
-  class="filter-bar"
-  @click="resetFilter"
-  >
+  <div class="filter-bar">
     <!-- 리셋 아이콘 -->
-    <RotateCcw class="reset-icon" />
+    <RotateCcw class="reset-icon" @click="resetFilter"/>
 
     <!-- 날짜 필터 버튼 -->
     <!-- 버튼 active 조건: 필터 열려 있거나 적용되어 있을 때 -->
@@ -162,7 +159,7 @@ const isDateFiltered = computed(() => {
 })
 
 // const isCategoryFiltered = computed(() => categoryFilter.value !== null);
-// const isParticipantsFiltered = computed(() => participantsFilter.value.length > 0);
+const isParticipantsFiltered = computed(() => selectedMembers.value.length > 0);
 
 // 날짜 모달 토글 함수
 const toggleDateModal = () => {
@@ -207,11 +204,17 @@ const applyDateFilter = () => {
 
 // 리셋 클릭: 초기 상태로
 const resetFilter = () => {
-    console.log("click resetFilter")
+  console.log("click resetFilter")
+
+  // 날짜 필터링 초기화
   hasApplied.value = false
   pickerRange.value = [ props.startDate, today ]
   console.log("reset date: ", pickerRange.value[0], pickerRange.value[1])
   emit('date-filtered', { start: '', end: '' })
+
+  // 결제 참여자 필터링 초기화
+  selectedMembers.value = [];
+  emit('participant-filtered', []); // 빈 배열로 초기화 알림
 }
 
 const toggleCategoryModal = async () => {
