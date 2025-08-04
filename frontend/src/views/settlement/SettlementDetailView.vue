@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia';
 import Header from '../../components/layout/Header2.vue';
 import { useSettlementStore } from '@/stores/settlementStore';
 import { useRoute, useRouter } from 'vue-router';
-import {SquareCheckBig} from "lucide-vue-next";
+import { SquareCheckBig } from 'lucide-vue-next';
 
 // ✅ Pinia Store 사용
 const settlementStore = useSettlementStore();
@@ -41,21 +41,21 @@ const buttonState = computed(() => {
     return {
       text: '송금하기',
       action: 'transfer',
-      disabled: false
+      disabled: false,
     };
   } else if (hasReceiveAmount) {
     // 보낼 돈은 없고 받을 돈만 있는 경우
     return {
       text: '확인',
       action: 'confirm',
-      disabled: false
+      disabled: false,
     };
   } else {
     // 보낼 돈도 받을 돈도 없는 경우
     return {
       text: '확인',
       action: 'confirm',
-      disabled: false
+      disabled: false,
     };
   }
 });
@@ -103,9 +103,10 @@ const confirmTransfer = async () => {
     await settlementStore.fetchMySettlement(tripId);
 
     // 받을 돈이 아직 미완료 상태인지 확인
-    const hasIncompleteToReceive = mySettlementData.value?.toReceive?.some(
-        tx => tx.status !== 'COMPLETED'
-    ) || false;
+    const hasIncompleteToReceive =
+      mySettlementData.value?.toReceive?.some(
+        (tx) => tx.status !== 'COMPLETED'
+      ) || false;
 
     if (hasIncompleteToReceive) {
       // 송금 완료 + 받을 돈 미완료 → pending
@@ -114,7 +115,6 @@ const confirmTransfer = async () => {
       // 송금 완료 + 받을 돈 완료 → completed
       router.push(`/settlement/${tripId}/completed`);
     }
-
   } catch (err) {
     router.push(`/settlement/${tripId}/failure`);
   }
@@ -144,11 +144,16 @@ const confirmTransfer = async () => {
       <div class="settlement-card">
         <p class="card-title text-theme-text">받을 돈</p>
         <div class="transaction-list">
-          <div v-if="mySettlementData.toReceive && mySettlementData.toReceive.length > 0">
+          <div
+            v-if="
+              mySettlementData.toReceive &&
+              mySettlementData.toReceive.length > 0
+            "
+          >
             <div
-                v-for="tx in mySettlementData.toReceive"
-                :key="tx.settlementId"
-                class="transaction-item"
+              v-for="tx in mySettlementData.toReceive"
+              :key="tx.settlementId"
+              class="transaction-item"
             >
               <div class="member-info">
                 <div class="avatar">
@@ -156,23 +161,25 @@ const confirmTransfer = async () => {
                 </div>
                 <div class="member-text">
                   <div class="name-with-badge">
-              <span class="font-semibold text-sm text-theme-text">
-                {{ tx.senderNickname || '알 수 없음' }}
-              </span>
+                    <span class="font-semibold text-sm text-theme-text">
+                      {{ tx.senderNickname || '알 수 없음' }}
+                    </span>
                     <!-- 상태가 COMPLETED일 때만 체크 아이콘 표시 -->
                     <SquareCheckBig
-                        v-if="tx.status === 'COMPLETED'"
-                        class="status-icon"
+                      v-if="tx.status === 'COMPLETED'"
+                      class="status-icon"
                     />
                   </div>
                 </div>
               </div>
               <span class="amount text-theme-text">
-          {{ tx.amount?.toLocaleString() || 0 }}원
-        </span>
+                {{ tx.amount?.toLocaleString() || 0 }}원
+              </span>
             </div>
           </div>
-          <p v-else class="empty-message text-theme-text">받을 돈이 없습니다.</p>
+          <p v-else class="empty-message text-theme-text">
+            받을 돈이 없습니다.
+          </p>
         </div>
       </div>
 
@@ -180,11 +187,13 @@ const confirmTransfer = async () => {
       <div class="settlement-card">
         <p class="card-title">보낼 돈</p>
         <div class="transaction-list">
-          <div v-if="mySettlementData.toSend && mySettlementData.toSend.length > 0">
+          <div
+            v-if="mySettlementData.toSend && mySettlementData.toSend.length > 0"
+          >
             <div
-                v-for="tx in mySettlementData.toSend"
-                :key="tx.settlementId"
-                class="transaction-item"
+              v-for="tx in mySettlementData.toSend"
+              :key="tx.settlementId"
+              class="transaction-item"
             >
               <div class="member-info">
                 <div class="avatar">
@@ -192,20 +201,20 @@ const confirmTransfer = async () => {
                 </div>
                 <div class="member-text">
                   <div class="name-with-badge">
-              <span class="font-semibold text-sm">
-                {{ tx.receiverNickname || '알 수 없음' }}
-              </span>
+                    <span class="font-semibold text-sm">
+                      {{ tx.receiverNickname || '알 수 없음' }}
+                    </span>
                     <!-- 상태가 COMPLETED일 때만 체크 아이콘 표시 -->
                     <SquareCheckBig
-                        v-if="tx.status === 'COMPLETED'"
-                        class="status-icon"
+                      v-if="tx.status === 'COMPLETED'"
+                      class="status-icon"
                     />
                   </div>
                 </div>
               </div>
               <span class="amount">
-          {{ tx.amount?.toLocaleString() || 0 }}원
-        </span>
+                {{ tx.amount?.toLocaleString() || 0 }}원
+              </span>
             </div>
           </div>
           <p v-else class="empty-message">보낼 돈이 없습니다.</p>
@@ -215,17 +224,21 @@ const confirmTransfer = async () => {
 
     <footer class="footer">
       <button
-          @click="handleButtonClick"
-          class="next-button"
-          :disabled="buttonState.disabled"
+        @click="handleButtonClick"
+        class="next-button"
+        :disabled="buttonState.disabled"
       >
-        {{buttonState.text}}
+        {{ buttonState.text }}
       </button>
     </footer>
   </div>
 
   <!-- ✅ 송금하기 모달 -->
-  <div v-if="showTransferModal && buttonState.action === 'transfer'" class="modal-overlay" @click="cancelTransfer">
+  <div
+    v-if="showTransferModal && buttonState.action === 'transfer'"
+    class="modal-overlay"
+    @click="cancelTransfer"
+  >
     <div class="transfer-modal" @click.stop>
       <!-- 아이콘 -->
       <div class="modal-icon"></div>

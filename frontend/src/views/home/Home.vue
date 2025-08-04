@@ -1,16 +1,17 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
-import { storeToRefs } from "pinia";
+import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
 
-import AccountCard from './AccountCard.vue'
-import TravelInformationCard from './TravelInformationCard.vue'
-import SettlementCard from './SettlementCard.vue'
-import Footer from "@/components/layout/Footer.vue";
+import AccountCard from './AccountCard.vue';
+import TravelInformationCard from './TravelInformationCard.vue';
+import SettlementCard from './SettlementCard.vue';
+import Footer from '@/components/layout/Footer.vue';
 
-import tripApi from "@/api/tripApi.js";
-import axios from 'axios'
+import tripApi from '@/api/tripApi.js';
+import axios from 'axios';
 import { useAuthStore } from '@/stores/authStore.js';
+import { getMyUnsettledTrips } from '@/api/settlementApi.js';
 // import {getMyInfo} from '@/api/memberApi.js'
 
 import {
@@ -45,10 +46,14 @@ onMounted(async () => {
     }
 
     // 미정산 내역
+<<<<<<< HEAD
+    const response = await getMyUnsettledTrips();
+=======
     const token = localStorage.getItem('accessToken');
     const response = await axios.get('/api/settlements/unsettled/me', {
       headers: { Authorization: `Bearer ${token}` },
     });
+>>>>>>> ecce82160e04246cc008eb51d62744a45ea97b6f
     unsettledList.value = response.data;
 
     // // getMyInfo() 사용 (userId 파라미터 불필요)
