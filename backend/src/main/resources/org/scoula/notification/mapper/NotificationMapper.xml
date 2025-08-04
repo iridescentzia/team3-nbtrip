@@ -33,7 +33,7 @@
                  LEFT JOIN payment p ON n.payment_id = p.payment_id
                  LEFT JOIN merchant m ON p.merchant_id = m.merchant_id
         WHERE
-            (n.notification_type IN ('INVITE', 'SETTLEMENT', 'REMINDER') AND n.user_id = #{userId})
+            (n.notification_type IN ('INVITE', 'SETTLEMENT', 'REMINDER', 'TRANSACTION') AND n.user_id = #{userId})
            OR
             (n.notification_type IN ('TRANSACTION_CREATE', 'TRANSACTION_UPDATE') AND n.trip_id IN (
                 SELECT trip_id FROM trip_member WHERE user_id = #{userId}
@@ -102,9 +102,7 @@
         WHERE
             (n.notification_type IN ('SETTLEMENT', 'REMINDER') AND n.user_id = #{userId})
            OR
-            (n.notification_type = 'COMPLETED' AND n.user_id = #{userId} AND n.trip_id IN (
-                SELECT trip_id FROM trip_member WHERE user_id = #{userId}
-            ))
+            (n.notification_type = 'COMPLETED' AND n.user_id = #{userId})
         ORDER BY n.send_at DESC
     </select>
 

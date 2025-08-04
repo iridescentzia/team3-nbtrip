@@ -1,5 +1,6 @@
 import './assets/styles/main.css';
 import './firebase.js'
+import { requestPermissionAndGetToken } from './firebase.js';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 
@@ -21,6 +22,7 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/firebase-messaging-sw.js')
     .then((registration) => {
       console.log('서비스 워커 등록 성공:', registration);
+      requestPermissionAndGetToken(registration);
     })
     .catch((err) => {
       console.log('서비스 워커 등록 실패:', err);
