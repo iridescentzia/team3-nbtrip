@@ -67,12 +67,23 @@ async function submitPayment() {
 
           <div class="input-group">
             <label for="amount">결제 금액</label><br />
-            <input
-              id="amount"
-              v-model.number="store.amount"
-              type="number"
-              placeholder="예: 55000"
-            />
+            <div style="display: flex; align-items: center">
+              <input
+                id="amount"
+                :value="store.amount ? store.amount.toLocaleString() : ''"
+                @input="
+                  (e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    store.amount = Number(val);
+                    e.target.value = val ? Number(val).toLocaleString() : '';
+                  }
+                "
+                type="text"
+                placeholder="예: 55,000"
+                style="padding-right: 12px; vertical-align: middle; flex: 1"
+              />
+              <span style="margin-left: 8px">원</span>
+            </div>
           </div>
 
           <div class="input-group">
