@@ -28,20 +28,16 @@ load();
 </script>
 
 <template>
-  <div class="view-wrapper">
-    <div class="trip-create-view">
-      <Header title="그룹 참여"/>
-      <div class="content-container">
-        <img src="@/assets/img/smiling_cat.png"/>
-        <div class="trip-info" v-if="tripDetails">
-          <h2>[{{tripDetails.tripName}}]의<br>
-            멤버가 되셨어요!
-          </h2>
-        </div>
-        <p>여행 정보를 확인해보세요!</p>
-        <Button class="next-btn" @click="toNextPage" label="여행 정보로 이동하기"/>
-      </div>
+  <Header title="그룹 참여"/>
+  <div class="content-container">
+    <img src="@/assets/img/smiling_cat.png"/>
+    <div class="trip-info" v-if="tripDetails">
+      <h2>[{{tripDetails.tripName}}]의<br>
+        멤버가 되셨어요!
+      </h2>
     </div>
+    <p>여행 정보를 확인해보세요!</p>
+    <Button class="next-btn" @click="toNextPage" label="여행 정보로 이동하기"/>
   </div>
 </template>
 

@@ -46,23 +46,19 @@ load();
 </script>
 
 <template>
-  <div class="view-wrapper">
-    <div class="trip-create-view">
-      <Header title="새로운 여행 만들기"/>
-      <div class="content-container">
-        <img src="@/assets/img/airplane_right.png"/>
-        <div class="trip-info" v-if="tripDetails && ownerData && tripDetails.members">
-          <h2>[{{tripDetails.tripName}}]</h2>
-          <p>
-            • 여행 기간: {{formatDate(tripDetails.startDate)}} ~ {{formatDate(tripDetails.endDate)}}<br>
-            • 여행 인원: {{tripDetails.members.length}}<br>
-            • 그룹 본부장: {{ownerData.name}}<br>
-          </p>
-        </div>
-        <h3>참여하시겠습니까?</h3>
-        <Button class="next-btn" @click="toNextPage" label="참여하기"/>
-      </div>
+  <Header title="새로운 여행 만들기"/>
+  <div class="content-container">
+    <img src="@/assets/img/airplane_right.png"/>
+    <div class="trip-info" v-if="tripDetails && ownerData && tripDetails.members">
+      <h2>[{{tripDetails.tripName}}]</h2>
+      <p>
+        • 여행 기간: {{formatDate(tripDetails.startDate)}} ~ {{formatDate(tripDetails.endDate)}}<br>
+        • 여행 인원: {{tripDetails.members.length}}<br>
+        • 그룹 본부장: {{ownerData.name}}<br>
+      </p>
     </div>
+    <h3>참여하시겠습니까?</h3>
+    <Button class="next-btn" @click="toNextPage" label="참여하기"/>
   </div>
 </template>
 

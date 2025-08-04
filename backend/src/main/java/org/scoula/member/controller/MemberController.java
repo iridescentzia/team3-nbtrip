@@ -9,7 +9,9 @@ import org.scoula.member.exception.InvalidTokenException;
 import org.scoula.member.exception.UserNotFoundException;
 import org.scoula.member.service.MemberService;
 import org.scoula.security.util.JwtProcessor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +27,82 @@ public class MemberController {
     private final MemberService memberService;
     private final JwtProcessor jwtProcessor;
 
-    // 1. 닉네임 중복 확인(POST /api/uses/check-nickname)
+    // 🔥 새로 추가: Firebase 서비스 워커 파일 서빙 (MIME 타입 문제 해결)
+    @GetMapping({"/firebase-messaging-sw.js", "/api/firebase-messaging-sw.js"})
+    public ResponseEntity<String> getFirebaseServiceWorker() {
+        try {
+            log.info("🔥 Firebase 서비스 워커 요청");
+
+            String content = """
+                    // NbbangTrip Firebase Service Worker
+                    console.log('🔥 NbbangTrip Firebase Service Worker 시작');
+                    
+                    importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
+                    importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
+                    
+                    const firebaseConfig = {
+                        apiKey: "AIzaSyDdGlnwurgQGdbDfPRbx0Gh2ZZ2G8AUBag",
+                        authDomain: "nbtrip-push.firebaseapp.com",
+                        projectId: "nbtrip-push",
+                        storageBucket: "nbtrip-push.firebasestorage.app",
+                        messagingSenderId: "312093298222",
+                        appId: "1:312093298222:web:0a37dc9fdf32be875819bf"
+                    };
+                    
+                    try {
+                        firebase.initializeApp(firebaseConfig);
+                        const messaging = firebase.messaging();
+                        console.log('✅ Firebase 초기화 완료');
+                        
+                        messaging.onBackgroundMessage((payload) => {
+                            console.log('📱 백그라운드 메시지:', payload);
+                            const title = payload.notification?.title || '여행 그룹 알림';
+                            const options = {
+                                body: payload.notification?.body || '새로운 알림',
+                                icon: '/favicon.ico',
+                                tag: 'nbbang-trip'
+                            };
+                            self.registration.showNotification(title, options);
+                        });
+                        
+                        self.addEventListener('notificationclick', (event) => {
+                            event.notification.close();
+                            event.waitUntil(clients.openWindow('/'));
+                        });
+                        
+                    } catch (error) {
+                        console.error('Firebase 초기화 실패:', error);
+                    }
+                    
+                    self.addEventListener('install', () => {
+                        console.log('Service Worker 설치');
+                        self.skipWaiting();
+                    });
+                    
+                    self.addEventListener('activate', () => {
+                        console.log('Service Worker 활성화');
+                        self.clients.claim();
+                    });
+                    
+                    console.log('🎉 Firebase Service Worker 준비 완료');
+                    """;
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("application/javascript; charset=UTF-8"));
+            headers.setCacheControl("no-cache, no-store, must-revalidate");
+            headers.setPragma("no-cache");
+            headers.setExpires(0);
+
+            log.info("✅ Firebase 서비스 워커 서빙 완료");
+            return new ResponseEntity<>(content, headers, HttpStatus.OK);
+
+        } catch (Exception e) {
+            log.error("❌ Firebase 서비스 워커 오류", e);
+            return ResponseEntity.status(500).body("console.log('Service Worker Error');");
+        }
+    }
+
+    // 1. 닉네임 중복 확인(POST /api/users/check-nickname)
     @PostMapping("/users/check-nickname")
     public ResponseEntity<ApiResponse> checkNickname(@Valid @RequestBody MemberNicknameCheckDTO dto) {
         log.info("닉네임 중복 확인 요청 - 닉네임: {}", dto.getNickname());
@@ -40,23 +117,38 @@ public class MemberController {
         }
     }
 
-    // 2. 회원가입(POST /api/auth/register)
+    // 2. 회원가입(POST /api/auth/register) - FCM 토큰 선택사항 처리
     @PostMapping("/auth/register")
     public ResponseEntity<ApiResponse> register(@Valid @RequestBody MemberDTO memberDTO, BindingResult bindingResult) {
-        log.info("회원가입 요청 - 이메일 : {}", memberDTO.getEmail());
+        log.info("🔐 NbbangTrip 회원가입 요청 - 이메일: {}", memberDTO.getEmail());
 
         // 요청 파라미터 유효성 검사
         if(bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getFieldErrors().get(0).getDefaultMessage();
+            log.warn("회원가입 유효성 검사 실패: {}", errorMessage);
             return ResponseEntity.badRequest().body(new ApiResponse(false, errorMessage));
-        } try {
+        }
+
+        try {
+            // FCM 토큰이 있는지 로그로 확인 (디버깅용)
+            String fcmToken = memberDTO.getFcmToken();
+            if (fcmToken != null && !fcmToken.trim().isEmpty()) {
+                log.info("회원가입 시 FCM 토큰 포함: {}...", fcmToken.substring(0, Math.min(20, fcmToken.length())));
+            } else {
+                log.info("회원가입 시 FCM 토큰 없음 (로그인 시 설정 예정)");
+            }
+
             ApiResponse response = memberService.registerMember(memberDTO);
+            log.info("✅ 회원가입 성공 - 이메일: {}", memberDTO.getEmail());
+
             return ResponseEntity.ok(response);
         } catch (DuplicateEmailException | DuplicateNicknameException e) {
+            log.warn("회원가입 실패 - 중복 데이터: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(false, e.getMessage()));
         } catch (Exception e) {
-            log.error("회원가입 에러 : {}", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse(false, "서버 오류"));
+            log.error("❌ 회원가입 서버 오류 - 이메일: {}, 오류: {}", memberDTO.getEmail(), e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "서버 오류가 발생했습니다"));
         }
     }
 
@@ -68,33 +160,62 @@ public class MemberController {
             MemberResponseDTO member = memberService.getMemberInfo(userId);
             return ResponseEntity.ok(member);
         } catch (UserNotFoundException e) {
-            log.warn("유저 없음 : {}", e.getMessage());
+            log.warn("유저 없음 - userId: {}, 오류: {}", userId, e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, e.getMessage()));
         } catch (Exception e) {
-            log.error("회원 정보 조회 실패", e);
+            log.error("❌ 회원 정보 조회 실패 - userId: {}", userId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse(false, "서버 오류"));
         }
     }
 
-    // 4. FCM 토큰 갱신(PUT /api/users/fcm-token)
+    // 4. FCM 토큰 갱신(PUT /api/users/fcm-token) - 여행 그룹 알림용
     @PutMapping("/users/fcm-token")
     public ResponseEntity<ApiResponse> updateFcmToken(
-            @Valid @RequestBody MemberFcmTokenDTO memberFcmTokenDTO, BindingResult bindingResult,
+            @Valid @RequestBody MemberFcmTokenDTO memberFcmTokenDTO,
+            BindingResult bindingResult,
             @RequestHeader("Authorization") String authorizationHeader) {
 
         // 유효성 검사
         if(bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getFieldErrors().get(0).getDefaultMessage();
+            log.warn("FCM 토큰 갱신 유효성 검사 실패: {}", errorMessage);
             return ResponseEntity.badRequest().body(new ApiResponse(false, errorMessage));
-        } try {
+        }
+
+        try {
             int userId = extractUserIdFromJwt(authorizationHeader);
+
+            // FCM 토큰 유효성 추가 검증
+            String fcmToken = memberFcmTokenDTO.getFcmToken();
+            if (fcmToken == null || fcmToken.trim().isEmpty()) {
+                log.warn("FCM 토큰 갱신 실패 - 빈 토큰, userId: {}", userId);
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "유효하지 않은 FCM 토큰입니다"));
+            }
+
+            if (fcmToken.length() < 50) {
+                log.warn("FCM 토큰 갱신 실패 - 토큰 길이 부족, userId: {}, 길이: {}", userId, fcmToken.length());
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "FCM 토큰 형식이 올바르지 않습니다"));
+            }
+
             memberService.updateFcmToken(userId, memberFcmTokenDTO);
-            return ResponseEntity.ok(new ApiResponse(true, "FCM 토큰 갱신 완료"));
-        } catch (UserNotFoundException | InvalidTokenException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(false, e.getMessage()));
+
+            log.info("✅ FCM 토큰 갱신 성공 - userId: {}, 토큰: {}...",
+                    userId, fcmToken.substring(0, 20));
+            log.info("🔔 여행 그룹 실시간 알림 서비스 활성화 완료 - userId: {}", userId);
+
+            return ResponseEntity.ok(new ApiResponse(true, "여행 그룹 알림 서비스 활성화 완료"));
+        } catch (UserNotFoundException e) {
+            log.warn("FCM 토큰 갱신 실패 - 사용자 없음: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, e.getMessage()));
+        } catch (InvalidTokenException e) {
+            log.warn("FCM 토큰 갱신 실패 - JWT 토큰 문제: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false, e.getMessage()));
         } catch (Exception e) {
-            log.error("FCM 토큰 갱신 실패", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse(false, "서버 오류"));
+            log.error("❌ FCM 토큰 갱신 서버 오류", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "FCM 토큰 저장 중 오류가 발생했습니다"));
         }
     }
     @GetMapping("/users/search/{nickname}")
@@ -104,11 +225,23 @@ public class MemberController {
 
     // JWT 토큰에서 userId 추출 메서드
     private int extractUserIdFromJwt(String authorizationHeader) {
-        if(authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) { throw new InvalidTokenException("JWT 토큰이 없습니다."); };
+        if(authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            log.warn("JWT 토큰 추출 실패 - Authorization 헤더 없음 또는 형식 오류");
+            throw new InvalidTokenException("JWT 토큰이 없습니다.");
+        }
+
         String token = authorizationHeader.substring(7);
-        if(!jwtProcessor.validateToken(token)) { throw new InvalidTokenException("유효하지 않은 JWT 토큰입니다."); }
+        if(!jwtProcessor.validateToken(token)) {
+            log.warn("JWT 토큰 검증 실패 - 유효하지 않은 토큰");
+            throw new InvalidTokenException("유효하지 않은 JWT 토큰입니다.");
+        }
+
         Integer userId = jwtProcessor.getUserId(token);
-        if(userId == null) { throw new InvalidTokenException("JWT 토큰에서 사용자 ID를 찾을 수 없습니다."); }
+        if(userId == null) {
+            log.warn("JWT 토큰에서 userId 추출 실패");
+            throw new InvalidTokenException("JWT 토큰에서 사용자 ID를 찾을 수 없습니다.");
+        }
+
         return userId;
     }
 
@@ -117,8 +250,25 @@ public class MemberController {
     public ResponseEntity<ApiResponse> verifyPassword(
             @RequestHeader("Authorization") String authHeader,
             @Valid @RequestBody MemberPasswordDTO dto) {
-        int userId = extractUserIdFromJwt(authHeader);
-        boolean verified = memberService.verifyPassword(userId, dto.getCurrentPassword());
-        return ResponseEntity.ok(new ApiResponse(true, "비밀번호 확인 성공"));
+        try {
+            int userId = extractUserIdFromJwt(authHeader);
+            boolean verified = memberService.verifyPassword(userId, dto.getCurrentPassword());
+
+            if (verified) {
+                log.info("비밀번호 검증 성공 - userId: {}", userId);
+                return ResponseEntity.ok(new ApiResponse(true, "비밀번호 확인 성공"));
+            } else {
+                log.warn("비밀번호 검증 실패 - userId: {}", userId);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse(false, "비밀번호가 일치하지 않습니다"));
+            }
+        } catch (InvalidTokenException e) {
+            log.warn("비밀번호 검증 실패 - JWT 토큰 문제: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false, e.getMessage()));
+        } catch (Exception e) {
+            log.error("❌ 비밀번호 검증 서버 오류", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, "서버 오류가 발생했습니다"));
+        }
     }
 }

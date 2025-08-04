@@ -13,19 +13,6 @@ const showList = ref(false);
 const options = ref([]);
 const addedItems = ref([]);
 
-// function debounce(fn, delay) {
-//   var timer;
-//   return (...args) => {
-//     clearTimeout(timer);
-//     timer = setTimeout(() => fn(...args), delay);
-//   };
-// }
-//
-//
-// const debouncedFetch = debounce((value) => {
-//   getOptions(value);
-// }, 300);
-
 var timer;
 const debouncedFetch = value => {
   clearTimeout(timer);
@@ -113,73 +100,69 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="view-wrapper">
-    <div class="trip-invite-view">
-      <Header title="멤버 초대하기"/>
-      <div class="content-container">
-        <div class="info-box">
-          <p class="trip_title">{{store.tripName}}</p>
-          <p class="guide">친구들을 초대하고</p>
-          <p class="guide">함께 여행을 계획하세요!</p>
-          <div class="tip-box">
-            <p class="tip-text"><Lightbulb :size="12" />모든 것을 완벽하게 하려고 하기보다, </p>
-            <p class="tip-text">예기치 못한 상황을 즐겨보세요!</p>
-          </div>
-        </div>
-        <div class="autocomplete" ref="wrapper" style="position: relative">
-          <p class="menu-label">회원 검색</p>
-          <div class="input-wrapper">
+  <Header title="멤버 초대하기"/>
+  <div class="content-container">
+    <div class="info-box">
+      <p class="trip_title">{{store.tripName}}</p>
+      <p class="guide">친구들을 초대하고</p>
+      <p class="guide">함께 여행을 계획하세요!</p>
+      <div class="tip-box">
+        <p class="tip-text"><Lightbulb :size="12" />모든 것을 완벽하게 하려고 하기보다, </p>
+        <p class="tip-text">예기치 못한 상황을 즐겨보세요!</p>
+      </div>
+    </div>
+    <div class="autocomplete" ref="wrapper" style="position: relative">
+      <p class="menu-label">회원 검색</p>
+      <div class="input-wrapper">
             <span class="unit-text">
               <Search size="20" />
             </span>
-            <input
-                class="input-box"
-                v-bind:value="inputValue"
-                @input="onInput"
-                @focus="showList = true"
-                type="text"
-                placeholder="닉네임으로 검색"
-            />
-          </div>
-          <div
-              v-if="showList && options.length"
-              class="autocomplete-list"
-          >
-            <div
-                class="autocomplete-item"
-                v-for="(option, index) in options"
-                :key="index"
-            >
-              <div class = "avatar avatar-sm">{{ option.nickname.charAt(0) }}</div>
-              <div class = "autocomplete-name">
-                {{ option.nickname }}
-                <button class="autocomplete-btn" @click.stop="onButtonClick(option)">초대하기</button>
-              </div>
-            </div>
-          </div>
-          <p class="menu-label">초대 목록</p>
-          <div v-if="addedItems.length" class="added-list">
-            <ul>
-              <li v-for="(item, idx) in addedItems" :key="idx">
-                <div class="added-item">
-                  <div class="avatar avatar-lg">{{ item.nickname.charAt(0)}}</div>
-                    <div class="list-item">
-                      {{ item.nickname }}
-                      <button @click="removeItem(idx)">삭제</button>
-                    </div>
-                </div>
-              </li>
-            </ul>
+        <input
+            class="input-box"
+            v-bind:value="inputValue"
+            @input="onInput"
+            @focus="showList = true"
+            type="text"
+            placeholder="닉네임으로 검색"
+        />
+      </div>
+      <div
+          v-if="showList && options.length"
+          class="autocomplete-list"
+      >
+        <div
+            class="autocomplete-item"
+            v-for="(option, index) in options"
+            :key="index"
+        >
+          <div class = "avatar avatar-sm">{{ option.nickname.charAt(0) }}</div>
+          <div class = "autocomplete-name">
+            {{ option.nickname }}
+            <button class="autocomplete-btn" @click.stop="onButtonClick(option)">초대하기</button>
           </div>
         </div>
-        <button
-            class="round-next-btn"
-            @click="createTrip"
-        >
-          <MoveRight/>
-        </button>
+      </div>
+      <p class="menu-label">초대 목록</p>
+      <div v-if="addedItems.length" class="added-list">
+        <ul>
+          <li v-for="(item, idx) in addedItems" :key="idx">
+            <div class="added-item">
+              <div class="avatar avatar-lg">{{ item.nickname.charAt(0)}}</div>
+              <div class="list-item">
+                {{ item.nickname }}
+                <button @click="removeItem(idx)">삭제</button>
+              </div>
+            </div>
+          </li>
+        </ul>
       </div>
     </div>
+    <button
+        class="round-next-btn"
+        @click="createTrip"
+    >
+      <MoveRight/>
+    </button>
   </div>
 </template>
 
@@ -188,40 +171,6 @@ onBeforeUnmount(() => {
 p{
   margin: 0;
 }
-.trip-invite-view {
-  --theme-primary: rgba(255, 209, 102, 0.65);
-  --theme-primary-dark: #e2c05e;
-  --theme-bg: #f8f9fa;
-  --theme-text: #333333;
-  --theme-text-light: #888888;
-}
-
-/* 화면 중앙 정렬을 위한 wrapper 스타일 */
-.view-wrapper {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  min-height: 100vh; /* 화면 전체 높이를 차지하도록 */
-  background-color: #ffffff;
-  padding: 2rem 0; /* 위아래 여백 추가 */
-}
-
-/* 전체 레이아웃 */
-.trip-invite-view {
-  z-index: 1;
-  width: 100%;
-  max-width: 24rem; /* 384px */
-  background-color: var(--theme-bg);
-  display: flex;
-  flex-direction: column;
-  border-radius: 1.5rem; /* 둥근 모서리 */
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); /* 그림자 효과 */
-  overflow: hidden; /* 둥근 모서리 적용을 위해 */
-  position: relative; /* Header 컴포넌트의 fixed 포지션 기준점 */
-  height: 844px; /* 특정 스마트폰 높이를 기준으로 고정 */
-  max-height: 90vh; /* 화면 높이의 90%를 넘지 않도록 설정 */
-}
-
 
 /* 메인 콘텐츠 */
 .content-container {

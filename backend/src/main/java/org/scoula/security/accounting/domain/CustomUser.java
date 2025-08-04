@@ -39,4 +39,5 @@ public class CustomUser extends User {
     public String getName() {
         return member != null ? member.getName() : null;
     }
+    public String getFcmToken() { return member != null ? member.getFcmToken() : null; }
 }

@@ -33,7 +33,7 @@ public enum BankCode {
     }
 
     public String getCode() { return code; }
-    //public String getName() { return name; }
+//    public String getName() { return name; }
 
     public static BankCode fromName(String name) {
         BankCode bankCode = NAME_MAP.get(name);
