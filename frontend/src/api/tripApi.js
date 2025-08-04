@@ -10,6 +10,7 @@ export default {
     async getTripDetail(tripId){
         const { data } = await api.get(`${BASE_URL}/${tripId}`);
         console.log("get tripDetail: " + tripId);
+        console.log("getTripDetail: ", data)
         return data
     },
     async createTrip(params) {

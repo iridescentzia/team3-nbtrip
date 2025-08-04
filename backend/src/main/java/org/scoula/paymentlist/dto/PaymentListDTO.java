@@ -16,6 +16,8 @@ public class PaymentListDTO {
 
     private String userId;
 
+    private String nickname;
+
     private String payAt;
 
     private int amount;
@@ -29,6 +31,7 @@ public class PaymentListDTO {
         return PaymentListDTO.builder()
                 .memo(vo.getMemo())
                 .userId(vo.getUserId())
+                .nickname(vo.getNickname())
                 .payAt(vo.getPayAt())
                 .amount(vo.getAmount())
                 .build();
@@ -41,6 +44,7 @@ public class PaymentListDTO {
         return PaymentListVO.builder()
                 .memo(this.memo)
                 .userId(this.userId)
+                .nickname(this.nickname)
                 .payAt(this.payAt)
                 .amount(this.amount)
                 .build();
