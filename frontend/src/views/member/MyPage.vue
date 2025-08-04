@@ -8,7 +8,8 @@ import {
   CircleUserRound,
   ChevronRight,
 } from 'lucide-vue-next';
-import { getMyInfo, logoutMember } from '@/api/memberApi.js'; // ✅ getMyInfo와 logoutMember import
+import { getMyInfo, logoutMember } from '@/api/memberApi.js';
+import tripApi from "@/api/tripApi.js";
 
 const router = useRouter();
 const userInfo = ref({ nickname: '', name: '' });
@@ -50,8 +51,6 @@ const logout = async () => {
 
     // 토큰 정리
     localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-
     console.log('로그아웃 성공, 로그인 페이지로 이동');
     router.push('/login');
   } catch (e) {
@@ -59,10 +58,18 @@ const logout = async () => {
 
     // 에러가 발생해도 토큰은 정리하고 로그인 페이지로 이동
     localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
     router.push('/login');
   }
 };
+
+// 지난 여행, 예정된 여행
+const readyTrips = ref([]);
+const closedTrips = ref([]);
+
+onMounted(async () => {
+  readyTrips.value = await tripApi.getTripsByStatus('READY');
+  closedTrips.value = await tripApi.getTripsByStatus('CLOSED');
+})
 </script>
 
 <template>
@@ -74,26 +81,26 @@ const logout = async () => {
       <!-- 프로필 이미지 + 닉네임 -->
       <div class="profile-section">
         <img
-          src="@/assets/img/airplane_left.png"
-          alt="프로필"
-          class="profile-img"
+            src="@/assets/img/airplane_left.png"
+            alt="프로필"
+            class="profile-img"
         />
         <div class="nickname">{{ userInfo.nickname || '김냥이' }}</div>
       </div>
 
       <!-- 아이콘 -->
       <div class="icon-section">
-        <div class="icon-wrapper" @click="goTo('/my/info')">
+        <div class="icon-wrapper" @click="goTo('/mypage/info')">
           <div class="icon-button"><CircleUserRound size="28" /></div>
           <span>회원 정보</span>
         </div>
         <!--      <div class="icon-wrapper" @click="goTo('/trips?status=ready')">-->
-        <div class="icon-wrapper">
+        <div class="icon-wrapper" @click="goTo('/mypage/ready-trip')">
           <div class="icon-button"><Briefcase size="28" /></div>
           <span>예정된 여행</span>
         </div>
         <!--      <div class="icon-wrapper" @click="goTo('/trips?status=closed')">-->
-        <div class="icon-wrapper">
+        <div class="icon-wrapper" @click="goTo('/mypage/closed-trip')">
           <div class="icon-button"><BriefcaseConveyorBelt size="28" /></div>
           <span>지난 여행</span>
         </div>
@@ -101,13 +108,13 @@ const logout = async () => {
 
       <!-- 메뉴 리스트 -->
       <div class="menu-list">
-        <div class="menu-item" @click="goTo('/my/payment')">
+        <div class="menu-item" @click="goTo('/mypage/payment')">
           결제 수단 관리 <ChevronRight class="arrow" />
         </div>
-        <div class="menu-item" @click="goTo('/faq')">
+        <div class="menu-item" @click="goTo('/mypage/faq')">
           공지사항 및 FAQ <ChevronRight class="arrow" />
         </div>
-        <div class="menu-item" @click="goTo('/terms')">
+        <div class="menu-item" @click="goTo('/mypage/terms')">
           이용 약관 <ChevronRight class="arrow" />
         </div>
       </div>
