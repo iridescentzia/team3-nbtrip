@@ -10,7 +10,7 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 const tripDetail = ref({
   tripName: '',
   startDate: '',
-  endDate: ''
+  endDate: '',
 });
 const tripStatus = ref('');
 const headerTitle = ref('');
@@ -103,14 +103,11 @@ load();
         :tripName="tripDetail.tripName"
         :startDate="tripDetail.startDate"
         :endDate="tripDetail.endDate"
+        :tripStatus="tripStatus"
         v-slot="{ activeTab }"
     >
-      <div v-if="activeTab === '그룹 지출 내역'">
-        지출 내역
-      </div>
-      <div v-else-if="activeTab === '선결제 내역'">
-        선결제 내역
-      </div>
+      <div v-if="activeTab === '그룹 지출 내역'">지출 내역</div>
+      <div v-else-if="activeTab === '선결제 내역'">선결제 내역</div>
       <div v-else>
         <label for="editName">여행 이름 수정</label><br>
         <input
@@ -157,8 +154,6 @@ load();
 </template>
 
 <style scoped>
-
-
 /* 메인 콘텐츠 */
 .content-container {
   flex-grow: 1;
@@ -237,6 +232,4 @@ div{
 .floating-pill-button:hover {
   background-color: var(--theme-primary-dark); /* 호버 시 조금 진한 색으로 변경 */
 }
-
-
 </style>

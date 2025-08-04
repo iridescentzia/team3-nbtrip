@@ -24,6 +24,7 @@ const props = defineProps({
 const emit = defineEmits(['back']);
 
 const handleBackClick = () => {
+  console.log('🔙 뒤로가기 클릭됨');
   if (props.backAction) {
     props.backAction();
   } else {
@@ -74,7 +75,6 @@ const handleBackClick = () => {
   background-color: #f9fafb;
   border-bottom: none; /* slate-200 */
   box-sizing: border-box;
-
 }
 
 .left,
