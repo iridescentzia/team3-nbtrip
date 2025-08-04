@@ -14,30 +14,27 @@ export const useTripStore = defineStore('trip', () => {
   };
 
   const currentTrip = computed(() => {
-    // 대한민국 시간 기준으로 오늘 날짜 00:00:00 생성
     const now = new Date();
     const todayKST = new Date(
       now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' })
     );
-    todayKST.setHours(0, 0, 0, 0); // KST 기준 오늘 00:00:00
+    todayKST.setHours(0, 0, 0, 0);
 
-    // 배열 반환
     return trips.value.find((trip) => {
       if (!trip.startDate || !trip.endDate) return false;
 
-      const [sy, sm, sd] = trip.startDate;
-      const [ey, em, ed] = trip.endDate;
-
-      const start = new Date(sy, sm - 1, sd);
-      const end = new Date(ey, em - 1, ed);
+      // 문자열 → Date 객체로 파싱
+      const start = new Date(trip.startDate);
+      const end = new Date(trip.endDate);
 
       return (
         trip.tripStatus === 'ACTIVE' &&
-        todayKST.getTime() >= start.getTime() &&
-        todayKST.getTime() <= end.getTime()
+        todayKST >= start &&
+        todayKST <= end
       );
     });
-  });
+});
+
 
   const currentTripMembers = ref([]);
 
