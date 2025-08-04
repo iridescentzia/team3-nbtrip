@@ -10,6 +10,7 @@ import org.scoula.trip.domain.TripVO;
 import org.scoula.trip.dto.TripCreateDTO;
 import org.scoula.trip.dto.TripDTO;
 import org.scoula.trip.dto.TripMemberDTO;
+import org.scoula.trip.dto.TripUpdateDTO;
 import org.scoula.trip.mapper.TripMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,8 +58,8 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
-    public int changeMemberStatus(int tripId, int userId) {
-        return mapper.changeMemberStatus(tripId, userId);
+    public int changeMemberStatus(int tripId, int userId, TripMemberStatus status) {
+        return mapper.changeMemberStatus(tripId, userId, status);
     }
 
     @Override
@@ -92,4 +93,25 @@ public class TripServiceImpl implements TripService {
                 .map(TripDTO::of)
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    @Override
+    public TripDTO updateTrip(TripUpdateDTO tripUpdateDTO) {
+        log.info("수정된 여행 정보: {}", tripUpdateDTO);
+
+        mapper.updateTrip(TripUpdateDTO.toVO(tripUpdateDTO));
+
+        if (tripUpdateDTO.getMembers() != null && !tripUpdateDTO.getMembers().isEmpty()) {
+            for (TripMemberDTO tripMemberDTO : tripUpdateDTO.getMembers()) {
+                try {
+                    changeMemberStatus(tripMemberDTO.getTripId(), tripMemberDTO.getUserId(), tripMemberDTO.getMemberStatus());
+                } catch (Exception e) {
+                    log.error("멤버 상태 변경 실패 (tripId={}, userId={}): {}",
+                            tripMemberDTO.getTripId(), tripMemberDTO.getUserId(), e.getMessage(), e);
+                }
+            }
+        }
+        return get(tripUpdateDTO.getTripId());
+    }
+
 }
