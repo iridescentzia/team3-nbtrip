@@ -198,7 +198,6 @@ public class NotificationServiceImpl implements NotificationService {
             }
             return;
         }
-    }
 
     // 알림 읽음 처리
     @Override
