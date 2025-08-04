@@ -53,7 +53,7 @@ async function submitPayment() {
             <p>결제할 가게의 QR코드를 인식해주세요.</p>
           </div>
 
-          <QRScanner />
+          <QRScanner style="height: 730px" />
 
           <div
             v-if="store.isModalVisible && store.modalType === 1"
@@ -139,53 +139,16 @@ async function submitPayment() {
 </template>
 
 <style scoped>
-/* Default Layout */
-.layout-wrapper {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  min-height: 100vh;
-  background-color: #f9fafb; /* 기존 Tailwind 'bg-gray-50' */
-  position: relative;
-  overflow: hidden;
-}
-
-.content {
-  padding-top: 56px;
-  width: 100%;
-  max-width: 414px;
-  flex: 1;
-  padding: 16px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* 자식 요소들을 가운데 정렬 */
-}
-
-.layout-container {
-  width: 100%;
-  max-width: 414px; /* 모바일 기준 */
-  position: relative;
-  padding-top: 0px;
-  margin-top: 0px;
-}
-
-.mid {
-  height: 250px;
-}
-
 /* Payment Modal */
 /* 모달 박스 */
 .modal {
-  position: fixed;
-  left: 50%;
+  position: absolute;
+  left: 0;
   bottom: 0;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 414px;
+  width: 360px;
   background-color: #ffffff;
   border-radius: 16px 16px 0 0;
-  padding: 24px 24px 32px 24px;
+  padding: 16px 12px 24px 12px;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
   z-index: 1001;
   animation: modalUp 0.25s ease;
