@@ -1,6 +1,7 @@
 <script setup>
 import { usePaymentStore } from '@/stores/paymentStore';
 import paymentApi from '@/api/paymentApi';
+import tripApi from '@/api/tripApi';
 import QRScanner from '@/components/qr/QRScanner.vue';
 import { getMyInfo } from '@/api/memberApi.js';
 import { ref, computed, onMounted, watch } from 'vue';
@@ -26,11 +27,15 @@ onMounted(async () => {
     console.log('응답 결과:', res);
 
     // ✅ 응답 구조에 맞게 수정
-    if (res?.success && res?.data) {
-      userInfo.value = res.data;
-      console.log('사용자 정보 설정 완료:', userInfo.value);
-    } else {
+    if (!res?.success && !res?.data) {
       console.error('유저 정보 조회 실패:', res?.message || '데이터 없음');
+    }
+
+    const tripId = await tripApi.getCurrentTripId();
+    if (tripId == 0) {
+      console.error('현재 여행 ID를 가져오지 못했습니다.');
+      alert('진행 중인 여행이 없습니다. 여행을 생성하거나 참여해주세요.');
+      router.push('/');
     }
   } catch (err) {
     console.error('마이페이지 API 에러:', err);
