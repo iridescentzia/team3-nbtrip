@@ -110,6 +110,9 @@ dependencies {
     implementation 'com.google.auth:google-auth-library-oauth2-http:1.19.0'
     implementation 'com.google.code.gson:gson:2.10.1'
 
+    // Quartz 스케줄러
+    implementation 'org.quartz-scheduler:quartz:2.3.2'
+
 }
 
 test {

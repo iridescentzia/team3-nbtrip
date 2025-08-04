@@ -3,20 +3,6 @@
         PUBLIC "--//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.scoula.account.mapper.AccountMapper">
-    <!-- 계좌 등록 - 회원가입 시 사용 -->
-    <insert id="insertAccount" parameterType="org.scoula.account.dto.AccountRegisterDTO">
-        INSERT INTO account (user_id, account_number, bank_code, balance)
-        VALUES (#{userId}, #{accountNumber}, #{bankCode}, 500000)
-    </insert>
-
-    <!-- 계좌 수정 - 마이페이지 결제 수단 관리 -->
-    <update id="updateAccount" parameterType="org.scoula.account.dto.AccountUpdateDTO">
-        UPDATE account
-        SET account_number = #{accountNumber},
-            bank_code = #{bankCode}
-        WHERE user_id = #{userId}
-    </update>
-
     <!-- 계좌 상세 조회 - 홈 화면 계좌 잔액 표시용 -->
     <resultMap id="accountResultMap" type="org.scoula.account.domain.AccountVO">
         <id property="accountId" column="account_id"/>
@@ -31,6 +17,20 @@
         FROM account
         WHERE user_id = #{userId}
     </select>
+
+    <!-- 계좌 등록 - 회원가입 시 사용 -->
+    <insert id="insertAccount" parameterType="org.scoula.account.dto.AccountRegisterDTO">
+        INSERT INTO account (user_id, account_number, bank_code, balance)
+        VALUES (#{userId}, #{accountNumber}, #{bankCode}, 500000)
+    </insert>
+
+    <!-- 계좌 수정 - 마이페이지 결제 수단 관리 -->
+    <update id="updateAccount" parameterType="org.scoula.account.dto.AccountUpdateDTO">
+        UPDATE account
+        SET account_number = #{accountNumber},
+            bank_code = #{bankCode}
+        WHERE user_id = #{userId}
+    </update>
 
     <!-- 사용자 계좌 잔액 차감 - 송금/결제 시 사용 -->
     <update id="decreaseUserBalance">

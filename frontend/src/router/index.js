@@ -7,9 +7,12 @@ import Home from '@/views/home/Home.vue';
 import settlementRoutes from '@/router/settlementRoutes.js';
 import memberRoutes from '@/router/memberRoutes.js';
 import paymentRoutes from './payment';
-import notificationRoutes from './notificationRoutes';
-import paymentlistRoutes from './paymentlistRoutes';
-import reportRoutes from './report';
+import SettlementSummaryView from '../views/settlement/SettlementSummaryView.vue';
+import SettlementRequestView from '../views/settlement/SettlementRequestView.vue';
+import paymentlistRoutes from '@/router/paymentlistRoutes.js';
+import tripRoutes from '@/router/tripRoutes.js';
+import notificationRoutes from '@/router/notificationRoutes.js';
+import reportRoutes from '@/router/reportRoutes.js';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,8 +26,9 @@ const router = createRouter({
         ...settlementRoutes,
         ...memberRoutes,
         ...paymentRoutes,
-        ...notificationRoutes,
         ...paymentlistRoutes,
+        ...notificationRoutes,
+        ...tripRoutes,
         ...reportRoutes,
       ],
     },

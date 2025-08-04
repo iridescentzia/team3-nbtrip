@@ -23,6 +23,13 @@ public interface NotificationMapper {
     // tripId로 멤버 userId 조회 (푸시용) -> 푸시 알림 보낼 대상 조회
     List<Integer> findUserIdsByTripId(@Param("tripId") Integer tripId);
 
+    // 정산 안한 맴버 조회
+    List<Integer> findUsersNeedingReminder();
+    // 리마인더 대상 trip_id 조회
+    Integer findTripIdForUserPendingSettlement(@Param("userId") Integer userId);
+    // 해당 trip의 정산 요청자 조회
+    Integer findSettlementRequester(@Param("tripId") Integer tripId);
+
     // 단일 알림 생성
     int createNotification(NotificationVO vo);
     //trip 맴버 전체에게 completed 알림
@@ -31,6 +38,8 @@ public interface NotificationMapper {
     int createGroupEventNotification(NotificationVO vo);
     // trip 멤버 전체에게 정산 요청 알림
     void createSettlementNotificationForAll(NotificationVO vo);
+    // trip 멤버 전체에게 결제 알림
+    void createTransactionNotificationForAll(NotificationVO vo);
 
     // 알림 읽음 처리
     int readNotification(@Param("notificationId") Integer notificationId);

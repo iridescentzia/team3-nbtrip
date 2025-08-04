@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
-import { ref, computed, reactive } from 'vue';
+import { ref } from 'vue';
 
-export const travelCreateStore = defineStore('travelCreate', () => {
-    const travelName = ref("")
+export const useTravelCreateStore = defineStore('travelCreate', () => {
+    const tripName = ref("")
     const startDate = ref()
     const endDate = ref()
     const budget = ref()
 
-    return { travelName, startDate, endDate, budget }
+    return { tripName, startDate, endDate, budget }
 })

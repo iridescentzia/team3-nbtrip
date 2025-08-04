@@ -34,15 +34,37 @@ onMounted(async () => {
   }
 });
 
-// 정산 요청 보내기 함수 - 단순 이동
+// 정산 요청 보내기 함수 - 알림 발송 + 페이지 이동
 const handleRequestSettlement = async () => {
-  if (!confirm('정산 내역을 확인하러 가시겠습니까?')) return;
+  if (!confirm('그룹원들에게 정산 요청 알림을 보내시겠습니까?')) return;
 
   try {
+    // 로딩 상태 표시
+    settlementStore.isLoading = true;
+
+    // 1. 정산 요청 알림 발송
+    await settlementStore.sendNotification(tripId);
+
+    // 2. 성공 메시지 표시
+    alert('정산 요청 알림이 모든 그룹원에게 발송되었습니다! 📢');
+
+    // 3. 그룹장의 개인별 정산 상세 페이지로 이동
     router.push(`/settlement/${tripId}/detail`);
+
   } catch (err) {
-    console.error('페이지 이동 실패:', err);
-    alert('페이지 이동에 실패했습니다.');
+    console.error('정산 요청 알림 발송 실패:', err);
+
+    // 에러 타입별 메시지 처리
+    if (err.message.includes('권한이 없습니다')) {
+      alert('❌ 권한이 없습니다. 그룹장만 정산 요청을 보낼 수 있습니다.');
+    } else if (err.message.includes('서버 오류')) {
+      alert('❌ 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    } else {
+      alert('❌ 알림 발송에 실패했습니다. 네트워크 연결을 확인해주세요.');
+    }
+  } finally {
+    // 로딩 상태 해제
+    settlementStore.isLoading = false;
   }
 };
 </script>

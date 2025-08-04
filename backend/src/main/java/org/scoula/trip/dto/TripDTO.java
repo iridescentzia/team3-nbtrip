@@ -1,5 +1,6 @@
 package org.scoula.trip.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +10,6 @@ import org.scoula.trip.domain.TripVO;
 import org.scoula.trip.domain.TripStatus;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -20,7 +20,9 @@ public class TripDTO {
     private int tripId;
     private int ownerId;
     private String tripName;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate startDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate endDate;
     private int budget;
     private TripStatus tripStatus;

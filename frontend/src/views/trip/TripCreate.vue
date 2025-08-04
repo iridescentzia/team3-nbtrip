@@ -1,73 +1,131 @@
 <script setup>
 import tripApi from "@/api/tripApi.js";
-import {computed, ref} from 'vue';
+import {ref} from 'vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
-import { travelCreateStore } from "@/stores/tripStore.js"
-const date = ref({});
+import { useTravelCreateStore } from "@/stores/tripStore.js"
+import Button from "@/components/common/Button.vue";
+import {useRouter} from "vue-router";
+import Header from "@/components/layout/Header.vue";
+const router=useRouter();
+const rawDate = ref({});
 const disableDates = ref();
+const store = useTravelCreateStore();
 const load = async () => {
-  disableDates.value=await tripApi.getDiabledDates();
+  try {
+    disableDates.value = await tripApi.getDisabledDates();
+  } catch (e) {
+    console.error('비활성화 날짜 불러오기 실패:', e);
+  }
 }
 load();
-const store = travelCreateStore()
+const toNextPage = () => {
+  console.log('입력한 이름:', store.tripName);
+  router.push('/trip/invite');
+}
 
-const tripName = computed(()=> store.travelName);
-const startDate = computed(()=> store.startDate);
-const endDate = computed(()=> store.endDate);
-const budget = computed(()=> store.budget);
+const handleDate = (modelData) => {
+  rawDate.value = modelData;
+  store.startDate = new Date(modelData[0]);
+  store.endDate = new Date(modelData[1]);
+  console.log(rawDate.value);
+}
 
 </script>
 
 <template>
-  <label for="trip_name">어떤 여행인가요?</label><br>
-  <input type="text" name="trip_name" id="trip_name" placeholder="예) 서울 우정 여행" v-mode>
-  <VueDatePicker
-      v-model="date"
-      :range="{ noDisabledRange: true }"
-      :enable-time-picker="false"
-      :disabled-dates="disableDates"
-      locale="ko"
-      cancelText="취소"
-      selectText="선택"
-  ></VueDatePicker>
-  <label for="budget">예산을 입력해주세요</label><br>
-  <div class="input-wrapper">
-    <input type="number" class="input-with-unit" name="budget" id="budget">
-    <span class="unit-text">원</span>
+  <Header title="새로운 여행 만들기"/>
+  <div class="content-container">
+    <label for="trip_name" class="label-text">어떤 여행인가요?</label><br>
+    <input
+        type="text"
+        name="trip_name"
+        id="trip_name"
+        placeholder="예) 서울 우정 여행"
+        v-model="store.tripName"
+        class="input-box"
+    />
+    <p class="label-text">언제 떠나시나요?</p>
+    <div class="datepicker-wrapper">
+      <VueDatePicker
+          inline auto-apply
+          v-model="rawDate"
+          :range="{ noDisabledRange: true }"
+          :enable-time-picker="false"
+          :disabled-dates="disableDates"
+          locale="ko"
+          cancelText="취소"
+          selectText="선택"
+          @update:model-value="handleDate"
+      ></VueDatePicker>
+    </div>
+    <label for="budget" class="label-text">예산을 입력해주세요</label><br>
+    <div class="input-wrapper">
+      <input type="number" class="input-box" name="budget" id="budget" v-model="store.budget">
+      <span class="unit-text">원</span>
+    </div>
+    <Button class="next-btn" @click="toNextPage" label="다음"></Button>
   </div>
-
 </template>
 
 <style scoped>
-  input{
-    padding-right: 40px;
-    height: 32px;
-    box-sizing: border-box;
-  }
 
+/* 메인 콘텐츠 */
+.content-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: calc(56px) 1.25rem 1.25rem;
+}
+  /* input:number에 있는 스핀 버튼 제거 */
   input::-webkit-inner-spin-button {
     appearance: none;
     -moz-appearance: none;
     -webkit-appearance: none;
   }
   .input-wrapper {
-    position: relative;
-    display: inline-flex; /* inline-block -> inline-flex */
-    align-items: center;  /* 수직 가운데 정렬 */
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
   }
-  .input-with-unit {
-    padding-right: 40px;
-    height: 32px;
-    box-sizing: border-box;
-  }
-  .unit-text {
-    position: absolute;
-    right: 10px;
-    color: #666;
-    pointer-events: none;
-    font-size: 14px;
-    top: auto;   /* 기존 top 삭제 */
-    transform: none; /* 기존 transform 삭제 */
-  }
+
+.input-box {
+  width: 100%;
+  padding-left: 10px;
+  padding-right: 50px;
+  height: 40px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  border: 1px solid var(--theme-text-light)
+}
+
+.unit-text {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--theme-text-light);
+  pointer-events: none;
+  font-size: 14px;
+}
+
+.label-text{
+  margin: 0.5rem 0;
+  color: var(--theme-text);
+}
+
+.next-btn {
+  width: 90%;
+  height: 50px;
+  position: absolute;
+  bottom : 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+</style>
+<!--scoped에선 datepicker에 대한 커스터마이징이 먹히지 않아서 관련 내용 style에 정의-->
+<style>
+.dp__theme_light {
+  --dp-primary-color: var(--theme-primary);
+}
 </style>

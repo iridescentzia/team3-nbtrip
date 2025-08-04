@@ -64,6 +64,13 @@
         WHERE user_id = #{userId}
     </select>
 
+    <!-- 닉네임으로 회원 검색 -->
+    <select id="searchUserByNickname" resultType="org.scoula.member.domain.MemberVO">
+        SELECT *
+        FROM users
+        WHERE nickname LIKE CONCAT('%', #{nickname}, '%')
+    </select>
+
     <!-- 회원 정보 수정 -->
     <update id="updateMember" parameterType="org.scoula.member.domain.MemberVO">
         UPDATE users

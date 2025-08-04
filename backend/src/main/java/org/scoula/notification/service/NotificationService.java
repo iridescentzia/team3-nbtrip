@@ -20,6 +20,9 @@ public interface NotificationService {
     // 카테고리별 (ALL, TRANSACTION, SETTLEMENT, INVITE)
     List<NotificationDTO> getNotificationsByCategory(Integer userId, String category);
 
+    // 리마인더 푸시알람
+    void sendReminderNotifications();
+
     // 알림 생성
     void createNotification(NotificationDTO dto);
 
