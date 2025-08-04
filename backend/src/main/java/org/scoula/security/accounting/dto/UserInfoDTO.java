@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.scoula.security.accounting.domain.CustomUser;
 import org.scoula.security.accounting.domain.MemberVO;
 import org.scoula.security.util.CryptoUtil;
 
@@ -22,6 +23,7 @@ public class UserInfoDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String name;
+    private String fcmToken;
     private String phoneNumber;  // 복호화된 휴대폰 번호
     private String maskedPhoneNumber;  // 마스킹된 휴대폰 번호
     private List<String> authorities;  // 권한 목록

@@ -4,7 +4,7 @@ import Header from '@/components/layout/Header.vue';
 import Button from '@/components/common/Button.vue';
 import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAgreementStore } from '@/stores/agreement.js';
+import { useAgreementStore } from '@/stores/agreementStore.js';
 import { ChevronRight } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -34,34 +34,34 @@ const agreements = ref([
 
 // store 값 -> agreements 반영
 watch(
-  () => agreementStore.agreements,
-  (storeValue) => {
-    agreements.value.forEach((a) => {
-      a.checked = storeValue[a.id];
-    });
-  },
-  { immediate: true, deep: true }
+    () => agreementStore.agreements,
+    (storeValue) => {
+      agreements.value.forEach((a) => {
+        a.checked = storeValue[a.id];
+      });
+    },
+    { immediate: true, deep: true }
 );
 
 // agreements 값 -> store에 반영
 watch(
-  agreements,
-  (localValue) => {
-    localValue.forEach((a) => {
-      agreementStore.agreements[a.id] = a.checked;
-    });
-  },
-  { deep: true }
+    agreements,
+    (localValue) => {
+      localValue.forEach((a) => {
+        agreementStore.agreements[a.id] = a.checked;
+      });
+    },
+    { deep: true }
 );
 
 // 전체 동의 상태
 const agreeAll = ref(false);
 watch(
-  agreements,
-  () => {
-    agreeAll.value = agreements.value.every((a) => a.checked);
-  },
-  { immediate: true, deep: true }
+    agreements,
+    () => {
+      agreeAll.value = agreements.value.every((a) => a.checked);
+    },
+    { immediate: true, deep: true }
 );
 
 // 전체 동의 toggle
@@ -75,11 +75,11 @@ const toggleAll = () => {
 // 필수 약관 모두 동의 여부 (실제 체크 여부 기준)
 const allRequiredChecked = ref(false);
 watch(
-  agreements,
-  () => {
-    allRequiredChecked.value = agreements.value.every((a) => a.checked);
-  },
-  { immediate: true, deep: true }
+    agreements,
+    () => {
+      allRequiredChecked.value = agreements.value.every((a) => a.checked);
+    },
+    { immediate: true, deep: true }
 );
 
 // 상세 페이지 이동
@@ -130,8 +130,8 @@ const goBack = () => {
               <label :for="item.id">{{ item.label }}</label>
             </div>
             <ChevronRight
-              class="chevron-icon"
-              @click="goToDetail(item.route)"
+                class="chevron-icon"
+                @click="goToDetail(item.route)"
             />
           </div>
         </div>
@@ -141,10 +141,10 @@ const goBack = () => {
     <!-- 하단 버튼 -->
     <footer class="bottom-fixed">
       <Button
-        label="동의하고 회원가입 하기"
-        :disabled="!allRequiredChecked"
-        @click="goToJoin"
-        class="agreement-button"
+          label="동의하고 회원가입 하기"
+          :disabled="!allRequiredChecked"
+          @click="goToJoin"
+          class="agreement-button"
       />
     </footer>
   </div>
