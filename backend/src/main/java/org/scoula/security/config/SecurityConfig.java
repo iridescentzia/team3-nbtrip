@@ -123,8 +123,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/merchants",
                 "/accounts",
                 "/payments",
-                "/chart",
+                "/report",
                 "/notifications",
+                "/paymentlist",
 
                 // 시스템 모니터링
                 "/api/health",
@@ -192,7 +193,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/transactions/**").authenticated()  // 거래
                 .antMatchers("/settlements/**").authenticated()  // 정산
                 .antMatchers("/accounts/**").authenticated()  // 계좌
-                .antMatchers("/chart/**").authenticated()  // 차트
+                .antMatchers("/report/**").authenticated()  // 차트
                 .antMatchers("/notifications/**").authenticated()  // 알림
                 .antMatchers("/payments/**").authenticated()  // 결제
                 .anyRequest().permitAll();

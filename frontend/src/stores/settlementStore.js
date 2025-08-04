@@ -6,7 +6,8 @@ import {
     transferMoney,
     getSettlementSummary,
     getSettlementsByTripId,
-    requestSettlement
+    requestSettlement,
+    sendSettlementNotification
 } from '@/api/settlementApi'
 
 export const useSettlementStore = defineStore('settlement', () => {
@@ -230,6 +231,25 @@ export const useSettlementStore = defineStore('settlement', () => {
         selectedMember.value = null
     }
 
+    // 정산 요청 알림 발송
+    const sendNotification = async (tripId) => {
+        try {
+            const response = await sendSettlementNotification(tripId)
+            return response.data
+        } catch (err) {
+            console.error('정산 요청 알림 발송 실패:', err)
+
+            if (err.response?.status === 403) {
+                throw new Error('권한이 없습니다. 그룹장만 정산 요청 알림을 보낼 수 있습니다.')
+            } else if (err.response?.status === 500) {
+                throw new Error('알림 발송 중 서버 오류가 발생했습니다.')
+            } else {
+                throw new Error('알림 발송에 실패했습니다.')
+            }
+        }
+    }
+
+
     return {
         // State
         summaryData,
@@ -258,6 +278,7 @@ export const useSettlementStore = defineStore('settlement', () => {
         clearAllData,
         clearSummaryData,
         clearMySettlementData,
-        clearGroupSettlementData
+        clearGroupSettlementData,
+        sendNotification
     }
 })

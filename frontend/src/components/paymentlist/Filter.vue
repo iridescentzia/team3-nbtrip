@@ -85,6 +85,7 @@
     </transition>
   </div>
 
+  <!-- 결제 참여자 모달 창 -->
   <div
     v-if="isParticipantModalOpen"
     class="overlay"
@@ -128,7 +129,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['date-filtered'])
+const emit = defineEmits(['date-filtered', 'participant-filtered'])
 
 const tripStore = useTripStore();
 
@@ -168,8 +169,6 @@ const closeDateModal = () => {
   isDateModalOpen.value = false;
 };
 
-//const payments = ref([]); // 전체 결제 내역
-//const filteredPayments = ref([]); // 필터링된 결과
 
 // "2025-07-30" 형식으로 변환
 const formatDateHyphen = (timestamp) => {
@@ -234,8 +233,9 @@ const closeParticipantModal = () => {
   isParticipantModalOpen.value = false;
 };
 
+// 선택된 결제 참여자 필터링
 const applyParticipantFilter = () => {
-  // 선택된 결제 참여자 필터링 로직 추가
+  emit('participant-filtered', selectedMembers.value); // 선택된 결제 참여자 전달
   closeParticipantModal();
 };
 

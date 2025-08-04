@@ -12,6 +12,8 @@ import memberRoutes from '@/router/memberRoutes.js';
 import paymentRoutes from './payment';
 import paymentlistRoutes from "@/router/paymentlistRoutes.js";
 import tripRoutes from "@/router/tripRoutes.js";
+import notificationRoutes from '@/router/notificationRoutes.js';
+import reportRoutes from '@/router/reportRoutes.js';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,6 +29,7 @@ const router = createRouter({
         ...paymentRoutes,
         ...paymentlistRoutes,
         ...tripRoutes,
+        ...reportRoutes,
       ],
     },
     {

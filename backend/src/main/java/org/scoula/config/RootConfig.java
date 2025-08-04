@@ -23,8 +23,7 @@ import javax.sql.DataSource;
 })
 @MapperScan(basePackages = {
         "org.scoula.merchant.mapper",
-        "org.scoula.security.accounting.mapper", 
-        "org.scoula.member.mapper", 
+        "org.scoula.security.accounting.mapper",
         "org.scoula.mypage.mapper",
         "org.scoula.trip.mapper",
         "org.scoula.settlement.mapper",
