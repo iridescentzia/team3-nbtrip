@@ -39,7 +39,7 @@ const goToPage = (n) => {
         router.push(`/trip/${n.tripId}`)
       }
       break;
-      
+
     case 'GROUP_EVENT':
       // 그룹 상세 페이지
       router.push(`/trip/${n.tripId}`);
@@ -69,6 +69,7 @@ const selectCategory = (tab) => {
 
 const handleCardClick = (n) => {
   notificationStore.readNotification(n.notificationId);
+  // goToPage(n); // 이동까지 같이 처리
 };
 
 const formatAmount = (value) => {

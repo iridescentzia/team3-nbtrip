@@ -13,7 +13,7 @@ const navItems = [
     name: 'home',
     label: '홈',
     icon: House,
-    path: '/home',
+    path: '/',
   },
   {
     name: 'trip',
