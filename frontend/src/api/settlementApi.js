@@ -76,3 +76,12 @@ export const getMySettlementStatus = () => {
 export const sendSettlementNotification = (tripId) => {
   return apiClient.post(`/settlements/${tripId}/notify`);
 };
+
+/**
+ * 홈 화면: 내 미정산 여행 목록 조회 API
+ * @returns {Promise} - Axios Promise 객체
+ */
+export const getMyUnsettledTrips = () => {
+  // JWT 토큰에 담긴 사용자 정보를 기반으로 서버에서 미정산 내역을 찾아 반환합니다.
+  return apiClient.get('/settlements/unsettled-trips');
+};
