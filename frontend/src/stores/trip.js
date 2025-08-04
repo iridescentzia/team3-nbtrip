@@ -6,18 +6,35 @@ import memberApi from '@/api/memberApi';
 export const useTripStore = defineStore('trip', () => {
   const trips = ref([]);
 
+  // 현재 tripApi는 userId = 1인 trip만 불러옴
   const fetchTrips = async () => {
     const data = await tripApi.fetchTrips();
+    console.log('[tripApi.fetchTrips] 응답 데이터:', data);
     trips.value = Array.isArray(data) ? data : [];
   };
 
   const currentTrip = computed(() => {
-    const now = Date.now();
+    // 대한민국 시간 기준으로 오늘 날짜 00:00:00 생성
+    const now = new Date();
+    const todayKST = new Date(
+      now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' })
+    );
+    todayKST.setHours(0, 0, 0, 0); // KST 기준 오늘 00:00:00
+
+    // 배열 반환
     return trips.value.find((trip) => {
+      if (!trip.startDate || !trip.endDate) return false;
+
+      const [sy, sm, sd] = trip.startDate;
+      const [ey, em, ed] = trip.endDate;
+
+      const start = new Date(sy, sm - 1, sd);
+      const end = new Date(ey, em - 1, ed);
+
       return (
         trip.tripStatus === 'ACTIVE' &&
-        now >= trip.startDate &&
-        now <= trip.endDate
+        todayKST.getTime() >= start.getTime() &&
+        todayKST.getTime() <= end.getTime()
       );
     });
   });
@@ -29,7 +46,7 @@ export const useTripStore = defineStore('trip', () => {
 
     try {
       const detail = await tripApi.getTripDetail(currentTrip.value.tripId);
-      console.log(detail);
+      console.log('getTripDetail: ', detail);
       currentTripMembers.value = Array.isArray(detail.members)
         ? detail.members
         : [];
@@ -49,7 +66,7 @@ export const useTripStore = defineStore('trip', () => {
 
     const nicknamePromises = memberIds.map(async (id) => {
       try {
-        const user = await memberApi.get(id);
+        const user = await memberApi.getUserInfo(id);
         return { userId: id, nickname: user.nickname };
       } catch (error) {
         console.error(`Failed to fetch user ${id}:`, error);

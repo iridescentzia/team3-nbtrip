@@ -7,22 +7,42 @@ import org.scoula.member.dto.*;
 import org.scoula.member.exception.*;
 import org.scoula.member.mapper.MemberMapper;
 import org.scoula.security.util.JwtProcessor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class MemberServiceImpl implements MemberService {
     private final MemberMapper memberMapper;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtProcessor jwtProcessor;
+    private PasswordEncoder passwordEncoder;
+    private JwtProcessor jwtProcessor;
+
+    // 생성자에서는 MemberMapper만 주입
+    public MemberServiceImpl(MemberMapper memberMapper) {
+        this.memberMapper = memberMapper;
+    }
+
+    // Setter 주입으로 변경
+    @Autowired
+    @Lazy
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
+    @Autowired
+    @Lazy
+    public void setJwtProcessor(JwtProcessor jwtProcessor) {
+        this.jwtProcessor = jwtProcessor;
+    }
+
 
     // 전화번호 마스킹 처리 메서드
     private String maskPhoneNumber(String phoneNumber) {
@@ -106,7 +126,9 @@ public class MemberServiceImpl implements MemberService {
             // 6. 토큰 만료 시간 계산
             Long expiresIn = 86400000L;
             return MemberLoginResponseDTO.builder()
-                    .accessToken(accessToken).member(memberResponse).build();
+                    .accessToken(accessToken)
+                    .fcmToken(memberVO.getFcmToken())
+                    .member(memberResponse).build();
         } catch (UserNotFoundException | AuthenticationException e) {
             throw e;
         } catch (Exception e) {
@@ -304,5 +326,11 @@ public class MemberServiceImpl implements MemberService {
             log.error("사용자 ID 조회 중 오류 발생 - 닉네임 : {}, 오류 : {}", nickname, e.getMessage(), e);
             throw new UserNotFoundException("해당 닉네임의 사용자를 찾을 수 없습니다.");
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MemberSearchResponseDTO> searchMembersByNickname(String nickname) {
+        return memberMapper.searchUserByNickname(nickname).stream().map(MemberSearchResponseDTO::of).toList();
     }
 }

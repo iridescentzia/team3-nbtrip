@@ -12,7 +12,7 @@
 </template>
 
 <script setup>
-import { ref,computed, onMounted } from 'vue';
+import { ref,computed, onMounted,watch } from 'vue';
 import { useRoute } from 'vue-router'; 
 import ExpenseCard from '@/views/paymentlist/PaymentListInfoCard.vue';
 import paymentApi from '@/api/paymentlistApi';
@@ -21,29 +21,63 @@ const props = defineProps({
   dateRange: {
     type: Object,
     default: () => ({ start: '', end: '' })
+  },
+  selectedParticipants:{
+    type:Array,
+    default: () => []
   }
 })
 
+const emit = defineEmits(['init-total']);
+
 // URL에서 tripId 추출
+// paymentlistStore로 분리해야 함
 const route = useRoute();
 const tripId = Number(route.params.tripId); 
 const payments = ref([]); // 서버에서 받아온 전체 결제 내역
 
 const filteredPayments = computed(() => {
+  // 날짜 필터
   const { start, end } = props.dateRange
   console.log('[PaymentListInfo.vue] 현재 dateRange:', start, end)
 
-  // 시작/종료 날짜가 모두 비어있으면 전체 반환
-  if (!start && !end) return payments.value
+  let result = payments.value;
+  console.log('원래 payments 수:', payments.value.length);
 
-  return payments.value.filter(p => {
-    // ISO 문자열에서 yyyy-MM-dd 부분만 비교
-    const payDate = p.payAt.slice(0, 10)
-    if (start && end)   return payDate >= start && payDate <= end
-    if (start)          return payDate >= start
-    if (end)            return payDate <= end
-  })
+  // 날짜 필터
+  // 시작/종료 날짜가 모두 비어있으면 전체 반환
+  // if (!start && !end) return result
+  if(start || end){
+      result = result.filter(p => {
+      // ISO 문자열에서 yyyy-MM-dd 부분만 비교
+      const payDate = p.payAt.slice(0, 10)
+      if (start && end)   return payDate >= start && payDate <= end
+      if (start)          return payDate >= start
+      if (end)            return payDate <= end
+    });
+
+  }
+  console.log('날짜 필터 후 수:', result.length);
+
+  // 결제 참여자 필터
+ if (props.selectedParticipants.length > 0) {
+  const selectedIds = props.selectedParticipants.map(Number); // 문자열을 숫자로 변환
+  result = result.filter(p => selectedIds.includes(p.userId));
+  console.log('참여자 필터링: userIds =', props.selectedParticipants, '→ 숫자 배열 =', selectedIds);
+console.log('현재 결제 항목 userId:', result.map(r => r.userId));
+
+}
+
+  return result;
 })
+
+watch(() => props.selectedParticipants, (val) => {
+  console.log('[watch] selectedParticipants:', val);
+});
+
+watch(() => props.dateRange, (val) => {
+  console.log('[watch] dateRange:', val);
+});
 
 function formatSub(payer, time) {
   const t = new Date(time);
@@ -52,6 +86,11 @@ function formatSub(payer, time) {
   const meridiem = t.getHours() < 12 ? '오전' : '오후';
   return `${payer} · ${meridiem} ${h}:${m}`;
 }
+
+// 필터와 무관한 전체 지출 총액
+const originalTotalAmount = computed(()=>
+  payments.value.reduce((sum, item) => sum + item.amount, 0)
+)
 
 // 컴포넌트 마운트 시 서버에서 결제 내역 호출
 onMounted(async () => {
@@ -62,6 +101,7 @@ onMounted(async () => {
 
     if (Array.isArray(result.paymentData)) {
       payments.value = result.paymentData;
+      emit('init-total', originalTotalAmount.value)
     } else {
       console.warn('paymentData가 배열이 아님', result);
     }

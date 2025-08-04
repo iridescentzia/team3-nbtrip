@@ -1,7 +1,7 @@
 package org.scoula.notification.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;;
+import lombok.extern.log4j.Log4j2;
 import org.scoula.notification.domain.NotificationVO;
 import org.scoula.notification.dto.NotificationDTO;
 import org.scoula.notification.mapper.NotificationMapper;
@@ -79,6 +79,12 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void createNotification(NotificationDTO dto) {
         String type = dto.getNotificationType().toUpperCase();
+
+        // 결제 (TRANSACTION) 알림 -> trip 멤버 전체 insert
+        if (type.equals("TRANSACTION")) {
+            mapper.createTransactionNotificationForAll(dto.toVO());
+            return;
+        }
 
         // 정산 요청 알림 trip 멤버 전원에게 알림 insert + 푸시 전송
         if (type.equals("SETTLEMENT")) {

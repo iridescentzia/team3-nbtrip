@@ -6,8 +6,17 @@
     </div>
     <div class="amount-row">
       <div class="amount">{{formattedAmount}}</div>
-      <Info class="info-icon" />
-<!--      <div class="budget" small >예산: {{formattedBudget}}</div>-->
+      <div class="info-wrapper">
+        <!-- info 아이콘 -->
+        <Info class="info-icon" @click="toggleInfo"/>
+        <!-- 예산 사용 정보 메시지 팝업 -->
+        <div 
+          v-if="showInfo" 
+          class="info-popup"
+          v-html="budgetMessage"
+        >          
+        </div>
+      </div>      
     </div>
 
     <div class="progress-bar">
@@ -21,7 +30,7 @@
 </template>
 
 <script setup >
-import {computed} from 'vue'
+import {computed, ref} from 'vue'
 import { Info } from 'lucide-vue-next';
 
 // props: amount(사용금액 합계), budget(여행 예산)
@@ -35,6 +44,12 @@ const props = defineProps({
     required: true
   }
 })
+
+// 상태: info 팝업 토글
+const showInfo = ref(false)
+const toggleInfo = () => {
+  showInfo.value = !showInfo.value
+}
 
 // 총 금액 포맷팅 (ex. 350,000원)
 const formattedAmount = computed(()=>{
@@ -66,6 +81,45 @@ const progressPercentage = computed(()=>{
 const isOverBudget = computed(() =>{
   return props.amount >= props.budget;
 })
+
+// 숫자 -> 한국어 단위 변환 함수
+function formatKoreanCurrency(amount) {
+  if (amount === 0) return '0원'
+
+  const units = [
+    { value: 10000, label: '만' },
+    { value: 1000, label: '천' },
+    { value: 100, label: '백' },
+    { value: 10, label: '십' },
+  ]
+
+  let result = ''
+  let remaining = amount
+
+  for (const unit of units) {
+    const unitAmount = Math.floor(remaining / unit.value)
+    if (unitAmount > 0) {
+      result += `${unitAmount}${unit.label} `
+      remaining %= unit.value
+    }
+  }
+
+  return result.trim() + '원'
+}
+
+// 예산 사용 정보 메시지 생성
+const budgetMessage = computed(()=>{
+  const diff = props.budget - props.amount
+  const formattedDiff = formatKoreanCurrency(Math.abs(diff))
+  if (diff > 0) {
+    return `💡예산보다 ${diff.toLocaleString()}원<br> 아끼고 있어요.`
+  } else if (diff < 0) {
+    return `⚠️예산보다 ${Math.abs(diff).toLocaleString()}원<br> 더 썼어요.`
+  } else {
+    return '✅예산을 딱 맞췄어요!'
+  }
+})
+
 
 </script>
 
@@ -119,10 +173,34 @@ const isOverBudget = computed(() =>{
   margin-right: 7px;
 }
 
+.info-wrapper{
+  position:relative;
+}
+
 .info-icon{
   color:#AAAAAA;
   width:18px;
-  padding-bottom:5px;
+  /* padding-bottom:5px; */
+  cursor: pointer;
+  transform: translateY(3px); /* 3px 아래로 */  
+}
+
+.info-popup {
+  position: absolute;
+  top: 24px;
+  left: -100px;
+  transform: translateY(10px);
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px 16px; 
+  font-size: 14px;     
+  line-height: 1.6;    /*  줄 간격 여유 있게 */
+  min-width: 170px;    /*  최소 너비 확보 */
+  max-width: 240px;    /*  너무 길지 않게 제한 */
+  white-space: normal; /*  줄바꿈 허용 */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 10;
 }
 
 .budget {
