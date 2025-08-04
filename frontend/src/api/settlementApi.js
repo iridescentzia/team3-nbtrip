@@ -67,3 +67,12 @@ export const getRemainingSettlements = (tripId) => {
 export const getMySettlementStatus = () => {
   return apiClient.get('/settlements/status');
 };
+
+/**
+ * 정산 요청 알림 발송 API
+ * @param {number} tripId - 여행 ID
+ * @returns {Promise} - Axios Promise 객체
+ */
+export const sendSettlementNotification = (tripId) => {
+  return apiClient.post(`/settlements/${tripId}/notify`);
+};

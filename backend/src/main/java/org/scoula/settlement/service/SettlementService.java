@@ -1,7 +1,7 @@
 package org.scoula.settlement.service;
 
 import org.scoula.settlement.dto.SettlementDTO;
-import org.scoula.settlement.exception.domain.SettlementVO;
+import org.scoula.settlement.domain.SettlementVO;
 import java.util.List;
 
 /**
@@ -102,4 +102,11 @@ public interface SettlementService {
      * 특정 여행의 미정산 존재 여부
      */
     SettlementDTO.RemainingSettlementResponseDto getRemainingSettlements(int tripId);
+
+    /**
+     * 특정 여행의 모든 정산이 완료되었는지 확인
+     * @param tripId 여행 ID
+     * @return 모든 정산이 완료되었으면 true, 아니면 false
+     */
+    boolean isAllSettlementCompleted(Integer tripId);
 }
