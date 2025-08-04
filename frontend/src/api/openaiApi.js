@@ -1,33 +1,14 @@
-// src/api/openai.js
-import axios from 'axios';
+import apiClient from '@/api/index.js';
 
-export const getAIComment = async (prompt) => {
+export const getAIComment = async (tripId, type = 'category') => {
   try {
-    const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'system',
-            content:
-              '너는 여행 소비 분석을 도와주는 전문가야. 사용자의 소비 지출 데이터를 비율로 분석하고, 이번 여행에 대해 개선 조언이나 피드백을 전문가처럼 해줘. 너무 딱딱하지 않고, 부드러운 조언을 포함한 한국어로 작성해.',
-          },
-          { role: 'user', content: prompt },
-        ],
-        temperature: 0.7,
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-        },
-      }
-    );
+    const url =
+      type === 'category' ? `/openai/${tripId}` : `/openai/${tripId}/date`;
 
-    return response.data.choices[0].message.content;
+    const response = await apiClient.get(url);
+    return response.data.comment;
   } catch (error) {
-    console.error('OpenAI API 오류:', error);
-    throw error;
+    console.error('AI 분석 코멘트 가져오기 실패:', error);
+    return 'AI 분석에 실패했습니다.';
   }
 };
