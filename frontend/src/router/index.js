@@ -24,7 +24,7 @@ const router = createRouter({
       path: '/',
       component: DefaultLayout, // DefaultLayout을 부모로 설정
       children: [
-        { path: '', name: 'home', component: Home }, // 예: http://localhost:5173/
+        { path: '/home', name: 'home', component: Home }, // 예: http://localhost:5173/
         // --- 여기에 DefaultLayout을 사용할 페이지들을 추가 ---
         ...settlementRoutes,
         ...memberRoutes,

@@ -1,18 +1,12 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
-import { storeToRefs } from "pinia";
-
 import AccountCard from './AccountCard.vue'
 import TravelInformationCard from './TravelInformationCard.vue'
 import SettlementCard from './SettlementCard.vue'
 import Footer from "@/components/layout/Footer.vue";
-
 import tripApi from "@/api/tripApi.js";
-import axios from 'axios'
-import { useAuthStore } from '@/stores/auth';
-// import {getMyInfo} from '@/api/memberApi.js'
-
+import { getMyInfo } from '@/api/memberApi.js';
 import { 
   Bell, 
   CalendarPlus, 
@@ -21,80 +15,57 @@ import {
   Wallet,
 } from "lucide-vue-next";
 
-
-
-// const userInfo = ref({ userId: null, nickname: '', name: '' });
 const router = useRouter();
-const authStore = useAuthStore();
-const { user } = storeToRefs(authStore);
 
+const userInfo = ref({ nickname: '', name: '' })
 const ongoingTrips = ref([]);
 const unsettledList = ref([]);
 
-// computed로 닉네임과 이름 사용
-const userNickname = computed(() => user.value?.nickname || '김냥이');
-const userNameInitial = computed(() => user.value?.name?.charAt(0) || '?');
 
-// API 호출 (닉네임)
+// API 호출
 onMounted(async () => {
   try {
+
+    const token = localStorage.getItem('accessToken');
+    const res = await getMyInfo();
+
+    // 유저 정보
+    if (res?.success && res?.data) {
+      userInfo.value = res.data;
+      console.log('사용자 정보 설정 완료:', userInfo.value);
+    } else {
+      console.error('유저 정보 조회 실패:', res?.message || '데이터 없음');
+    }
 
     // 여행 목록
     const tripRes = await tripApi.fetchTrips();
     if (Array.isArray(tripRes)) {
       ongoingTrips.value = tripRes.filter(trip => trip.tripStatus === 'ACTIVE');
     }
+    
 
     // 미정산 내역
-    const token = localStorage.getItem('accessToken');
     const response = await axios.get('/api/settlements/unsettled/me', {
       headers: { Authorization: `Bearer ${token}` }
     });
     unsettledList.value = response.data;
 
-
-    // // getMyInfo() 사용 (userId 파라미터 불필요)
-    // const userRes = await getMyInfo();
-    // console.log('응답 결과:', userRes);
-    // // ✅ getMyInfo() 사용 (userId 파라미터 불필요)
-    // const userRes = await getMyInfo();
-    // console.log('응답 결과:', userRes);
-    // // ✅ 응답 구조에 맞게 수정
-    // if (userRes?.success && userRes?.data) {
-    //   userInfo.value = userRes.data;
-    //   console.log('사용자 정보 설정 완료:', userInfo.value);
-    // } else {
-    //   console.error('유저 정보 조회 실패:', userRes?.message || '데이터 없음');
-    // }
-  
-
-    // // 여행 목록 가져오기
-    // const tripRes = await tripApi.fetchTrips();
-    // if (Array.isArray(tripRes)) {
-    //   console.log('전체 여행 목록:', tripRes);
-
-    //   // 진행 중인 여행 필터링 (ACTIVE + 내가 참여한 여행)
-    //   ongoingTrips.value = tripRes.filter(trip =>{
-    //       console.log('trip.tripStatus:', trip.tripStatus);
-    //       const isActive = trip.tripStatus === 'ACTIVE';
-    //       console.log(`[${trip.tripName}] isActive: ${isActive}`);
-    //       return isActive
-      // });
-
-      
-    // } else {
-    //   console.error('여행 목록 조회 실패:', tripRes?.message || '데이터 없음');
-    // }
-
   } catch (err) {
     console.error('API 에러:', err);
+    if (err.message?.includes('인증') || err.message?.includes('토큰')) {
+      console.log('인증 오류로 로그인 페이지로 이동');
+      router.push('/login');
+    }
   }
 });
+const userNameInitial = computed(() => userInfo.value.name?.charAt(0) || '');
+
+console.log(localStorage.getItem('userInfo'))
+console.log(localStorage.getItem('accessToken'))
 
 const goToNotification = () => router.push("/notification");
 // const goToGroupCreate = () => router.push("/groupcreate");
 const goToMyPage = () => router.push("/mypage");
-
 </script>
 
 
@@ -108,7 +79,7 @@ const goToMyPage = () => router.push("/mypage");
         <!-- 인사말 -->
         <div class="greeting-box">
           <span class="welcome">안녕하세요.</span>
-          <span class="nickname">{{ userNickname }}님!</span>
+          <span class="nickname" v-if="userInfo.nickname">{{ userInfo.nickname }}님!</span>
         </div>
         <!-- 아이콘 -->
         <div class="icon-group">
@@ -147,7 +118,7 @@ const goToMyPage = () => router.push("/mypage");
             v-for="trip in ongoingTrips"
             :key="trip.tripId"
             class="card"
-            :tripId="trip.tripId"
+            :trip="trip"
           />
         </section>
         <!-- 3. 내 계좌 요약 -->
@@ -156,10 +127,9 @@ const goToMyPage = () => router.push("/mypage");
             <Wallet class="main-icon"/>
             <span class="section-title">내 계좌</span>
           </div>
-          <AccountCard class="card"
-            bankName="카카오뱅크"
-            accountNumber="111111111"
-            :balance="1000000"
+          <AccountCard class="card" 
+          v-if="userInfo.userId" 
+          :user-id="userInfo.userId"
           />
         </section>
       </div>
