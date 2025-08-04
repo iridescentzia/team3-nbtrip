@@ -4,7 +4,7 @@
     <ExpenseCard
       v-for="(item, index) in filteredPayments"
       :key="index"
-      :title="item.memo"
+      :title="item.merchantName"
       :sub="formatSub(item.nickname, item.payAt)"
       :amount="item.amount"
     />

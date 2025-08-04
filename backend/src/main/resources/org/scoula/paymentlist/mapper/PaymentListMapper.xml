@@ -7,11 +7,16 @@
 
     <!-- VO 필드 매핑 -->
     <resultMap id="PaymentListResultMap" type="org.scoula.paymentlist.domain.PaymentListVO">
-        <result property="memo"    column="memo" />
-        <result property="userId" column="userId" />
+        <result property="merchantId" column="merchantId"/>
+        <result property="merchantName" column="merchantName"/>
+        <result property="categoryId" column="categoryId"/>
+        <result property="categoryName" column="categoryName"/>
+        <result property="userId" column="userId"/>
         <result property="nickname" column="nickname"/>
-        <result property="payAt"        column="payAt" />
-        <result property="amount"       column="amount" />
+        <result property="payAt" column="payAt"/>
+        <result property="amount" column="amount"/>
+        <result property="paymentType" column="paymentType"/>
+        <result property="memo" column="memo"/>
     </resultMap>
 
     <!-- 결제 내역 불러오기 -->
@@ -19,15 +24,21 @@
             parameterType="int"
             resultMap="PaymentListResultMap">
         SELECT
-            p.memo,
+            m.merchant_id AS merchantId,
+            m.merchant_name AS merchantName,
+            mc.category_id AS categoryId,
+            mc.category_name AS categoryName,
             u.user_id AS userId,
             u.nickname AS nickname,
             p.pay_at AS payAt,
-            p.amount
+            p.amount,
+            p.payment_type AS paymentType,
+            p.memo
         FROM payment p
-                 JOIN users u ON p.user_id = u.user_id
+                JOIN users u ON p.user_id = u.user_id
+                JOIN merchant m ON p.merchant_id = m.merchant_id
+                JOIN merchant_category mc ON m.category_id = mc.category_id
         WHERE p.trip_id = #{tripId}
         ORDER BY p.pay_at desc;
     </select>
-
 </mapper>
