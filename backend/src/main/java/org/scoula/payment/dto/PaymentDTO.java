@@ -15,8 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class PaymentDTO {
-//    private int tripId;
-//    private int userId;
     private int merchantId;
     private int amount;
     private String memo;
@@ -25,7 +23,7 @@ public class PaymentDTO {
     // 결제 참여자
     private List<ParticipantDTO> participants;
 
-    // 사용자가 입력한 결제일자 및 시간 (수동 등록 시 사용)
+    // 사용자가 입력한 결제일자 및 시간
     private LocalDate paymentDate;
     private LocalTime paymentTime;
 

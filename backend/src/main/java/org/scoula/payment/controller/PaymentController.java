@@ -25,8 +25,6 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final TripService tripService;
 
-
-
     // QR 결제
     @PostMapping("/qr")
     public ResponseEntity<String> processQrPayment(@RequestBody PaymentDTO paymentDTO, @AuthenticationPrincipal CustomUser customUser) {

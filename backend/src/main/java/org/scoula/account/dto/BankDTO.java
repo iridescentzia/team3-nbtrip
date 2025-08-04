@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class BankDTO {
-    private String code;
-    private String name;
+    private String bankCode;
+    private String bankName;
 }
