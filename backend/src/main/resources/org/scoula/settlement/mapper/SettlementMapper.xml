@@ -291,4 +291,27 @@
         FROM settlement
         WHERE trip_id = #{tripId}
     </select>
+
+    <!-- 특정 사용자의 미정산 여행 목록을 조회하는 쿼리 -->
+    <!--
+        settlement 테이블과 trip 테이블을 JOIN하여,
+        로그인한 사용자가 sender 또는 receiver이고,
+        정산 상태가 PENDING 또는 PROCESSING인 여행의 정보를
+        중복 없이 가져옵니다.
+    -->
+    <select id="findUnsettledTripsByUserId" resultType="org.scoula.settlement.dto.SettlementDTO$UnsettledTripInfo">
+        SELECT DISTINCT
+            t.trip_id,
+            t.trip_name,
+            t.start_date,
+            t.end_date
+        FROM
+            settlement s
+                JOIN
+            trip t ON s.trip_id = t.trip_id
+        WHERE
+            (s.sender_id = #{userId} OR s.receiver_id = #{userId})
+          AND
+            s.settlement_status IN ('PENDING', 'PROCESSING')
+    </select>
 </mapper>

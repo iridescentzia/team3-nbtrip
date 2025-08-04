@@ -109,4 +109,11 @@ public interface SettlementService {
      * @return 모든 정산이 완료되었으면 true, 아니면 false
      */
     boolean isAllSettlementCompleted(Integer tripId);
+
+    /**
+     * 특정 사용자의 미정산 여행 목록을 조회하는 비즈니스 로직.
+     * @param userId 사용자의 ID
+     * @return 미정산 여행 정보 DTO 리스트
+     */
+    List<SettlementDTO.UnsettledTripInfo> getUnsettledTrips(int userId);
 }
