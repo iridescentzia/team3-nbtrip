@@ -39,10 +39,7 @@
     </div>
 
     <!-- AI 분석 -->
-    <div class="ai-report">
-      <h3>AI 분석 리포트</h3>
-      <p>{{ aiReport }}</p>
-    </div>
+    <AIReport :tripId="tripId" :activeTab="activeTab" />
   </div>
 </template>
 
@@ -60,9 +57,9 @@ import {
   LineElement,
 } from 'chart.js';
 import { useRoute } from 'vue-router';
-import chartApi from '@/api/chart';
+import chartApi from '@/api/chartApi';
 import Header from '@/components/layout/Header.vue';
-import DefaultLayout from '@/components/layout/DefaultLayout.vue';
+import AIReport from './AiReport.vue';
 
 ChartJS.register(
   ArcElement,
@@ -173,9 +170,6 @@ onMounted(async () => {
         },
       ],
     };
-
-    aiReport.value =
-      '전체 지출 중 교통비가 40%로 가장 큰 비중을 차지합니다. 다음 여행에서는 교통비 절감을 위해 대중교통 패스를 고려해보세요.';
   } catch (err) {
     console.error('차트 데이터 로드 실패', err);
   }
@@ -187,11 +181,10 @@ onMounted(async () => {
   background: #fff;
 }
 .travel-report-page {
-  max-width: 414px;
+  max-width: 100%;
   margin: 0 auto;
   margin-top: 56px;
   background-color: #f9fafb;
-  min-height: 100vh;
   box-sizing: border-box;
 }
 
@@ -252,6 +245,8 @@ onMounted(async () => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   font-size: 14px;
   color: #333;
+  min-height: 140; /* ✅ 추가 */
+  min-width: 200;
 }
 
 .ai-report h3 {
