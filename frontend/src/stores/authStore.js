@@ -1,4 +1,4 @@
-// stores/auth.js
+// stores/authStore.js
 import { defineStore } from 'pinia'
 import { loginMember, logoutMember, getMyInfo, setStoredToken, clearTokens } from '@/api/memberApi.js'
 

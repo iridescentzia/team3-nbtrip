@@ -37,7 +37,6 @@ export const requestPermissionAndGetToken = async () => {
     });
 
     if (token) {
-      console.log("FCM Token:", token);
       return token;
     } else {
       console.warn("토큰을 받을 수 없습니다. 권한을 허용했는지 확인하세요.");
