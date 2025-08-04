@@ -81,18 +81,6 @@ export const updateFcmToken = async (fcmTokenData) => {
     }
 };
 
-// 비밀번호 확인 (회원 정보 수정 전 확인)
-export const verifyPassword = async (password) => {
-    try {
-        const response = await apiClient.post('/users/verify-password', {
-            currentPassword: password
-        });
-        return response.data;
-    } catch (error) {
-        throw handleApiError(error, '비밀번호 확인');
-    }
-};
-
 // ===== MyPage API =====
 
 // 내 정보 조회 (JWT 기반)
@@ -102,6 +90,18 @@ export const getMyInfo = async () => {
         return response.data;
     } catch (error) {
         throw handleApiError(error, '내 정보 조회');
+    }
+};
+
+// 비밀번호 확인 (회원 정보 수정 전 확인)
+export const verifyPassword = async (password) => {
+    try {
+        const response = await apiClient.post('/mypage/verify-password', {
+            currentPassword: password
+        });
+        return response.data;
+    } catch (error) {
+        throw handleApiError(error, '비밀번호 확인');
     }
 };
 
