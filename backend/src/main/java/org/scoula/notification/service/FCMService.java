@@ -41,6 +41,11 @@ public class FCMService {
 
     // 2) 푸시알림 보내기
     public void sendPushNotification(String targetToken, String title, String body) throws IOException {
+        System.out.println("=== FCM Push Send Start ===");
+        System.out.println("Target Token: " + targetToken);
+        System.out.println("Title: " + title);
+        System.out.println("Body: " + body);
+
         JsonObject message = new JsonObject();
         JsonObject notification = new JsonObject();
         notification.addProperty("title", title);
@@ -60,14 +65,15 @@ public class FCMService {
         HttpEntity<String> request = new HttpEntity<>(message.toString(), headers);
         ResponseEntity<String> response = restTemplate.postForEntity(FCM_API_URL, request, String.class);
 
+        System.out.println("HTTP Status: " + response.getStatusCodeValue());
         System.out.println("FCM Response: " + response.getBody());
     }
     public void debugKeyFile() {
         if (FCMService.class.getClassLoader()
                 .getResourceAsStream("firebase/nbtrip-push-adminsdk.json") == null) {
-            System.out.println("### JSON 파일을 찾지 못했습니다! 경로를 확인하세요.");
+            System.out.println("JSON 파일을 찾지 못했습니다.");
         } else {
-            System.out.println("### JSON 파일을 성공적으로 찾았습니다.");
+            System.out.println("JSON 파일을 성공적으로 찾았습니다.");
         }
     }
 

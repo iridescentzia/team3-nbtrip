@@ -19,6 +19,20 @@ const app = initializeApp(firebaseConfig);
 // FCM 메시징 객체
 const messaging = getMessaging(app);
 
+
+//테스트
+getToken(messaging, { vapidKey: 'BKLHna4RJKWaEv5iaGUoi-T9IExHNzhNdt7WLyy2cwArSy3U9ZLro1omUR6FwzpUduZM6A6_tIu-OLepc7uuvlc' })
+  .then((currentToken) => {
+    if (currentToken) {
+      console.log("현재 브라우저 FCM 토큰:", currentToken);
+    } else {
+      console.warn("FCM 토큰을 가져오지 못했습니다.");
+    }
+  })
+  .catch((err) => {
+    console.error("토큰 가져오기 실패:", err);
+  });
+
 // 브라우저에서 FCM 토큰 발급
 export const requestPermissionAndGetToken = async () => {
   console.log(">>> FCM 권한 요청 시도"); // 확인용 로그
@@ -37,6 +51,7 @@ export const requestPermissionAndGetToken = async () => {
     });
 
     if (token) {
+      console.log("FCM Token:", token);
       return token;
     } else {
       console.warn("토큰을 받을 수 없습니다. 권한을 허용했는지 확인하세요.");

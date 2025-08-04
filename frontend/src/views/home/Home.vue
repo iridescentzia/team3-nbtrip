@@ -38,19 +38,24 @@ const userNameInitial = computed(() => user.value?.name?.charAt(0) || '?');
 // API 호출 (닉네임)
 onMounted(async () => {
   try {
-    // ✅ 여행 목록
+
+    // 여행 목록
     const tripRes = await tripApi.fetchTrips();
     if (Array.isArray(tripRes)) {
       ongoingTrips.value = tripRes.filter(trip => trip.tripStatus === 'ACTIVE');
     }
 
-    // ✅ 미정산 내역
+    // 미정산 내역
     const token = localStorage.getItem('accessToken');
     const response = await axios.get('/api/settlements/unsettled/me', {
       headers: { Authorization: `Bearer ${token}` }
     });
     unsettledList.value = response.data;
 
+
+    // // getMyInfo() 사용 (userId 파라미터 불필요)
+    // const userRes = await getMyInfo();
+    // console.log('응답 결과:', userRes);
     // // ✅ getMyInfo() 사용 (userId 파라미터 불필요)
     // const userRes = await getMyInfo();
     // console.log('응답 결과:', userRes);
