@@ -1,11 +1,17 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
+import { storeToRefs } from 'pinia';
+
 import AccountCard from './AccountCard.vue'
 import TravelInformationCard from './TravelInformationCard.vue'
 import SettlementCard from './SettlementCard.vue'
 import Footer from "@/components/layout/Footer.vue";
+
 import tripApi from "@/api/tripApi.js";
+import axios from 'axios';
+import { useAuthStore } from '@/stores/authStore.js';
+import { getMyUnsettledTrips } from '@/api/settlementApi.js';
 import { getMyInfo } from '@/api/memberApi.js';
 import { 
   Bell, 
@@ -62,11 +68,9 @@ onMounted(async () => {
 });
 const userNameInitial = computed(() => userInfo.value.name?.charAt(0) || '');
 
-console.log(localStorage.getItem('userInfo'))
-console.log(localStorage.getItem('accessToken'))
 
 const goToNotification = () => router.push('/notification');
-// const goToGroupCreate = () => router.push("/groupcreate");
+const goToGroupCreate = () => router.push("/trip/create");
 const goToMyPage = () => router.push("/mypage");
 </script>
 
@@ -85,8 +89,7 @@ const goToMyPage = () => router.push("/mypage");
           <div class="icon-btn" @click="goToNotification">
             <Bell class="header-icon" />
           </div>
-          <div class="icon-btn">
-            <!-- <button class="icon-btn" @click="goToGroupCreate"> -->
+          <div class="icon-btn" @click= "goToGroupCreate">
             <CalendarPlus class="header-icon" />
           </div>
           <div class="icon-btn" @click="goToMyPage">
@@ -131,6 +134,9 @@ const goToMyPage = () => router.push("/mypage");
           />
         </section>
       </div>
+      <button class="floating-button" @click="goToGroupCreate">
+        <span class="plus-icon">+</span> 새로운 여행
+      </button>
     </div>
 
     <Footer class="footer" />
@@ -139,6 +145,7 @@ const goToMyPage = () => router.push("/mypage");
 
 <style scoped>
 .home-content {
+  margin-top: 8%;
   width: 100%;
   height: 100%;
   display: flex;
@@ -146,13 +153,15 @@ const goToMyPage = () => router.push("/mypage");
   background: #f8fafc;
   overflow: hidden;
   font-family: 'IBM Plex Sans KR', sans-serif;
+
+  position: relative;
 }
 
 .content {
   flex: 1;
   overflow-y: auto;
   padding: 0px 32px 0px 32px;
-  min-height: 0;
+  position: relative;
 }
 
 .header-section {
@@ -191,6 +200,8 @@ const goToMyPage = () => router.push("/mypage");
   flex-direction: row;
   align-items: center;
   gap: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .profile-circle {
@@ -243,5 +254,38 @@ const goToMyPage = () => router.push("/mypage");
 
 .footer {
   margin-top: auto;
+}
+
+.floating-button {
+  position: sticky;
+  bottom: 18px; 
+  left: 600px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 8px 18px;
+  background-color: #FFE58A;
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans KR', sans-serif;
+
+  z-index: 10;
+}
+
+.floating-button:hover {
+  background-color: #ffd940;
+}
+
+.plus-icon {
+  font-size: 20px;
+  margin-right: 6px;
 }
 </style>
