@@ -2,7 +2,13 @@
 import { ref, onMounted, computed } from 'vue';
 import tripApi from '@/api/tripApi.js';
 import paymentlistApi from '@/api/paymentlistApi.js'
-import { Info } from 'lucide-vue-next';
+import { Info, ChevronRight } from 'lucide-vue-next';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+const goTripDetail = () => {
+  router.push(`/trip/${trip.value.tripId}`)
+}
 
 const props = defineProps({
   trip: Object
@@ -57,9 +63,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="travel-card">
-    <h3 class="trip-name">{{ tripName }}</h3>
-    <p class="trip-date">{{ date }}</p>
+  <div class="travel-card" @click="goTripDetail">
+    <div class="trip-header">
+      <div>
+        <h3 class="trip-name">{{ tripName }}</h3>
+        <p class="trip-date">{{ date }}</p>
+      </div>
+      <ChevronRight class="arrow-icon" />
+    </div>
 
     
     <div class="amount-row">
@@ -90,10 +101,17 @@ onMounted(async () => {
   border-radius: 12px;
   box-sizing: border-box;
   padding: 16px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
   font-family: 'IBM Plex Sans KR', sans-serif;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.travel-card:hover {
+  transform: translateY(-2px); /* 호버 시 살짝 떠오르는 효과 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .trip-name {
@@ -110,11 +128,10 @@ onMounted(async () => {
 }
 
 .amount-row {
-  
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-top: 15%;
+  margin-top: 10%;
 }
 
 .amount-text{
@@ -128,6 +145,19 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     gap: 30px; 
+}
+
+.trip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.arrow-icon {
+  width: 24px;
+  height: 24px;
+  color: #888;
 }
 
 .info-icon{
