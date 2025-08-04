@@ -13,15 +13,13 @@ import axios from 'axios'
 import { useAuthStore } from '@/stores/authStore.js';
 // import {getMyInfo} from '@/api/memberApi.js'
 
-import { 
-  Bell, 
-  CalendarPlus, 
+import {
+  Bell,
+  CalendarPlus,
   BellRing,
   PlaneTakeoff,
   Wallet,
-} from "lucide-vue-next";
-
-
+} from 'lucide-vue-next';
 
 // const userInfo = ref({ userId: null, nickname: '', name: '' });
 const router = useRouter();
@@ -38,20 +36,20 @@ const userNameInitial = computed(() => user.value?.name?.charAt(0) || '?');
 // API 호출 (닉네임)
 onMounted(async () => {
   try {
-
     // 여행 목록
     const tripRes = await tripApi.fetchTrips();
     if (Array.isArray(tripRes)) {
-      ongoingTrips.value = tripRes.filter(trip => trip.tripStatus === 'ACTIVE');
+      ongoingTrips.value = tripRes.filter(
+        (trip) => trip.tripStatus === 'ACTIVE'
+      );
     }
 
     // 미정산 내역
     const token = localStorage.getItem('accessToken');
     const response = await axios.get('/api/settlements/unsettled/me', {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     });
     unsettledList.value = response.data;
-
 
     // // getMyInfo() 사용 (userId 파라미터 불필요)
     // const userRes = await getMyInfo();
@@ -66,7 +64,6 @@ onMounted(async () => {
     // } else {
     //   console.error('유저 정보 조회 실패:', userRes?.message || '데이터 없음');
     // }
-  
 
     // // 여행 목록 가져오기
     // const tripRes = await tripApi.fetchTrips();
@@ -79,29 +76,23 @@ onMounted(async () => {
     //       const isActive = trip.tripStatus === 'ACTIVE';
     //       console.log(`[${trip.tripName}] isActive: ${isActive}`);
     //       return isActive
-      // });
+    // });
 
-      
     // } else {
     //   console.error('여행 목록 조회 실패:', tripRes?.message || '데이터 없음');
     // }
-
   } catch (err) {
     console.error('API 에러:', err);
   }
 });
 
-const goToNotification = () => router.push("/notification");
+const goToNotification = () => router.push('/notification');
 // const goToGroupCreate = () => router.push("/groupcreate");
-const goToMyPage = () => router.push("/mypage");
-
+const goToMyPage = () => router.push('/mypage');
 </script>
-
-
 
 <template>
   <div class="home-content">
-
     <div class="content">
       <!-- 헤더 -->
       <div class="header-section">
@@ -116,7 +107,7 @@ const goToMyPage = () => router.push("/mypage");
             <Bell class="header-icon" />
           </div>
           <div class="icon-btn">
-          <!-- <button class="icon-btn" @click="goToGroupCreate"> -->
+            <!-- <button class="icon-btn" @click="goToGroupCreate"> -->
             <CalendarPlus class="header-icon" />
           </div>
           <div class="icon-btn" @click="goToMyPage">
@@ -131,16 +122,15 @@ const goToMyPage = () => router.push("/mypage");
         <!-- 1. 정산 요청 -->
         <section v-if="unsettledList.length > 0" class="settlement-pending">
           <div class="section-header">
-            <BellRing class="main-icon"/>
+            <BellRing class="main-icon" />
             <span class="section-title">아직 안 한 정산</span>
           </div>
           <SettlementCard :settlements="unsettledList" />
-          
         </section>
         <!-- 2. 진행 중인 여행 -->
         <section class="ongoing-trips">
           <div class="section-header">
-            <PlaneTakeoff class="main-icon"/>
+            <PlaneTakeoff class="main-icon" />
             <span class="section-title">진행 중인 여행</span>
           </div>
           <TravelInformationCard
@@ -153,10 +143,11 @@ const goToMyPage = () => router.push("/mypage");
         <!-- 3. 내 계좌 요약 -->
         <section class="account-summary">
           <div class="section-header">
-            <Wallet class="main-icon"/>
+            <Wallet class="main-icon" />
             <span class="section-title">내 계좌</span>
           </div>
-          <AccountCard class="card"
+          <AccountCard
+            class="card"
             bankName="카카오뱅크"
             accountNumber="111111111"
             :balance="1000000"
@@ -164,8 +155,8 @@ const goToMyPage = () => router.push("/mypage");
         </section>
       </div>
     </div>
-    
-    <Footer class="footer"/>
+
+    <Footer class="footer" />
   </div>
 </template>
 
@@ -203,7 +194,7 @@ const goToMyPage = () => router.push("/mypage");
 .nickname {
   font-size: 24px;
   font-weight: 700;
-  color: #4A4A4A;
+  color: #4a4a4a;
 }
 
 .welcome {
@@ -211,27 +202,25 @@ const goToMyPage = () => router.push("/mypage");
   color: #777;
 }
 
-
 .header-icon {
   display: flex;
   width: 35px;
   height: 32px;
-  color: #4A4A4A;
+  color: #4a4a4a;
 }
 
 .icon-group {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 15px; 
+  gap: 15px;
 }
-
 
 .profile-circle {
   width: 37px;
   height: 37px;
   border-radius: 50%;
-  background-color: #FDDF99;
+  background-color: #fddf99;
   color: #333;
   display: flex;
   justify-content: center;
@@ -261,14 +250,14 @@ const goToMyPage = () => router.push("/mypage");
   margin-bottom: 12px; /* 아래 내용과 간격 */
 }
 
-.main-icon{
+.main-icon {
   width: 24px;
   height: 24px;
-  color: #4A4A4A;
+  color: #4a4a4a;
   margin-bottom: 11px;
 }
 
-.card{
+.card {
   width: 100%;
   display: flex;
   justify-content: center;
@@ -278,5 +267,4 @@ const goToMyPage = () => router.push("/mypage");
 .footer {
   margin-top: auto;
 }
-
 </style>

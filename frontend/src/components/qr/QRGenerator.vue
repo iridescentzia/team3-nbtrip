@@ -14,7 +14,7 @@ export default {
   data() {
     return {
       jsonData: {
-        merchantID: 1,
+        merchantID: 7,
       },
       qrCodeValue: '',
     };
