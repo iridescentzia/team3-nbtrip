@@ -1,8 +1,8 @@
 <script setup>
 import Header from '@/components/layout/Header.vue';
 import Button from '@/components/common/Button.vue';
-import { useRouter } from 'vue-router';
-import { useAgreementStore } from '@/stores/agreement.js';
+import { useRouter, useRoute } from 'vue-router';
+import { useAgreementStore } from '@/stores/agreementStore.js';
 
 const router = useRouter();
 const agreementStore = useAgreementStore();
@@ -12,6 +12,9 @@ const agreeAndGoBack = () => {
   agreementStore.check('privacy');
   router.back();
 };
+
+// 동의 버튼(회원가입/마이페이지)
+const isViewOnly = useRoute().query.viewOnly === 'true'
 </script>
 
 <template>
@@ -107,7 +110,7 @@ const agreeAndGoBack = () => {
       </div>
     </div>
 
-    <footer class="bottom-fixed">
+    <footer v-if="!isViewOnly" class="bottom-fixed">
       <Button label="동의합니다." @click="agreeAndGoBack" />
     </footer>
   </div>

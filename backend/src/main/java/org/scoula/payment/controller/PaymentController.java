@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import org.scoula.payment.dto.PaymentDTO;
 import org.scoula.payment.service.PaymentService;
 import org.scoula.security.accounting.domain.CustomUser;
+import org.scoula.trip.domain.TripStatus;
 import org.scoula.trip.dto.TripDTO;
 import org.scoula.trip.service.TripService;
 import org.springframework.http.HttpStatus;
@@ -24,8 +25,6 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final TripService tripService;
 
-
-
     // QR 결제
     @PostMapping("/qr")
     public ResponseEntity<String> processQrPayment(@RequestBody PaymentDTO paymentDTO, @AuthenticationPrincipal CustomUser customUser) {
@@ -35,8 +34,8 @@ public class PaymentController {
             TripDTO currentTrip = new TripDTO();
             for(TripDTO trip : trips) {
                 if ((trip.getStartDate().isBefore(LocalDate.now()) || trip.getStartDate().isEqual(LocalDate.now())) &&
-                        (trip.getEndDate().isAfter(LocalDate.now()) || trip.getEndDate().isEqual(LocalDate.now()))) {
-
+                        (trip.getEndDate().isAfter(LocalDate.now()) || trip.getEndDate().isEqual(LocalDate.now())) &&
+                        trip.getTripStatus() == TripStatus.ACTIVE) {
                     currentTrip = trip;
                 }
             }
@@ -60,8 +59,8 @@ public class PaymentController {
             TripDTO currentTrip = new TripDTO();
             for(TripDTO trip : trips) {
                 if ((trip.getStartDate().isBefore(LocalDate.now()) || trip.getStartDate().isEqual(LocalDate.now())) &&
-                        (trip.getEndDate().isAfter(LocalDate.now()) || trip.getEndDate().isEqual(LocalDate.now()))) {
-
+                        (trip.getEndDate().isAfter(LocalDate.now()) || trip.getEndDate().isEqual(LocalDate.now())) &&
+                        trip.getTripStatus() == TripStatus.ACTIVE) {
                     currentTrip = trip;
                 }
             }
@@ -86,8 +85,8 @@ public class PaymentController {
             TripDTO currentTrip = new TripDTO();
             for(TripDTO trip : trips) {
                 if ((trip.getStartDate().isBefore(LocalDate.now()) || trip.getStartDate().isEqual(LocalDate.now())) &&
-                        (trip.getEndDate().isAfter(LocalDate.now()) || trip.getEndDate().isEqual(LocalDate.now()))) {
-
+                        (trip.getEndDate().isAfter(LocalDate.now()) || trip.getEndDate().isEqual(LocalDate.now())) &&
+                        trip.getTripStatus() == TripStatus.ACTIVE) {
                     currentTrip = trip;
                 }
             }

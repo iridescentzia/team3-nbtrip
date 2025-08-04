@@ -1,21 +1,3 @@
-<template>
-  <div class="travel-card" @click="handleClick">
-    <div class="card-content">
-      <div class="travel-info">
-        <div class="travel-title">
-          {{ tripName }}
-        </div>
-        <div class="travel-dates">
-          {{ formattedDate }}
-        </div>
-      </div>
-      <div class="arrow-icon">
-        <ChevronRight :size="24" />
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { computed } from 'vue'
 import { ChevronRight } from 'lucide-vue-next'
@@ -70,6 +52,24 @@ const handleClick = () => {
 }
 </script>
 
+<template>
+  <div class="travel-card" @click="handleClick">
+    <div class="card-content">
+      <div class="travel-info">
+        <div class="travel-title">
+          {{ tripName }}
+        </div>
+        <div class="travel-dates">
+          {{ formattedDate }}
+        </div>
+      </div>
+      <div class="arrow-icon">
+        <ChevronRight :size="24" />
+      </div>
+    </div>
+  </div>
+</template>
+
 <style scoped>
 .travel-card {
   width: 342px;
@@ -112,7 +112,6 @@ const handleClick = () => {
 .travel-title {
   color: #575757;
   font-size: 24px;
-  font-family: Inter, sans-serif;
   font-weight: 700;
   line-height: 24px;
   word-wrap: break-word;
@@ -123,7 +122,6 @@ const handleClick = () => {
   opacity: 0.8;
   color: #575757;
   font-size: 14px;
-  font-family: Inter, sans-serif;
   font-weight: 400;
   line-height: 20px;
   word-wrap: break-word;

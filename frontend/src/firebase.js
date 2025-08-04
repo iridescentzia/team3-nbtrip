@@ -19,6 +19,7 @@ const app = initializeApp(firebaseConfig);
 // FCM 메시징 객체
 const messaging = getMessaging(app);
 
+
 //테스트
 getToken(messaging, { vapidKey: 'BKLHna4RJKWaEv5iaGUoi-T9IExHNzhNdt7WLyy2cwArSy3U9ZLro1omUR6FwzpUduZM6A6_tIu-OLepc7uuvlc' })
   .then((currentToken) => {

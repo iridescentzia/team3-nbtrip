@@ -5,7 +5,7 @@ import org.scoula.trip.mapper.TripMapper;
 import lombok.extern.log4j.Log4j2;
 import org.scoula.trip.service.TripService;
 import org.scoula.member.mapper.MemberMapper;
-import org.scoula.settlement.exception.domain.SettlementVO;
+import org.scoula.settlement.domain.SettlementVO;
 import org.scoula.settlement.dto.SettlementDTO;
 import org.scoula.settlement.mapper.SettlementAccountMapper;
 import org.scoula.settlement.mapper.SettlementMapper;
@@ -446,5 +446,26 @@ public class SettlementServiceImpl implements SettlementService {
         }
 
         return resultDto;
+    }
+
+    @Override
+    public boolean isAllSettlementCompleted(Integer tripId) {
+        try {
+            log.info("🟢 전체 정산 완료 여부 확인 - tripId: {}", tripId);
+
+            // RemainingSettlementResponseDto의 hasRemaining 필드로 확인
+            // hasRemaining이 false면 모든 정산이 완료된 상태
+            SettlementDTO.RemainingSettlementResponseDto result = getRemainingSettlements(tripId);
+
+            boolean isCompleted = !result.isHasRemaining();
+
+            log.info("🔍 정산 완료 확인 결과 - tripId: {}, 전체완료: {}, 미완료건수: {}",
+                    tripId, isCompleted, result.getPendingCount() + result.getProcessingCount());
+
+            return isCompleted;
+        } catch (Exception e) {
+            log.error("전체 정산 완료 확인 실패 - tripId: {}", tripId, e);
+            return false; // 예외 발생 시 안전하게 false 반환
+        }
     }
 }

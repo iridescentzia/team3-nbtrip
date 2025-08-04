@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { verifyPassword } from "@/api/memberApi.js";
 
 // 공통 컴포넌트
 import Header from '@/components/layout/Header.vue';
@@ -18,24 +18,19 @@ const goBack = () => {
 };
 
 // 완료 버튼 클릭 시 실행되는 비밀번호 검증 함수
-const verifyPassword = async () => {
+const handleVerifyPassword = async () => {
   try {
-    const token = localStorage.getItem('accessToken');
-    const response = await axios.post(
-      '/api/mypage/verify-password',
-      { currentPassword: password.value },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    const response = await verifyPassword(password.value)
 
-    // 비밀번호 검증 성공 시 /my/update 페이지로 이동
-    if (response.data.success) {
-      router.push('/my/update');
+    // 비밀번호 검증 성공 시 /mypage/updateInfo 페이지로 이동
+    if (response.success) {
+      router.push('/mypage/updateInfo');
     } else {
       errorMessage.value =
-        response.data.message || '비밀번호가 올바르지 않습니다.';
+          response.message || '비밀번호가 올바르지 않습니다.';
     }
   } catch (err) {
-    errorMessage.value = err?.response?.data?.message || '오류가 발생했습니다.';
+    errorMessage.value = err.message || '오류가 발생했습니다.';
     console.error(err);
   }
 };
@@ -55,11 +50,11 @@ const verifyPassword = async () => {
 
       <!-- 비밀번호 입력 필드 -->
       <input
-        type="password"
-        v-model="password"
-        placeholder="비밀번호 입력"
-        class="password-input"
-        @keyup.enter="verifyPassword"
+          type="password"
+          v-model="password"
+          placeholder="비밀번호 입력"
+          class="password-input"
+          @keyup.enter="verifyPassword"
       />
 
       <!-- 에러 메시지 출력 -->
@@ -68,7 +63,7 @@ const verifyPassword = async () => {
 
     <!-- 완료 버튼 -->
     <footer class="bottom-fixed">
-      <Button label="완료" @click="verifyPassword" />
+      <Button label="완료" @click="handleVerifyPassword" />
     </footer>
   </div>
 </template>

@@ -41,6 +41,12 @@ public class JwtUsernamePasswordAuthenticationFilter extends UsernamePasswordAut
                 loginDTO.getFcmToken() != null ? "있음" : "없음",
                 loginDTO.isRememberMe());
 
+        // FCM 토큰을 request attribute에 저장
+        if(loginDTO.getFcmToken() != null && !loginDTO.getFcmToken().trim().isEmpty()) {
+            request.setAttribute("fcmToken", loginDTO.getFcmToken().trim());
+            log.debug("FCM 토큰을 request attribute에 저장 완료 - 길이: {}", loginDTO.getFcmToken().length());
+        }
+
         // 2. 인증 토큰 생성
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 loginDTO.getEmail(),  // username 파라미터 = email

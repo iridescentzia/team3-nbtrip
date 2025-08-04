@@ -2,6 +2,7 @@ package org.scoula.trip.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.scoula.trip.domain.TripMemberStatus;
 import org.scoula.trip.domain.TripMemberVO;
 import org.scoula.trip.domain.TripVO;
 import java.util.List;
@@ -22,7 +23,7 @@ public interface TripMapper {
     void createTrip(TripVO tripVO);
     int joinTrip(@Param("tripId") int tripId, @Param("userId") int userId);
     int changeMemberStatus(@Param("tripId") int tripId, @Param("userId") int userId);
-    void inviteTrip(@Param("tripId") int tripId, @Param("userId") int userId);
+    void inviteTrip(@Param("tripId") int tripId, @Param("userId") int userId, @Param("status")TripMemberStatus status);
     int changeTripStatus(int tripId);
     boolean isOwner(@Param("tripId") int tripId, @Param("userId") int userId);
     /**
@@ -31,4 +32,6 @@ public interface TripMapper {
      * @return 여행 이름
      */
     String findTripNameById(int tripId);
+    // 본인이 참가한 상태별 여행 조회
+    List<TripVO> getTripsByStatus(@Param("userId") int userId, @Param("status") String status);
 }
