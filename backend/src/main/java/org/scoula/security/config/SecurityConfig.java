@@ -117,6 +117,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/payments",
                 "/chart",
                 "/notifications",
+                "/paymentlist",
 
                 // 시스템 모니터링
                 "/api/health",
