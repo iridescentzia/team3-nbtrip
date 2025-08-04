@@ -19,14 +19,6 @@
       >
       </Summary> 
       
-      <!-- <Summary
-        v-if="tripStore.currentTrip"
-        :amount="12324200"
-        :budget="tripStore.currentTrip.budget"
-      >
-    </Summary> -->
-     
-    
       <Filter 
         v-if="tripStore.currentTrip"
         :start-date="formatDate(tripStore.currentTrip.startDate)"
@@ -45,7 +37,6 @@
 <script setup>
 import Header from '@/components/layout/Header.vue';
 import TravelCard from '@/components/common/TravelCard.vue';
-import DefaultLayout from '@/components/layout/DefaultLayout.vue';
 import Filter from '@/components/paymentlist/Filter.vue';
 import PaymentListInfo from './PaymentListInfo.vue';
 
@@ -55,25 +46,17 @@ import Summary from '@/components/common/Summary.vue';
 
 const tripStore = useTripStore();
 
-// timestamp -> KST 기준 date 변환
-// const formatDate = (timestamp) => {
-//   const date = new Date(timestamp);
-//   return date
-//     .toLocaleDateString('ko-KR', {
-//       year: 'numeric',
-//       month: '2-digit',
-//       day: '2-digit',
-//       timeZone: 'Asia/Seoul',
-//     })
-//     .replace(/\.\s/g, '.')
-//     .replace(/\.$/, ''); // 2025.07.30 형태로 맞춤
-// };
+const formatDate = (dateInput) => {
+  let date;
 
-const formatDate = (dateArray) => {
-  if (!Array.isArray(dateArray) || dateArray.length !== 3) return '날짜 오류';
-
-  const [year, month, day] = dateArray;
-  const date = new Date(year, month - 1, day); // ← ⚠ month - 1 필수
+  if (Array.isArray(dateInput) && dateInput.length === 3) {
+    const [year, month, day] = dateInput;
+    date = new Date(year, month - 1, day);
+  } else if (typeof dateInput === 'string') {
+    date = new Date(dateInput);
+  } else {
+    return '날짜 오류';
+  }
 
   return date
     .toLocaleDateString('ko-KR', {
@@ -85,6 +68,7 @@ const formatDate = (dateArray) => {
     .replace(/\.\s/g, '.')
     .replace(/\.$/, '');
 };
+
 
 // Filter.vue에서 emit된 ref
 const selectedDateRange = ref({ start: '', end: '' })
@@ -111,16 +95,15 @@ function onParticipantFiltered(userIds){
 
 onMounted(async () => {
   await tripStore.fetchTrips();
-  console.log("디버깅 trips:", tripStore.trips);
-
-    tripStore.trips.forEach((trip, index) => {
-    console.log(`Trip[${index}]`, trip);
-    
-  });
-
   await tripStore.fetchCurrentTripMembers()
-  console.log('currentTrip:', tripStore.currentTrip);
-  console.log("currentTrip.value: ", tripStore.currentTrip);
+
+  if (tripStore.currentTrip) {
+    console.log("currentTrip ready:", tripStore.currentTrip);
+    console.log("tripStore.currentTrip.startDate", tripStore.currentTrip.startDate); // "2025-08-01" ← 문자열
+
+  } else {
+    console.log("currentTrip is not ready yet");
+  }
 });
 </script>
 
