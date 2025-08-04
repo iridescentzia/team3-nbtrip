@@ -8,12 +8,13 @@ import {ref} from "vue";
 
 const router = useRouter()
 const route = useRoute()
+const tripId = route.params.tripId
 
 const trip = ref({tripName: ''})
 
 // 홈 화면으로 이동
-const goHome = () => {
-  router.push('/')
+const goToTravelReport = () => {
+  router.push(`/report/${tripId}`)
 }
 
 const fetchTrip = async () => {
@@ -38,7 +39,7 @@ const fetchTrip = async () => {
       </div>
     </div>
 
-    <Button label="여행 리포트 보러 가기" @click="goHome"/>
+    <Button label="여행 리포트 보러 가기" @click="goToTravelReport"/>
   </div>
 </template>
 

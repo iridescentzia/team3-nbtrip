@@ -10,7 +10,7 @@ import Footer from "@/components/layout/Footer.vue";
 
 import tripApi from "@/api/tripApi.js";
 import axios from 'axios'
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from '@/stores/authStore.js';
 // import {getMyInfo} from '@/api/memberApi.js'
 
 import { 
