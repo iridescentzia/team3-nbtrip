@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -257,6 +258,20 @@ public class SettlementController {
         return response.isSuccess() ? ResponseEntity.ok(response) : ResponseEntity.badRequest().body(response);
     }
 
+    @GetMapping("/unsettled-trips")
+    public ResponseEntity<List<SettlementDTO.UnsettledTripInfo>> getMyUnsettledTrips(@AuthenticationPrincipal CustomUser customUser) {
+        // 1. Principal 객체에서 현재 로그인한 사용자의 ID를 추출합니다.
+        //    (실제 구현 시에는 JWT 토큰에 저장된 ID를 사용하게 됩니다.)
+        // int userId = Integer.parseInt(principal.getName());
+        int userId = customUser.getUserId(); // 테스트를 위해 임시로 '김민수(ID:1)' 사용자로 가정합니다.
+
+        // 2. Service 계층에 userId를 전달하여 비즈니스 로직을 수행합니다.
+        List<SettlementDTO.UnsettledTripInfo> unsettledTrips = settlementService.getUnsettledTrips(userId);
+
+        // 3. 조회된 데이터를 ResponseEntity에 담아 프론트엔드로 반환합니다.
+        return ResponseEntity.ok(unsettledTrips);
+    }
+
     // ==================== 내부 헬퍼 메서드들 ====================
 
     /**
@@ -339,4 +354,6 @@ public class SettlementController {
             return false;
         }
     }
+
+
 }
