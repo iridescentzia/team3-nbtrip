@@ -22,6 +22,7 @@
       <Filter 
         v-if="tripStore.currentTrip"
         :start-date="formatDate(tripStore.currentTrip.startDate)"
+        :members="tripStore.currentTripMembers" 
         @date-filtered="onDateFiltered" 
         @participant-filtered="onParticipantFiltered"
       />  
@@ -73,6 +74,7 @@ const formatDate = (dateInput) => {
 // Filter.vue에서 emit된 ref
 const selectedDateRange = ref({ start: '', end: '' })
 const selectedParticipants = ref([]); // 선택된 참여자 userId 배열
+const tripMembers = ref([]);
 const totalAmount = ref(0)
 
 // Filter.vue로부터 'date-filtered' 이벤트 전달받는 핸들러
@@ -92,19 +94,12 @@ function onParticipantFiltered(userIds){
   selectedParticipants.value = userIds;
 }
 
-
 onMounted(async () => {
-  await tripStore.fetchTrips();
-  await tripStore.fetchCurrentTripMembers()
-
+  await tripStore.fetchTrips()
   if (tripStore.currentTrip) {
-    console.log("currentTrip ready:", tripStore.currentTrip);
-    console.log("tripStore.currentTrip.startDate", tripStore.currentTrip.startDate); // "2025-08-01" ← 문자열
-
-  } else {
-    console.log("currentTrip is not ready yet");
+    await tripStore.fetchCurrentTripMemberNicknames()
   }
-});
+})
 </script>
 
 <style scoped>

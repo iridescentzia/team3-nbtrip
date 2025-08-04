@@ -69,8 +69,8 @@ const filteredPayments = computed(() => {
 
   // 결제 참여자 필터
   if (props.selectedParticipants.length > 0) {
-    const selectedIds = props.selectedParticipants.map(Number); 
-    result = result.filter(p => selectedIds.includes(p.userId));
+    const selectedIds = props.selectedParticipants.map(String); 
+    result = result.filter(p => selectedIds.includes(String(p.userId)));
     console.log("불러온 payments:", payments.value);
     console.log("userId 타입 체크:", payments.value.map(p => typeof p.userId)); // → 'number'만 나오면 OK
   }
@@ -122,7 +122,6 @@ onMounted(async () => {
 <style scoped>
 .wrapper {
   padding: 20px 0;
-  /* background-color: #f5f5f5; */
   min-height: 100vh;
 }
 </style>
