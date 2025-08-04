@@ -5,6 +5,7 @@ import QRScanner from '@/components/qr/QRScanner.vue';
 import { getMyInfo } from '@/api/memberApi.js';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import Header from '@/components/layout/Header2.vue';
 
 const router = useRouter();
 const store = usePaymentStore();
@@ -44,97 +45,93 @@ async function submitPayment() {
 </script>
 
 <template>
-  <div class="layout-wrapper">
-    <div class="layout-container">
-      <main class="content">
-        <div>
-          <div style="text-align: center; margin-bottom: 16px">
-            <h2>QR 스캔</h2>
-            <p>결제할 가게의 QR코드를 인식해주세요.</p>
+  <div>
+    <Header title="QR 스캔" />
+
+    <main class="content">
+      <div>
+        <div style="text-align: center; margin-bottom: 16px; margin-top: 60px">
+          <p>결제할 가게의 QR코드를 인식해주세요.</p>
+        </div>
+
+        <QRScanner style="height: 744px" />
+
+        <div v-if="store.isModalVisible && store.modalType === 1" class="modal">
+          <!-- 결제 입력 모달 -->
+          <h2 style="text-align: center">'{{ store.tripName }}' 중</h2>
+
+          <div class="input-group">
+            <label for="merchantName">가게 이름</label><br />
+            <input id="merchantName" type="text" :value="store.merchantName" />
           </div>
 
-          <QRScanner style="height: 730px" />
+          <div class="input-group">
+            <label for="amount">결제 금액</label><br />
+            <input
+              id="amount"
+              v-model.number="store.amount"
+              type="number"
+              placeholder="예: 55000"
+            />
+          </div>
 
-          <div
-            v-if="store.isModalVisible && store.modalType === 1"
-            class="modal"
-          >
-            <!-- 결제 입력 모달 -->
-            <h2 style="text-align: center">'{{ store.tripName }}' 중</h2>
-
-            <div class="input-group">
-              <label for="merchantName">가게 이름</label><br />
+          <div class="input-group">
+            <label>결제에 참여하는 사람들</label>
+            <div
+              v-for="participant in store.participantsNickname"
+              :key="participant.userId"
+              class="checkbox-group"
+            >
               <input
-                id="merchantName"
-                type="text"
-                :value="store.merchantName"
+                type="checkbox"
+                :id="`participant-${participant.userId}`"
+                :value="participant.userId"
+                v-model="store.selectedParticipants"
+                :checked="
+                  store.selectedParticipants.includes(participant.userId)
+                "
               />
+              <label :for="`participant-${participant.userId}`">{{
+                participant.nickname
+              }}</label>
             </div>
+          </div>
 
-            <div class="input-group">
-              <label for="amount">결제 금액</label><br />
-              <input
-                id="amount"
-                v-model.number="store.amount"
-                type="number"
-                placeholder="예: 55000"
-              />
-            </div>
+          <button @click="submitPayment" :disabled="!canSubmit">
+            결제하기
+          </button>
+        </div>
 
-            <div class="input-group">
-              <label>결제에 참여하는 사람들</label>
-              <div
-                v-for="participant in store.participantsNickname"
-                :key="participant.userId"
-                class="checkbox-group"
-              >
-                <input
-                  type="checkbox"
-                  :id="`participant-${participant.userId}`"
-                  :value="participant.userId"
-                  v-model="store.selectedParticipants"
-                  :checked="
-                    store.selectedParticipants.includes(participant.userId)
-                  "
-                />
-                <label :for="`participant-${participant.userId}`">{{
-                  participant.nickname
-                }}</label>
-              </div>
-            </div>
+        <!-- 결제 성공 모달 -->
+        <div v-if="store.isModalVisible && store.modalType === 2" class="modal">
+          <h3>결제 완료!</h3>
+          <img
+            src="@/assets/img/smiling_cat.png"
+            alt="웃는 고양이"
+            style="position: absolute; right: 10px; top: 10px; width: 100px"
+          />
+          <button @click="$router.push('/')">홈으로 돌아가기</button>
+        </div>
 
-            <button @click="submitPayment" :disabled="!canSubmit">
-              결제하기
+        <!-- 결제 실패 모달 -->
+        <div v-if="store.isModalVisible && store.modalType === 3" class="modal">
+          <h3>결제에 실패했어요...</h3>
+          <p>사유: {{ store.reason }}</p>
+          <img
+            src="@/assets/img/crying_cat.png"
+            alt="우는 고양이"
+            style="position: absolute; right: 10px; top: 10px; width: 100px"
+          />
+          <div style="display: flex">
+            <button @click="store.resetModal()" style="margin-right: 8px">
+              취소하기
             </button>
-          </div>
-
-          <!-- 결제 성공 모달 -->
-          <div
-            v-if="store.isModalVisible && store.modalType === 2"
-            class="modal"
-          >
-            <h3>결제 완료!</h3>
-            <button @click="$router.push('/')">홈으로 돌아가기</button>
-          </div>
-
-          <!-- 결제 실패 모달 -->
-          <div
-            v-if="store.isModalVisible && store.modalType === 3"
-            class="modal"
-          >
-            <h3>결제에 실패했어요...</h3>
-            <p>사유: {{ store.reason }}</p>
-            <div style="display: flex">
-              <button @click="store.resetModal()" style="margin-right: 8px">
-                취소하기
-              </button>
-              <button @click="submitPayment">다시 시도하기</button>
-            </div>
+            <button @click="submitPayment">다시 시도하기</button>
           </div>
         </div>
-      </main>
-      <div class="mid"></div>
-    </div>
+      </div>
+    </main>
+    <div class="mid"></div>
   </div>
 </template>
 
