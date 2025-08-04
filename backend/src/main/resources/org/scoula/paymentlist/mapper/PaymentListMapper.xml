@@ -9,6 +9,7 @@
     <resultMap id="PaymentListResultMap" type="org.scoula.paymentlist.domain.PaymentListVO">
         <result property="memo"    column="memo" />
         <result property="userId" column="userId" />
+        <result property="nickname" column="nickname"/>
         <result property="payAt"        column="payAt" />
         <result property="amount"       column="amount" />
     </resultMap>
@@ -19,7 +20,8 @@
             resultMap="PaymentListResultMap">
         SELECT
             p.memo,
-            u.name AS userId,
+            u.user_id AS userId,
+            u.nickname AS nickname,
             p.pay_at AS payAt,
             p.amount
         FROM payment p

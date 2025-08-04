@@ -1,16 +1,16 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { storeToRefs } from 'pinia';
+import { ref, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
 
-import AccountCard from './AccountCard.vue';
-import TravelInformationCard from './TravelInformationCard.vue';
-import SettlementCard from './SettlementCard.vue';
-import Footer from '@/components/layout/Footer.vue';
+import AccountCard from './AccountCard.vue'
+import TravelInformationCard from './TravelInformationCard.vue'
+import SettlementCard from './SettlementCard.vue'
+import Footer from "@/components/layout/Footer.vue";
 
-import tripApi from '@/api/tripApi.js';
-import axios from 'axios';
-import { useAuthStore } from '@/stores/authStore';
+import tripApi from "@/api/tripApi.js";
+import axios from 'axios'
+import { useAuthStore } from '@/stores/authStore.js';
 // import {getMyInfo} from '@/api/memberApi.js'
 
 import {
