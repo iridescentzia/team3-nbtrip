@@ -17,16 +17,26 @@
         :amount="totalAmount"
         :budget="tripStore.currentTrip.budget"
       >
-      </Summary>
+      </Summary> 
+      
+      <!-- <Summary
+        v-if="tripStore.currentTrip"
+        :amount="12324200"
+        :budget="tripStore.currentTrip.budget"
+      >
+    </Summary> -->
+     
     
       <Filter 
         v-if="tripStore.currentTrip"
         :start-date="formatDate(tripStore.currentTrip.startDate)"
         @date-filtered="onDateFiltered" 
+        @participant-filtered="onParticipantFiltered"
       />  
 
       <PaymentListInfo 
         :date-range="selectedDateRange" 
+        :selected-participants="selectedParticipants"
         @init-total="onInitTotal" 
       />
     </div>
@@ -76,8 +86,9 @@ const formatDate = (dateArray) => {
     .replace(/\.$/, '');
 };
 
-// Filter.vue에서 emit된 날짜 범위를 저장할 ref
+// Filter.vue에서 emit된 ref
 const selectedDateRange = ref({ start: '', end: '' })
+const selectedParticipants = ref([]); // 선택된 참여자 userId 배열
 const totalAmount = ref(0)
 
 // Filter.vue로부터 'date-filtered' 이벤트 전달받는 핸들러
@@ -90,6 +101,11 @@ function onDateFiltered(range) {
 // PaymentListInfo에서 전체 총액을 보내줄 때만 저장
 function onInitTotal(amount){
   totalAmount.value = amount
+}
+
+function onParticipantFiltered(userIds){
+  console.log('[Paymentlist.vue] 선택된 결제 참여자: ', userIds);
+  selectedParticipants.value = userIds;
 }
 
 
