@@ -52,10 +52,10 @@ onMounted(async () => {
     // // getMyInfo() 사용 (userId 파라미터 불필요)
     // const userRes = await getMyInfo();
     // console.log('응답 결과:', userRes);
-    // // ✅ getMyInfo() 사용 (userId 파라미터 불필요)
+    // // getMyInfo() 사용 (userId 파라미터 불필요)
     // const userRes = await getMyInfo();
     // console.log('응답 결과:', userRes);
-    // // ✅ 응답 구조에 맞게 수정
+    // // 응답 구조에 맞게 수정
     // if (userRes?.success && userRes?.data) {
     //   userInfo.value = userRes.data;
     //   console.log('사용자 정보 설정 완료:', userInfo.value);
