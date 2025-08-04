@@ -15,7 +15,9 @@ import org.scoula.security.handler.LoginFailureHandler;
 import org.scoula.security.handler.LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -31,6 +33,9 @@ import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.time.format.DateTimeFormatter;
 
@@ -45,8 +50,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final AuthenticationErrorFilter authenticationErrorFilter;  // 인증 오류 처리 필터
     private final CustomAccessDeniedHandler accessDeniedHandler;  // 접근 거부 처리 핸들러
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;  // 인증 진입점 처리 핸들러
-    private final LoginSuccessHandler loginSuccessHandler;  // 로그인 성공 핸들러
-    private final LoginFailureHandler loginFailureHandler;  // 로그인 실패 핸들러
+    @Lazy private final LoginSuccessHandler loginSuccessHandler;  // 로그인 성공 핸들러
+    @Lazy private final LoginFailureHandler loginFailureHandler;  // 로그인 실패 핸들러
 
     // AuthenticationManager Bean 등록
     @Bean
@@ -99,6 +104,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/**/*.jpg",
                 "/**/*.svg",
 
+                // FCM 서비스 워커 파일
+                "/firebase-messaging-sw.js",
+
                 // 정적 리소스
                 "/assets/**",
                 "/favicon.ico",
@@ -117,6 +125,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 "/payments",
                 "/chart",
                 "/notifications",
+                "/paymentlist",
+
 
                 // 시스템 모니터링
                 "/api/health",
@@ -172,6 +182,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/auth/register").permitAll()  // 회원가입
                 .antMatchers(HttpMethod.POST, "/auth/logout").permitAll()  // 로그아웃
                 .antMatchers(HttpMethod.POST, "/users/check-nickname").permitAll()  // 닉네임 중복 확인
+                .antMatchers("/firebase-messaging-sw.js").permitAll() // firebase FCM 토큰 발급
+                .antMatchers("/firebase/**").permitAll()
+
 
                 // 인증 필요(보호된 API)
                 .antMatchers("/users/**").authenticated()  // 사용자 정보

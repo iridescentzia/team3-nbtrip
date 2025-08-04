@@ -1,5 +1,4 @@
 <template>
-  <DefaultLayout>
     <Header title="진행 중인 여행" />
     <div class="content-container">
       <!-- 현재 tripId = 1 -->
@@ -27,7 +26,6 @@
 
       <PaymentListInfo :date-range="selectedDateRange" />
     </div>
-  </DefaultLayout>
 </template>
 
 <script setup>

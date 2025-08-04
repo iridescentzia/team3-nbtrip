@@ -4,12 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.scoula.security.config.SecurityConfig;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
@@ -73,5 +73,12 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
         registration.setInitParameter("throwExceptionIfNoHandlerFound", "true");
         MultipartConfigElement multipartConfig = new MultipartConfigElement(LOCATION, MAX_FILE_SIZE, MAX_REQUEST_SIZE, FILE_SIZE_THRESHOLD);
         registration.setMultipartConfig(multipartConfig);
+    }
+
+    // FCM 토큰 관련 정적 리소스 관리
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/firebase-messaging-sw.js")
+                .addResourceLocations("classpath:/static/firebase-messaging-sw.js");
     }
 }

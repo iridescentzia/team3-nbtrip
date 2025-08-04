@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.scoula.settlement.mapper.SettlementMapper">
     <!-- ResultMap: 컬럼명 <-> SettlementVO 필드명 매핑 -->
-    <resultMap id="settlementMap" type="org.scoula.settlement.exception.domain.SettlementVO">
+    <resultMap id="settlementMap" type="org.scoula.settlement.domain.SettlementVO">
         <id column="settlement_id" property="settlementId"/>
         <result column="trip_id" property="tripId"/>
         <result column="sender_id" property="senderId"/>
@@ -14,7 +14,7 @@
     </resultMap>
 
     <!-- ResultMap: 닉네임 포함 SettlementVO 매핑 -->
-    <resultMap id="settlementWithNicknamesMap" type="org.scoula.settlement.exception.domain.SettlementVO">
+    <resultMap id="settlementWithNicknamesMap" type="org.scoula.settlement.domain.SettlementVO">
         <id column="settlement_id" property="settlementId"/>
         <result column="trip_id" property="tripId"/>
         <result column="sender_id" property="senderId"/>
