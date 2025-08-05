@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper">
+  <div class="wrapper" @click="$emit('click')">
      <!-- computed된 filteredPayments를 순회하며 카드 렌더링 -->
     <ExpenseCard
       v-for="(item, index) in filteredPayments"
@@ -7,15 +7,16 @@
       :title="item.merchantName"
       :sub="formatSub(item.nickname, item.payAt)"
       :amount="item.amount"
+      @click="goToUpdate(item.paymentId)"
     />
   </div>
 </template>
 
 <script setup>
 import { ref,computed, onMounted,watch } from 'vue';
-import { useRoute } from 'vue-router'; 
+import { useRoute, useRouter } from 'vue-router'; 
 import ExpenseCard from '@/views/paymentlist/PaymentListInfoCard.vue';
-import paymentApi from '@/api/paymentlistApi';
+import paymentlistApi from '@/api/paymentlistApi';
 
 const props = defineProps({
   dateRange: {
@@ -37,6 +38,7 @@ const emit = defineEmits(['init-total']);
 // URL에서 tripId 추출
 // paymentlistStore로 분리해야 함
 const route = useRoute();
+const router = useRouter();
 const tripId = Number(route.params.tripId); 
 const payments = ref([]); // 서버에서 받아온 전체 결제 내역
 
@@ -117,10 +119,14 @@ const originalTotalAmount = computed(()=>
   payments.value.reduce((sum, item) => sum + item.amount, 0)
 )
 
+function goToUpdate(paymentId){
+  router.push(`/paymentlist/update/${paymentId}`)
+}
+
 // 컴포넌트 마운트 시 서버에서 결제 내역 호출
 onMounted(async () => {
   try {
-    const result = await paymentApi.getPaymentList(tripId);
+    const result = await paymentlistApi.getPaymentList(tripId); // api/paymentlist/${tripid}
     console.log('결제내역 리스트', result);
     console.log('tripId', tripId);
 
