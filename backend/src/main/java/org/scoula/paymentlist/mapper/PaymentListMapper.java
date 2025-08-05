@@ -10,7 +10,13 @@ import java.util.List;
 
 @Mapper
 public interface PaymentListMapper {
-    List<PaymentListVO> selectPaymentList(@Param("tripId")Integer tripId);
-    List<PaymentListVO> selectPaymentById(@Param("paymentId") Integer paymentId);
+    List<PaymentListVO> selectPaymentList(
+            @Param("tripId") Integer tripId,
+            @Param("userId") Integer userId
+    );
+    List<PaymentListVO> selectPaymentById(
+            @Param("paymentId") Integer paymentId,
+            @Param("userId") Integer userId
+    );
 
 }
