@@ -18,6 +18,7 @@ import { getMyInfo } from '@/api/memberApi.js';
 import { 
   Bell, 
   CalendarPlus, 
+
   BellRing,
   PlaneTakeoff,
   Wallet,
@@ -52,6 +53,7 @@ onMounted(async () => {
       ongoingTrips.value = tripRes.filter(trip => trip.tripStatus === 'ACTIVE');
     }
     
+
 
     // 미정산 내역
     const response = await axios.get('/api/settlements/unsettled/me', {
@@ -112,7 +114,7 @@ const goToMyPage = () => router.push("/mypage");
             <span class="section-title">아직 안 한 정산</span>
           </div>
           <SettlementCard :settlements="unsettledList" />
-          
+
         </section>
         <!-- 2. 진행 중인 여행 -->
         <section class="ongoing-trips">
@@ -143,7 +145,6 @@ const goToMyPage = () => router.push("/mypage");
         <span class="plus-icon">+</span> 새로운 여행
       </button>
     </div>
-    
     <Footer class="footer"/>
   </div>
 </template>

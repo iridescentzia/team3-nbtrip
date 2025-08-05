@@ -10,6 +10,9 @@ import org.scoula.merchant.mapper.MerchantMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Log4j2
 @Service
 @RequiredArgsConstructor
@@ -49,5 +52,14 @@ public class MerchantServiceImpl implements MerchantService {
         if(result == 0) {
             throw new RuntimeException("결제 오류");
         }
+    }
+
+    // 전체 카테고리 목록 조회
+    @Override
+    public List<MerchantCategoryDTO> getAllMerchantCategories() {
+        List<MerchantCategoryVO> categoryVOS = merchantMapper.getAllMerchantCategories();
+        return categoryVOS.stream()
+                .map(MerchantCategoryDTO::of)
+                .collect(Collectors.toList());
     }
 }

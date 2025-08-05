@@ -9,8 +9,5 @@ import java.util.List;
 
 @Mapper
 public interface PaymentListMapper {
-
     List<PaymentListVO> selectPaymentList(@Param("tripId")Integer tripId);
-
-
 }
