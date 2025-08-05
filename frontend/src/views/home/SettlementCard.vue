@@ -83,6 +83,11 @@ const goToSettlementDetail = (tripId) => {
   cursor: pointer;
 }
 
+.settlement-card:hover {
+  transform: translateY(-2px); /* 호버 시 살짝 떠오르는 효과 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
 /* 여행 이름 스타일 */
 .trip-name {
   font-weight: 700;
