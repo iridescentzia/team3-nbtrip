@@ -25,6 +25,10 @@ const props = defineProps({
   selectedParticipants:{
     type:Array,
     default: () => []
+  },
+  selectedCategories:{
+    type: Array,
+    default: () => []
   }
 })
 
@@ -36,43 +40,53 @@ const route = useRoute();
 const tripId = Number(route.params.tripId); 
 const payments = ref([]); // 서버에서 받아온 전체 결제 내역
 
+
+// 필터링된 결제 내역
 const filteredPayments = computed(() => {
-  // 날짜 필터
+
   const { start, end } = props.dateRange
   console.log('[PaymentListInfo.vue] 현재 dateRange:', start, end)
 
   let result = payments.value;
   console.log('원래 payments 수:', payments.value.length);
 
+
   // 날짜 필터
   // 시작/종료 날짜가 모두 비어있으면 전체 반환
   // if (!start && !end) return result
   if(start || end){
       result = result.filter(p => {
-      // ISO 문자열에서 yyyy-MM-dd 부분만 비교
-      const payDate = new Date(p.payAt)
-      const startDate = start ? new Date(start) : null;
-      const endDate = end ? new Date(end) : null;
+        // ISO 문자열에서 yyyy-MM-dd 부분만 비교
+        const payDate = new Date(p.payAt)
+        const startDate = start ? new Date(start) : null;
+        const endDate = end ? new Date(end) : null;
 
-        // 끝 날짜를 하루의 마지막 시각으로 보정
-        if (endDate) {
-          endDate.setHours(23, 59, 59, 999);
-        }
+          // 끝 날짜를 하루의 마지막 시각으로 보정
+          if (endDate) {
+            endDate.setHours(23, 59, 59, 999);
+          }
 
-      if (startDate && endDate) return payDate >= startDate && payDate <= endDate;
-      if (startDate) return payDate >= startDate;
-      if (endDate) return payDate <= endDate;
+        if (startDate && endDate) return payDate >= startDate && payDate <= endDate;
+        if (startDate) return payDate >= startDate;
+        if (endDate) return payDate <= endDate;
+
+        console.log('날짜 필터링 후 수:', result.length);
     });
 
   }
-  console.log('날짜 필터 후 수:', result.length);
+
 
   // 결제 참여자 필터
   if (props.selectedParticipants.length > 0) {
     const selectedIds = props.selectedParticipants.map(String); 
     result = result.filter(p => selectedIds.includes(String(p.userId)));
-    console.log("불러온 payments:", payments.value);
-    console.log("userId 타입 체크:", payments.value.map(p => typeof p.userId)); // → 'number'만 나오면 OK
+    console.log('결제 참여자 필터링 후 수:', result.length);
+  }
+
+  // 카테고리 필터
+  if (props.selectedCategories.length > 0) {
+    result = result.filter(p => props.selectedCategories.includes(p.categoryId))
+    console.log('카테고리 필터링 후 수:', result.length);
   }
 
   return result;
@@ -84,6 +98,10 @@ watch(() => props.selectedParticipants, (val) => {
 
 watch(() => props.dateRange, (val) => {
   console.log('[watch] dateRange:', val);
+});
+
+watch(() => props.selectedCategories, (val) => {
+  console.log('[watch] selectedCategories:', val);
 });
 
 function formatSub(payer, time) {

@@ -61,6 +61,7 @@
     </transition>
   </div>
 
+  <!-- 카테고리 선택 모달 창 -->
   <div
     v-if="isCategoryModalOpen"
     class="overlay"
@@ -69,15 +70,21 @@
     <transition name="slide-up" appear>
       <div class="bottom-modal">
         <h3 class="modal-title">카테고리</h3>
-        <select v-model="selectedCategory">
-        <option disabled value="">카테고리 선택</option>
-        <option value="식비">식비</option>
-        <option value="교통">교통</option>
-        <option value="숙박">숙박</option>
-        <option value="관광">관광</option>
-        <option value="기타">기타</option>
-      </select>
+        <div class="member-list">
+          <label
+            v-for="category in tripStore.merchantCategories"
+            :key="category.categoryId"
+            class="member-item"
+          >
+          <input
+            type="checkbox"
+            v-model="selectedCategories"
+            :value="category.categoryId"
+          />
+          {{ category.categoryName }}
+          </label>
         <Button @click="applyCategoryFilter" label="조회하기"></Button>
+        </div>
       </div>
     </transition>
   </div>
@@ -135,6 +142,7 @@ const emit = defineEmits(['date-filtered', 'participant-filtered'])
 const tripStore = useTripStore();
 
 const selectedMembers = ref([]);
+const selectedCategories = ref([])
 
 const today = new Date()
 const pickerRange = ref([props.startDate, today])
@@ -158,7 +166,7 @@ const isDateFiltered = computed(() => {
     pickerRange.value[1] !== null  )
 })
 
-// const isCategoryFiltered = computed(() => categoryFilter.value !== null);
+const isCategoryFiltered = computed(() => selectedCategories.value > 0);
 const isParticipantsFiltered = computed(() => selectedMembers.value.length > 0);
 
 // 날짜 모달 토글 함수
@@ -202,21 +210,6 @@ const applyDateFilter = () => {
   closeDateModal()
 }
 
-// 리셋 클릭: 초기 상태로
-const resetFilter = () => {
-  console.log("click resetFilter")
-
-  // 날짜 필터링 초기화
-  hasApplied.value = false
-  pickerRange.value = [ props.startDate, today ]
-  console.log("reset date: ", pickerRange.value[0], pickerRange.value[1])
-  emit('date-filtered', { start: '', end: '' })
-
-  // 결제 참여자 필터링 초기화
-  selectedMembers.value = [];
-  emit('participant-filtered', []); // 빈 배열로 초기화 알림
-}
-
 const toggleCategoryModal = async () => {
   isCategoryModalOpen.value = !isCategoryModalOpen.value;
 };
@@ -225,9 +218,9 @@ const closeCategoryModal = () => {
   isCategoryModalOpen.value = false;
 };
 
-
+// 선택된 카테고리 필터링
 const applyCategoryFilter = () => {
-  // 선택된 결제 참여자 필터링 로직 추가
+  emit('category-filtered', selectedCategories.value) // 부모로 전달
   closeCategoryModal();
 };
 
@@ -245,8 +238,28 @@ const applyParticipantFilter = () => {
   closeParticipantModal();
 };
 
+// 리셋 클릭: 초기 상태로
+const resetFilter = () => {
+  console.log("click resetFilter")
+
+  // 날짜 필터링 초기화
+  hasApplied.value = false
+  pickerRange.value = [ props.startDate, today ]
+  console.log("reset date: ", pickerRange.value[0], pickerRange.value[1])
+  emit('date-filtered', { start: '', end: '' })
+
+  // 결제 참여자 필터링 초기화
+  selectedMembers.value = [];
+  emit('participant-filtered', []); // 빈 배열로 초기화 알림
+
+  // 카테고리 필터링 초기화
+  selectedCategories.value = []
+  emit('category-filtered', [])
+}
+
 onMounted(async () => {
   await tripStore.fetchTrips();
+  await tripStore.fetchMerchantCategories();
 });
 </script>
 
