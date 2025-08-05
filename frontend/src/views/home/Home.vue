@@ -136,8 +136,6 @@ const goToMyPage = () => router.push('/mypage');
       </button>
     </div>
     <Footer class="footer" />
-
-    <Footer class="footer" />
   </div>
 </template>
 
