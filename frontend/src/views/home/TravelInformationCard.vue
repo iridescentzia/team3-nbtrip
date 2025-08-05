@@ -2,15 +2,19 @@
 import { ref, onMounted, computed } from 'vue';
 import tripApi from '@/api/tripApi.js';
 import paymentlistApi from '@/api/paymentlistApi.js'
-import { Info } from 'lucide-vue-next';
+import { Info, ChevronRight } from 'lucide-vue-next';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
+const goTripDetail = () => {
+  router.push(`/trip/${trip.value.tripId}`)
+}
 
-// ✅ props.tripId 받아오기
 const props = defineProps({
-  tripId: Number
+  trip: Object
 });
 
-const trip = ref(null);
+const trip = ref(props.trip);
 const paymentList = ref([]);
 
 // tripName
@@ -45,16 +49,12 @@ const progressPercentage = computed(() => {
 const isOverBudget = computed(() => usedAmount.value >= budget.value);
 
 onMounted(async () => {
-  const detail = await tripApi.getTripDetail(props.tripId);
-  console.log('tripApi 응답 detail:', detail);
-  trip.value = detail;
-
-  const res = await paymentlistApi.getPaymentList(props.tripId);
+  const res = await paymentlistApi.getPaymentList(trip.value.tripId);
   console.log('res:', res);
 
   if (res?.paymentData && Array.isArray(res.paymentData)) {
     paymentList.value = res.paymentData;
-    console.log(`[tripId=${props.tripId}] 결제 내역:`, paymentList.value);
+    console.log(`[tripId=${trip.value.tripId}] 결제 내역:`, paymentList.value);
   } else {
     console.warn('❌ 결제 데이터 형식이 예상과 다름:', res);
   }
@@ -63,9 +63,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="travel-card">
-    <h3 class="trip-name">{{ tripName }}</h3>
-    <p class="trip-date">{{ date }}</p>
+  <div class="travel-card" @click="goTripDetail">
+    <div class="trip-header">
+      <div>
+        <h3 class="trip-name">{{ tripName }}</h3>
+        <p class="trip-date">{{ date }}</p>
+      </div>
+      <ChevronRight class="arrow-icon" />
+    </div>
 
     
     <div class="amount-row">
@@ -96,11 +101,14 @@ onMounted(async () => {
   border-radius: 12px;
   box-sizing: border-box;
   padding: 16px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
   font-family: 'IBM Plex Sans KR', sans-serif;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
+
 
 .trip-name {
   font-size: 20px;
@@ -116,11 +124,10 @@ onMounted(async () => {
 }
 
 .amount-row {
-  
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-top: 15%;
+  margin-top: 10%;
 }
 
 .amount-text{
@@ -134,6 +141,19 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     gap: 30px; 
+}
+
+.trip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.arrow-icon {
+  width: 24px;
+  height: 24px;
+  color: #888;
 }
 
 .info-icon{

@@ -81,15 +81,6 @@ public class NotificationServiceImpl implements NotificationService {
     public void createNotification(NotificationDTO dto) {
         String type = dto.getNotificationType().toUpperCase();
 
-        // 결제 (TRANSACTION) 알림 -> trip 멤버 전체 insert
-
-        // 푸시 알림 x
-        if (type.equals("TRANSACTION")) {
-            // 결제 생성인지 수정인지 구분해서 actionType 세팅
-            if (dto.getActionType() == null || dto.getActionType().isBlank()) {
-                dto.setActionType("CREATE"); // 기본값 생성
-            }
-
 
             // 정산 요청 알림 trip 멤버 전원에게 알림 insert + 푸시 전송
             if (type.equals("SETTLEMENT")) {
