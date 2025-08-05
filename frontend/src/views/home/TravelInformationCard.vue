@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import tripApi from '@/api/tripApi.js';
 import paymentlistApi from '@/api/paymentlistApi.js'
-import { Info, ChevronRight } from 'lucide-vue-next';
+import { ChevronRight } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -77,7 +77,6 @@ onMounted(async () => {
         <span class="amount-text">현재 사용 금액</span>
         <div class="amount"> 
           {{formattedAmount}}
-          <Info class="info-icon" />
         </div>
         
     </div>
@@ -154,12 +153,6 @@ onMounted(async () => {
   width: 24px;
   height: 24px;
   color: #888;
-}
-
-.info-icon{
-  color:#AAAAAA;
-  width:18px;
-  padding-bottom:5px;
 }
 
 .progress-bar {
