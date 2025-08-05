@@ -2,7 +2,7 @@
   <div class="summary-card">
     <div class="summary-header">
       <span class="label">총 사용 금액</span>
-      <button class="terminate" small>여행 종료하기</button>
+      <button class="terminate" small @click="props.onTerminate">여행 종료하기</button>
     </div>
     <div class="amount-row">
       <div class="amount">{{formattedAmount}}</div>
@@ -42,6 +42,10 @@ const props = defineProps({
   budget:{
     type: Number,
     required: true
+  },
+  onTerminate: {
+    type: Function,
+    required: false
   }
 })
 
