@@ -7,6 +7,7 @@
         :trip-name="tripStore.currentTrip.tripName"
         :start-date="formatDate(tripStore.currentTrip.startDate)"
         :end-date="formatDate(tripStore.currentTrip.endDate)"
+        v-model:activeTab="activeTab"
         showEdit
       />
 
@@ -29,9 +30,11 @@
       />  
 
       <PaymentListInfo 
+        v-if="activeTab === '그룹 지출 내역' || activeTab === '선결제 내역'"
         :date-range="selectedDateRange" 
         :selected-participants="selectedParticipants"
         :selected-categories="selectedCategories"
+        :active-tab="activeTab"
         @init-total="onInitTotal" 
       />
     </div>
@@ -52,7 +55,9 @@ import { useTripStore } from '@/stores/trip.js';
 import { useRouter } from 'vue-router';
 import Summary from '@/components/common/Summary.vue';
 
+const router = useRouter();
 const tripStore = useTripStore();
+const activeTab = ref('그룹 지출 내역');
 
 const goToRegister = () => {
   router.push('/paymentlist/register2');

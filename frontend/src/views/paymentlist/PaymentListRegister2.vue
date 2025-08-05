@@ -317,6 +317,7 @@ input[type="number"]::-webkit-outer-spin-button {
   font-size: 16px;
   width: 100%;
   text-align: center;
+  cursor: pointer;
 }
 
 .participant-list {

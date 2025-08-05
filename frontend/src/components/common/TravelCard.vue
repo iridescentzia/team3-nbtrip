@@ -7,7 +7,10 @@ const props = defineProps({
   tripName: String,
   startDate: String,
   endDate: String,
+  activeTab: String 
 });
+
+const emit = defineEmits(['update:activeTab']);
 
 const formattedDate = computed(() => {
   const start = props.startDate?.replaceAll('-', '.') ?? '';
@@ -16,10 +19,10 @@ const formattedDate = computed(() => {
 });
 
 const tabs = ['그룹 지출 내역', '선결제 내역', '그룹 관리'];
-const activeTab = ref(tabs[0]);
+// const activeTab = ref(tabs[0]);
 
 function selectTab(tab) {
-  activeTab.value = tab;
+  emit('update:activeTab', tab);
 }
 
 // 아이콘 클릭 시 차트 페이지로 이동

@@ -9,6 +9,10 @@
       :amount="item.amount"
       @click="goToUpdate(item.paymentId)"
     />
+    <!-- 결제 내역이 없는 경우 -->
+    <!-- <div v-if="filteredPayments.length === 0 && isPaymentTab">
+      결제 내역이 없습니다.
+    </div> -->
   </div>
 </template>
 
@@ -30,7 +34,8 @@ const props = defineProps({
   selectedCategories:{
     type: Array,
     default: () => []
-  }
+  },
+  activeTab: String,
 })
 
 const emit = defineEmits(['init-total']);
@@ -52,6 +57,12 @@ const filteredPayments = computed(() => {
   let result = payments.value;
   console.log('원래 payments 수:', payments.value.length);
 
+  // 탭
+   if (props.activeTab === '그룹 지출 내역') {
+    result = result.filter(p => p.paymentType === 'QR');
+  } else if (props.activeTab === '선결제 내역') {
+    result = result.filter(p => p.paymentType === 'PREPAID' || p.paymentType === 'OTHER');
+  }
 
   // 날짜 필터
   // 시작/종료 날짜가 모두 비어있으면 전체 반환

@@ -171,7 +171,9 @@ const handleSave = async () => {
         <input 
         class="input-text"
         v-model="form.content" 
-        placeholder="지출 내용을 입력하세요" />
+        placeholder="지출 내용을 입력하세요" 
+        :readonly="paymentType == 'QR'"
+        />
       </div>
     </div>
 
@@ -183,6 +185,7 @@ const handleSave = async () => {
           v-model="form.amount"
           class="input-text"
           placeholder="금액을 입력하세요"
+          :readonly="paymentType == 'QR'"
           @input="formatAmountInput"
         />
         <span class="input-suffix">원</span>
@@ -371,6 +374,7 @@ input[type="number"]::-webkit-outer-spin-button {
   font-size: 16px;
   width: 100%;
   text-align: center;
+  cursor: pointer;
 }
 
 .participant-list {
