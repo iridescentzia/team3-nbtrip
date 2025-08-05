@@ -58,7 +58,6 @@ onMounted(async () => {
       headers: { Authorization: `Bearer ${token}` }
     });
     unsettledList.value = response.data;
-
   } catch (err) {
     console.error('API 에러:', err);
     if (err.message?.includes('인증') || err.message?.includes('토큰')) {

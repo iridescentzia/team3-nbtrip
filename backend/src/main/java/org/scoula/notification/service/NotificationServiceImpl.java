@@ -17,6 +17,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationMapper mapper;
     private final FCMService fcmService;
 
+
     // 유저 ID로 전체 알림 조회
     @Override
     public List<NotificationDTO> getNotificationsByUserId(Integer userId) {
@@ -81,23 +82,52 @@ public class NotificationServiceImpl implements NotificationService {
     public void createNotification(NotificationDTO dto) {
         String type = dto.getNotificationType().toUpperCase();
 
+        // 결제 (TRANSACTION) 알림 -> trip 멤버 전체 insert + 푸시 알림
+        if (type.equals("TRANSACTION")) {
+            // 결제 생성인지 수정인지 구분해서 actionType 세팅
+            if (dto.getActionType() == null || dto.getActionType().isBlank()) {
+                dto.setActionType("CREATE"); // 기본값 생성
+            }
+            // 한글 메시지용 actionKor 세팅
+            String actionKor = dto.getActionType().equalsIgnoreCase("UPDATE") ? "수정" : "등록";
 
-            // 정산 요청 알림 trip 멤버 전원에게 알림 insert + 푸시 전송
-            if (type.equals("SETTLEMENT")) {
-                mapper.createSettlementNotificationForAll(dto.toVO());
-                List<Integer> memberIds = mapper.findUserIdsByTripId(dto.getTripId());
-                for (Integer userId : memberIds) {
-                    String fcmToken = mapper.findFcmTokenByUserId(userId);
-                    if (fcmToken != null && !fcmToken.isBlank()) {
-                        try {
-                            fcmService.sendPushNotification(
-                                    fcmToken,
-                                    "정산 요청이 도착했어요",
-                                    "여행 정산을 확인해 주세요"
-                            );
-                        } catch (Exception e) {
-                            log.error("SETTLEMENT 푸시 실패: userId={}, tripId={}", userId, dto.getTripId(), e);
-                        }
+            // DB insert (여행 멤버 모두에게)
+            mapper.createTransactionNotificationForAll(dto.toVO());
+
+
+            // 푸시 전송
+            List<Integer> memberIds = mapper.findUserIdsByTripId(dto.getTripId());
+            for (Integer userId : memberIds) {
+                String fcmToken = mapper.findFcmTokenByUserId(userId);
+                if (fcmToken != null && !fcmToken.isBlank()) {
+                    try {
+                        fcmService.sendPushNotification(
+                                fcmToken,
+                                "결제 알림이 도착했습니다.",
+                                dto.getFromUserNickname() + "님이 '" + dto.getMerchantName() + "' 결제를 " + actionKor + "했습니다."
+                        );
+                    } catch (Exception e) {
+                        log.error("TRANSACTION 푸시 실패: userId={}, tripId={}", userId, dto.getTripId(), e);
+                    }
+                }
+
+            }
+        }
+        // 정산 요청 알림 trip 멤버 전원에게 알림 insert + 푸시 전송
+        if (type.equals("SETTLEMENT")) {
+            mapper.createSettlementNotificationForAll(dto.toVO());
+            List<Integer> memberIds = mapper.findUserIdsByTripId(dto.getTripId());
+            for (Integer userId : memberIds) {
+                String fcmToken = mapper.findFcmTokenByUserId(userId);
+                if (fcmToken != null && !fcmToken.isBlank()) {
+                    try {
+                        fcmService.sendPushNotification(
+                                fcmToken,
+                                "정산 요청이 도착했어요",
+                                "여행 정산을 확인해 주세요"
+                        );
+                    } catch (Exception e) {
+                        log.error("SETTLEMENT 푸시 실패: userId={}, tripId={}", userId, dto.getTripId(), e);
                     }
                 }
                 return;
@@ -141,10 +171,22 @@ public class NotificationServiceImpl implements NotificationService {
                 }
             }
 
-            // 기본 알림 db에 저장 (INVITE, REMINDER 등)
+        // 초대 알림 insert + 푸시
+        if (type.equals("INVITE")) {
+            String fcmToken = mapper.findFcmTokenByUserId(dto.getUserId());
             mapper.createNotification(dto.toVO());
-
-
+            if (fcmToken != null && !fcmToken.isBlank()) {
+                try {
+                    fcmService.sendPushNotification(
+                            fcmToken,
+                            "여행 초대가 도착했어요",
+                            "새로운 여행에 초대받았어요. 확인해보세요"
+                    );
+                } catch (Exception e) {
+                    log.error("INVITE 푸시 실패: userId={}", dto.getUserId(), e);
+                }
+            }
+            return;
         }
     }
 
