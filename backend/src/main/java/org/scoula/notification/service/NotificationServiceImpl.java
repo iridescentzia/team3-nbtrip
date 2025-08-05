@@ -146,6 +146,7 @@ public class NotificationServiceImpl implements NotificationService {
 
 
         }
+    }
 
     // 알림 읽음 처리
     @Override

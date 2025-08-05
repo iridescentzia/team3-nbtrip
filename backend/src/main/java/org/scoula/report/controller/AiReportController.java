@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.scoula.report.service.OpenAiService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,16 +15,23 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AiReportController {
 
-    private final OpenAiService OpenAiService;
-
+    private final OpenAiService openAiService;
 
     @GetMapping("/{tripId}")
-    public ResponseEntity<Map<String, Object>> getReport(@PathVariable int tripId) {
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("donutData", OpenAiService.getDonutReport(tripId));
-        response.put("lineData", OpenAiService.getLineReport(tripId));
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Map<String, Object>> getDonutReport(@PathVariable int tripId) {
+        String comment = openAiService.getDonutReport(tripId);
+        Map<String, Object> result = new HashMap<>();
+        result.put("comment", comment);
+        return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/{tripId}/date")
+    public ResponseEntity<Map<String, Object>> getLineReport(@PathVariable int tripId) {
+        String comment = openAiService.getLineReport(tripId);
+        Map<String, Object> result = new HashMap<>();
+        result.put("comment", comment);
+        return ResponseEntity.ok(result);
+    }
 }
+
+

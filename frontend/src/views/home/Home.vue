@@ -3,12 +3,14 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from 'pinia';
 
+
 import AccountCard from './AccountCard.vue'
 import TravelInformationCard from './TravelInformationCard.vue'
 import SettlementCard from './SettlementCard.vue'
 import Footer from "@/components/layout/Footer.vue";
 
 import tripApi from "@/api/tripApi.js";
+
 import axios from 'axios';
 import { useAuthStore } from '@/stores/authStore.js';
 import { getMyUnsettledTrips } from '@/api/settlementApi.js';
@@ -20,6 +22,7 @@ import {
   PlaneTakeoff,
   Wallet,
 } from "lucide-vue-next";
+
 
 const router = useRouter();
 
@@ -46,9 +49,7 @@ onMounted(async () => {
     // 여행 목록
     const tripRes = await tripApi.fetchTrips();
     if (Array.isArray(tripRes)) {
-      ongoingTrips.value = tripRes.filter(
-        (trip) => trip.tripStatus === 'ACTIVE'
-      );
+      ongoingTrips.value = tripRes.filter(trip => trip.tripStatus === 'ACTIVE');
     }
     
 
@@ -72,10 +73,14 @@ const userNameInitial = computed(() => userInfo.value.name?.charAt(0) || '');
 const goToNotification = () => router.push('/notification');
 const goToGroupCreate = () => router.push("/trip/create");
 const goToMyPage = () => router.push("/mypage");
+
 </script>
+
+
 
 <template>
   <div class="home-content">
+
     <div class="content">
       <!-- 헤더 -->
       <div class="header-section">
@@ -104,15 +109,16 @@ const goToMyPage = () => router.push("/mypage");
         <!-- 1. 정산 요청 -->
         <section v-if="unsettledList.length > 0" class="settlement-pending">
           <div class="section-header">
-            <BellRing class="main-icon" />
+            <BellRing class="main-icon"/>
             <span class="section-title">아직 안 한 정산</span>
           </div>
           <SettlementCard :settlements="unsettledList" />
+          
         </section>
         <!-- 2. 진행 중인 여행 -->
         <section class="ongoing-trips">
           <div class="section-header">
-            <PlaneTakeoff class="main-icon" />
+            <PlaneTakeoff class="main-icon"/>
             <span class="section-title">진행 중인 여행</span>
           </div>
           <TravelInformationCard
@@ -125,7 +131,7 @@ const goToMyPage = () => router.push("/mypage");
         <!-- 3. 내 계좌 요약 -->
         <section class="account-summary">
           <div class="section-header">
-            <Wallet class="main-icon" />
+            <Wallet class="main-icon"/>
             <span class="section-title">내 계좌</span>
           </div>
           <AccountCard class="card" 
@@ -138,8 +144,8 @@ const goToMyPage = () => router.push("/mypage");
         <span class="plus-icon">+</span> 새로운 여행
       </button>
     </div>
-
-    <Footer class="footer" />
+    
+    <Footer class="footer"/>
   </div>
 </template>
 
@@ -180,7 +186,7 @@ const goToMyPage = () => router.push("/mypage");
 .nickname {
   font-size: 24px;
   font-weight: 700;
-  color: #4a4a4a;
+  color: #4A4A4A;
 }
 
 .welcome {
@@ -188,11 +194,12 @@ const goToMyPage = () => router.push("/mypage");
   color: #777;
 }
 
+
 .header-icon {
   display: flex;
   width: 35px;
   height: 32px;
-  color: #4a4a4a;
+  color: #4A4A4A;
 }
 
 .icon-group {
@@ -204,11 +211,12 @@ const goToMyPage = () => router.push("/mypage");
   transition: background-color 0.2s ease;
 }
 
+
 .profile-circle {
   width: 37px;
   height: 37px;
   border-radius: 50%;
-  background-color: #fddf99;
+  background-color: #FDDF99;
   color: #333;
   display: flex;
   justify-content: center;
@@ -238,14 +246,14 @@ const goToMyPage = () => router.push("/mypage");
   margin-bottom: 12px; /* 아래 내용과 간격 */
 }
 
-.main-icon {
+.main-icon{
   width: 24px;
   height: 24px;
-  color: #4a4a4a;
+  color: #4A4A4A;
   margin-bottom: 11px;
 }
 
-.card {
+.card{
   width: 100%;
   display: flex;
   justify-content: center;
@@ -289,3 +297,4 @@ const goToMyPage = () => router.push("/mypage");
   margin-right: 6px;
 }
 </style>
+
