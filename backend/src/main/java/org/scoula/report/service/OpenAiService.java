@@ -1,14 +1,8 @@
 package org.scoula.report.service;
 
-import org.scoula.report.dto.OpenAiDTO;
-
-import java.util.List;
-
 public interface OpenAiService {
-
-    List<OpenAiDTO> getDonutReport(Integer tripId);
-
-    List<OpenAiDTO> getLineReport(Integer tripId);
-
-
+    String getDonutReport(int tripId);  // 카테고리 기반 분석
+    String getLineReport(int tripId);   // 날짜 기반 분석
 }
+
+
