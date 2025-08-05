@@ -38,4 +38,9 @@ public class ChartServiceImpl implements ChartService {
         return mapper.selectTripInfo(tripId);
     }
 
+    @Override
+    public boolean isTripMember(int tripId, int userId) {
+        return mapper.selectTripMember(tripId, userId);
+    }
+
 }

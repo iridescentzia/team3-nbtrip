@@ -2,8 +2,10 @@
 import { ref, computed } from 'vue';
 import { FileChartColumn, Trash2 } from 'lucide-vue-next';
 import { useRouter, useRoute } from 'vue-router';
+import apiClient from '@/api/index.js';
 
 const props = defineProps({
+  tripId: Number,
   tripName: String,
   startDate: String,
   endDate: String,
@@ -27,12 +29,22 @@ const router = useRouter();
 const route = useRoute();
 
 // 아이콘 클릭 시 차트 페이지로 이동
-function goToChart() {
-  const tripId = route.params.tripId;
-  router.push({
-    name: 'report',
-    params: { tripId },
-  });
+async function goToChart() {
+  try {
+    const tripId = route.params.tripId;
+    const res = await apiClient.get(`/report/${tripId}/is-member`);
+    const isMember = res.data;
+    console.log(isMember);
+
+    if (isMember) {
+      router.push({ name: 'report', params: { tripId } });
+    } else {
+      alert('현재 여행에 포함된 회원이 아닙니다');
+    }
+  } catch (error) {
+    console.error('멤버 확인 중 오류 발생:', error);
+    alert('서버 오류가 발생했습니다. 다시 시도해주세요.');
+  }
 }
 </script>
 

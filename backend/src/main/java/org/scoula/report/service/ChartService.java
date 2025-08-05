@@ -24,5 +24,7 @@ public interface ChartService {
 
     TripInfoDTO getTripInfo(Integer tripId);
 
+    boolean isTripMember(int tripId, int userId);
+
 
 }
