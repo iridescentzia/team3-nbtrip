@@ -1,16 +1,50 @@
 <script setup>
 import { usePaymentStore } from '@/stores/paymentStore';
 import paymentApi from '@/api/paymentApi';
+import tripApi from '@/api/tripApi';
 import QRScanner from '@/components/qr/QRScanner.vue';
 import { getMyInfo } from '@/api/memberApi.js';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import Header from '@/components/layout/Header.vue';
+import Button from '@/components/common/Button.vue';
 
 const router = useRouter();
 const store = usePaymentStore();
 
+const INT_MAX = 2147483647;
 const canSubmit = computed(() => {
-  return store.amount > 0;
+  return store.amount > 0 && store.amount <= INT_MAX;
+});
+
+// 마운트 시 사용자 정보 불러오기
+onMounted(async () => {
+  try {
+    console.log('마이페이지 마운트 시작');
+
+    // ✅ getMyInfo() 사용 (userId 파라미터 불필요)
+    const res = await getMyInfo();
+    console.log('응답 결과:', res);
+
+    // ✅ 응답 구조에 맞게 수정
+    if (!res?.success && !res?.data) {
+      console.error('유저 정보 조회 실패:', res?.message || '데이터 없음');
+    }
+
+    const tripId = await tripApi.getCurrentTripId();
+    if (tripId == 0) {
+      console.error('현재 여행 ID를 가져오지 못했습니다.');
+      alert('진행 중인 여행이 없습니다. 여행을 생성하거나 참여해주세요.');
+      router.push('/');
+    }
+  } catch (err) {
+    console.error('마이페이지 API 에러:', err);
+
+    if (err.message?.includes('인증') || err.message?.includes('토큰')) {
+      console.log('인증 오류로 로그인 페이지로 이동');
+      router.push('/login');
+    }
+  }
 });
 
 // 모달이 열릴 때 참여자 모두 선택되도록
@@ -44,25 +78,45 @@ async function submitPayment() {
 </script>
 
 <template>
-  <div class="layout-wrapper">
-    <div class="layout-container">
-      <main class="content">
-        <div>
-          <div style="text-align: center; margin-bottom: 16px">
-            <h2>QR 스캔</h2>
-            <p>결제할 가게의 QR코드를 인식해주세요.</p>
-          </div>
+  <div>
+    <Header
+      title="QR 스캔"
+      :backAction="
+        () => {
+          store.resetModal();
+          router.push('/');
+        }
+      "
+    />
 
-          <QRScanner />
+    <main class="content">
+      <div>
+        <div style="text-align: center; margin-bottom: 16px; margin-top: 60px">
+          <p>결제할 가게의 QR코드를 인식해주세요.</p>
+        </div>
 
+        <QRScanner style="height: 744px" />
+
+        <div v-if="store.isModalVisible && store.modalType === 1" class="modal">
+          <!-- 결제 입력 모달 -->
           <div
-            v-if="store.isModalVisible && store.modalType === 1"
-            class="modal"
+            style="
+              width: calc(100% - 32px);
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              margin: 10px auto 0 auto;
+            "
           >
-            <!-- 결제 입력 모달 -->
-            <h2 style="text-align: center">'{{ store.tripName }}' 중</h2>
+            <h2 style="text-align: center; width: 100%; margin: 0 0 16px 0">
+              '{{ store.tripName }}' 중
+            </h2>
 
-            <div class="input-group">
+            <div
+              class="input-group"
+              style="width: 100%; max-width: 320px; margin: 0 auto 16px auto"
+            >
               <label for="merchantName">가게 이름</label><br />
               <input
                 id="merchantName"
@@ -71,17 +125,37 @@ async function submitPayment() {
               />
             </div>
 
-            <div class="input-group">
+            <div
+              class="input-group"
+              style="width: 100%; max-width: 320px; margin: 0 auto 16px auto"
+            >
               <label for="amount">결제 금액</label><br />
-              <input
-                id="amount"
-                v-model.number="store.amount"
-                type="number"
-                placeholder="예: 55000"
-              />
+              <div style="display: flex; align-items: center">
+                <input
+                  id="amount"
+                  :value="store.amount ? store.amount.toLocaleString() : ''"
+                  @input="
+                    (e) => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      store.amount = Number(val);
+                      e.target.value = val ? Number(val).toLocaleString() : '';
+                    }
+                  "
+                  type="text"
+                  placeholder="예: 55,000"
+                  style="padding-right: 12px; vertical-align: middle; flex: 1"
+                />
+                <span style="margin-left: 8px">원</span>
+              </div>
+              <div v-if="store.amount > INT_MAX" class="amount-error">
+                최대 {{ INT_MAX.toLocaleString() }}원까지만 입력 가능합니다.
+              </div>
             </div>
 
-            <div class="input-group">
+            <div
+              class="input-group"
+              style="width: 100%; max-width: 320px; margin: 0 auto"
+            >
               <label>결제에 참여하는 사람들</label>
               <div
                 v-for="participant in store.participantsNickname"
@@ -102,90 +176,121 @@ async function submitPayment() {
                 }}</label>
               </div>
             </div>
-
-            <button @click="submitPayment" :disabled="!canSubmit">
-              결제하기
-            </button>
           </div>
 
-          <!-- 결제 성공 모달 -->
-          <div
-            v-if="store.isModalVisible && store.modalType === 2"
-            class="modal"
-          >
-            <h3>결제 완료!</h3>
-            <button @click="$router.push('/')">홈으로 돌아가기</button>
-          </div>
+          <Button
+            :label="'결제하기'"
+            :disabled="!canSubmit"
+            @click="submitPayment"
+          />
+        </div>
 
-          <!-- 결제 실패 모달 -->
+        <!-- 결제 성공 모달 -->
+        <div
+          v-if="store.isModalVisible && store.modalType === 2"
+          class="modal"
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          "
+        >
           <div
-            v-if="store.isModalVisible && store.modalType === 3"
-            class="modal"
+            style="
+              width: calc(100% - 32px);
+              text-align: left;
+              margin-bottom: 8px;
+              display: flex;
+              flex-direction: row;
+              justify-content: space-between;
+            "
           >
-            <h3>결제에 실패했어요...</h3>
-            <p>사유: {{ store.reason }}</p>
-            <div style="display: flex">
-              <button @click="store.resetModal()" style="margin-right: 8px">
-                취소하기
-              </button>
-              <button @click="submitPayment">다시 시도하기</button>
+            <h3 style="font-size: 22px; font-weight: bold; color: #34495e">
+              결제 완료!
+            </h3>
+            <img
+              src="@/assets/img/smiling_cat.png"
+              alt="웃는 고양이"
+              style="width: 100px"
+            />
+          </div>
+          <Button
+            :label="'홈으로 돌아가기'"
+            @click="
+              () => {
+                store.resetModal();
+                router.push('/');
+              }
+            "
+            :style="{ margin: '0' }"
+          />
+        </div>
+
+        <!-- 결제 실패 모달 -->
+        <div
+          v-if="store.isModalVisible && store.modalType === 3"
+          class="modal"
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          "
+        >
+          <div
+            style="
+              width: calc(100% - 32px);
+              text-align: left;
+              margin-bottom: 8px;
+              display: flex;
+              flex-direction: row;
+              justify-content: space-between;
+            "
+          >
+            <div>
+              <h3>결제에 실패했어요...</h3>
+              <p>사유: {{ store.reason }}</p>
             </div>
+            <img
+              src="@/assets/img/crying_cat.png"
+              alt="우는 고양이"
+              style="width: 100px"
+            />
+          </div>
+          <div
+            style="
+              width: calc(100% - 32px);
+              height: 48px;
+              display: flex;
+              justify-content: space-between;
+            "
+          >
+            <Button
+              :label="'취소하기'"
+              @click="store.resetModal()"
+              style="margin-right: 8px"
+            />
+            <Button :label="'다시 시도하기'" @click="submitPayment" />
           </div>
         </div>
-      </main>
-      <div class="mid"></div>
-    </div>
+      </div>
+    </main>
+    <div class="mid"></div>
   </div>
 </template>
 
 <style scoped>
-/* Default Layout */
-.layout-wrapper {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  min-height: 100vh;
-  background-color: #f9fafb; /* 기존 Tailwind 'bg-gray-50' */
-  position: relative;
-  overflow: hidden;
-}
-
-.content {
-  padding-top: 56px;
-  width: 100%;
-  max-width: 414px;
-  flex: 1;
-  padding: 16px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* 자식 요소들을 가운데 정렬 */
-}
-
-.layout-container {
-  width: 100%;
-  max-width: 414px; /* 모바일 기준 */
-  position: relative;
-  padding-top: 0px;
-  margin-top: 0px;
-}
-
-.mid {
-  height: 250px;
-}
-
 /* Payment Modal */
 /* 모달 박스 */
 .modal {
-  position: fixed;
-  left: 50%;
+  position: absolute;
+  left: 0;
   bottom: 0;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 414px;
+  width: 352px;
   background-color: #ffffff;
   border-radius: 16px 16px 0 0;
-  padding: 24px 24px 32px 24px;
+  padding: 16px 16px 24px 16px;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
   z-index: 1001;
   animation: modalUp 0.25s ease;
@@ -258,21 +363,9 @@ async function submitPayment() {
   min-height: 24px;
 }
 
-/* 버튼 스타일 */
-button {
-  width: 100%;
-  padding: 12px 0;
-  font-size: 16px;
-  color: #ffffff;
-  background-color: #ffd166;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
+.amount-error {
+  color: #ef4444;
+  font-size: 13px;
+  margin-top: 4px;
 }
 </style>

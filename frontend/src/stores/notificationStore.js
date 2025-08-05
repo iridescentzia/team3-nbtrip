@@ -8,23 +8,21 @@ export const useNotificationStore = defineStore('notification', {
   }),
 
   actions: {
-    // 테스트
-    // async getNotifications(userId, category = 'ALL') {
-    //   try {
-    //     const res = await fetchNotifications(userId, category);
-    //     console.log('받은 데이터:', res.data); // 삭제
-    //     this.notifications = res.data;
-    //     this.selectedCategory = category;
-    //   } catch (error) {
-    //     console.error('알림 조회 실패:', error);
-    //   }
-    // },
-
     // 토큰 기반 알림 조회
     async getNotifications(category = 'ALL') {
       try {
         const { data } = await fetchNotifications(category);
-        this.notifications = data;
+
+        if (category === 'ALL'){
+          this.notifications = data;
+        } else if(category === 'SETTLEMENT') {
+          this.notifications = data.filter(n =>
+            ['SETTLEMENT', 'REMINDER', 'COMPLETED'].includes(n.notificationType)
+          );
+        } else{
+          this.notifications = data.filter(n => n.notificationType === category);
+        }
+
         this.selectedCategory = category;
       } catch (error) {
         console.error('알림 조회 실패:', error);

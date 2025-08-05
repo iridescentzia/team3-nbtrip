@@ -96,7 +96,7 @@
         <h3 class="modal-title">결제 참여자</h3>
         <div class="member-list">
           <label
-            v-for="member in tripStore.currentTripMemberNicknames"
+            v-for="member in props.members"
             :key="member.userId"
             class="member-item"
           >
@@ -126,6 +126,10 @@ const props = defineProps({
   startDate: {
     type: String,
     default: ''
+  },
+  members: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -210,7 +214,6 @@ const resetFilter = () => {
   emit('date-filtered', { start: '', end: '' })
 }
 
-
 const toggleCategoryModal = async () => {
   isCategoryModalOpen.value = !isCategoryModalOpen.value;
 };
@@ -241,8 +244,6 @@ const applyParticipantFilter = () => {
 
 onMounted(async () => {
   await tripStore.fetchTrips();
-  await tripStore.fetchCurrentTripMembers();
-  await tripStore.fetchCurrentTripMemberNicknames();
 });
 </script>
 
