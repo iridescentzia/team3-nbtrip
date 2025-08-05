@@ -6,11 +6,6 @@ import org.scoula.paymentlist.dto.PaymentListDTO;
 import java.util.List;
 
 public interface PaymentListService {
-
-
     List<PaymentListDTO> getPaymentList(Integer tripId);
-
-
-
 }
 

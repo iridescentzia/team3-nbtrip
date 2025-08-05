@@ -11,16 +11,20 @@ import org.scoula.paymentlist.domain.PaymentListVO;
 @AllArgsConstructor
 @Builder
 public class PaymentListDTO {
+    private int merchantId;
+    private String merchantName;
 
-    private String memo;
+    private int categoryId;
+    private String categoryName;
 
     private String userId;
-
     private String nickname;
 
     private String payAt;
-
     private int amount;
+    private String paymentType;
+    private String memo;
+
     /**
      * VO → DTO 변환
      */
@@ -29,11 +33,16 @@ public class PaymentListDTO {
             return null;
         }
         return PaymentListDTO.builder()
-                .memo(vo.getMemo())
+                .merchantId(vo.getMerchantId())
+                .merchantName(vo.getMerchantName())
+                .categoryId(vo.getCategoryId())
+                .categoryName(vo.getCategoryName())
                 .userId(vo.getUserId())
                 .nickname(vo.getNickname())
                 .payAt(vo.getPayAt())
                 .amount(vo.getAmount())
+                .paymentType(vo.getPaymentType())
+                .memo(vo.getMemo())
                 .build();
     }
 
@@ -42,11 +51,16 @@ public class PaymentListDTO {
      */
     public PaymentListVO toVo() {
         return PaymentListVO.builder()
-                .memo(this.memo)
+                .merchantId(this.merchantId)
+                .merchantName(this.merchantName)
+                .categoryId(this.categoryId)
+                .categoryName(this.categoryName)
                 .userId(this.userId)
                 .nickname(this.nickname)
                 .payAt(this.payAt)
                 .amount(this.amount)
+                .paymentType(this.paymentType)
+                .memo(this.memo)
                 .build();
     }
 }

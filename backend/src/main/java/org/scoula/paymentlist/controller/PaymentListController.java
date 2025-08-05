@@ -23,8 +23,6 @@ public class PaymentListController {
     /** 결제내역 **/
     @GetMapping("/{tripId}")
     public ResponseEntity<Map<String, Object>> getPaymentList(@PathVariable int tripId) {
-
-
         Map<String, Object> response = new HashMap<>();
         response.put("paymentData", paymentService.getPaymentList(tripId));
         log.info("api 불러오는중");

@@ -13,19 +13,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class PaymentListVO {
+    private int merchantId;
+    private String merchantName;
 
-    /** 결제 내용 */
-    private String memo;
+    private int categoryId;
+    private String categoryName;
 
-    /** 결제자 */
     private String userId;
-
     private String nickname;
 
-    /** "결제 날짜 */
     private String payAt;
-
-    /** 결제금액 */
     private int amount;
+    private String paymentType;
+    private String memo;
 
 }

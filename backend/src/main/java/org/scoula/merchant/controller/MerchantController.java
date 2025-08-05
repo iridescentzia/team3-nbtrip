@@ -8,6 +8,8 @@ import org.scoula.merchant.service.MerchantService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @Log4j2
@@ -30,4 +32,11 @@ public class MerchantController {
         service.createMerchant(dto);
         return ResponseEntity.ok().build();
     }
+
+    // 전체 카테고리 목록 조회
+    @GetMapping("/category")
+    public ResponseEntity<List<MerchantCategoryDTO>> getAllMerchantCategories() {
+        return ResponseEntity.ok(service.getAllMerchantCategories());
+    }
+
 }

@@ -25,11 +25,13 @@
         :members="tripStore.currentTripMembers" 
         @date-filtered="onDateFiltered" 
         @participant-filtered="onParticipantFiltered"
+        @category-filtered="onCategoryFiltered"
       />  
 
       <PaymentListInfo 
         :date-range="selectedDateRange" 
         :selected-participants="selectedParticipants"
+        :selected-categories="selectedCategories"
         @init-total="onInitTotal" 
       />
     </div>
@@ -74,6 +76,8 @@ const formatDate = (dateInput) => {
 // Filter.vue에서 emit된 ref
 const selectedDateRange = ref({ start: '', end: '' })
 const selectedParticipants = ref([]); // 선택된 참여자 userId 배열
+const selectedCategories = ref([])
+
 const tripMembers = ref([]);
 const totalAmount = ref(0)
 
@@ -92,6 +96,11 @@ function onInitTotal(amount){
 function onParticipantFiltered(userIds){
   console.log('[Paymentlist.vue] 선택된 결제 참여자: ', userIds);
   selectedParticipants.value = userIds;
+}
+
+function onCategoryFiltered(categoryIds){
+  console.log('[PaymentList.vue] 선택된 카테고리: ', categoryIds)
+  selectedCategories.value = categoryIds
 }
 
 onMounted(async () => {

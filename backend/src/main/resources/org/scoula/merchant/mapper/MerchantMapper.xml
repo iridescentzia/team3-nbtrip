@@ -24,4 +24,10 @@
         FROM merchant_category
         WHERE category_id=#{categoryId}
     </select>
+
+    <select id="getAllMerchantCategories" resultType="org.scoula.merchant.domain.MerchantCategoryVO">
+        SELECT *
+        FROM merchant_category
+        ORDER BY category_id
+    </select>
 </mapper>
