@@ -69,14 +69,18 @@ public class NotificationServiceImpl implements NotificationService {
     // 그룹 참여/탈퇴 알림 생성 (joined, left)
     @Override
     public void createGroupEventNotification(Integer fromUserId, Integer tripId, String type) {
-        NotificationVO vo = NotificationVO.builder()
-                .fromUserId(fromUserId)
-                .tripId(tripId)
-                .notificationType(type) // JOINED or LEFT
-                .build();
-        mapper.createGroupEventNotification(vo);
-    }
+        List<Integer> memberIds = mapper.findUserIdsByTripId(tripId);
+        for(Integer userId : memberIds) {
+            NotificationVO vo = NotificationVO.builder()
+                    .userId(userId)
+                    .fromUserId(fromUserId)
+                    .tripId(tripId)
+                    .notificationType(type) // JOINED or LEFT
+                    .build();
+            mapper.createNotification(vo);
+        }
 
+    }
     // 알림 생성 및 fcm 푸시 전송
     @Override
     public void createNotification(NotificationDTO dto) {
@@ -93,7 +97,6 @@ public class NotificationServiceImpl implements NotificationService {
 
             // DB insert (여행 멤버 모두에게)
             mapper.createTransactionNotificationForAll(dto.toVO());
-
 
             // 푸시 전송
             List<Integer> memberIds = mapper.findUserIdsByTripId(dto.getTripId());

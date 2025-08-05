@@ -115,14 +115,14 @@
         n.trip_id AS tripId,
         t.trip_name AS tripName,
         tm.member_status AS memberStatus,
-        n.notification_type AS notificationType,  <!-- 항상 'INVITE' -->
+        n.notification_type AS notificationType,
         n.is_read AS isRead,
         n.send_at AS sendAt
         FROM notification n
         LEFT JOIN users u ON n.from_user_id = u.user_id
         LEFT JOIN trip t ON n.trip_id = t.trip_id
         LEFT JOIN trip_member tm ON n.trip_id = tm.trip_id AND tm.user_id = n.from_user_id
-        WHERE n.notification_type = 'INVITE'   <!-- JOINED/LEFT 없음 -->
+        WHERE n.notification_type IN ('INVITE', 'GROUP_EVENT')   <!-- JOINED/LEFT 없음 -->
         AND n.user_id = #{userId}
         ORDER BY n.send_at DESC
     </select>

@@ -39,7 +39,7 @@ const goToPage = (n) => {
         router.push(`/trip/${n.tripId}`)
       }
       break;
-      
+
     case 'GROUP_EVENT':
       // 그룹 상세 페이지
       router.push(`/trip/${n.tripId}`);
@@ -69,6 +69,7 @@ const selectCategory = (tab) => {
 
 const handleCardClick = (n) => {
   notificationStore.readNotification(n.notificationId);
+  // goToPage(n); // 이동까지 같이 처리
 };
 
 const formatAmount = (value) => {
@@ -98,12 +99,15 @@ const getMessage = (n) => {
       return `${user}님이 정산 요청을 보냈습니다.\n정산을 확인하시겠습니까?`;
 
     case 'INVITE':
+        return `${user}님이 "${n.tripName}" 그룹에 초대하셨습니다.\n여행에 참여하시겠습니까?`;
+    
+    case 'GROUP_EVENT':
       if (n.memberStatus === 'JOINED') {
         return `${user}님이 "${n.tripName}" 그룹에 참여했어요.`;
       } else if (n.memberStatus === 'LEFT') {
         return `${user}님이 "${n.tripName}" 그룹에서 나갔어요.`;
       } else {
-        return `${user}님이 "${n.tripName}" 그룹에 초대하셨습니다.\n여행에 참여하시겠습니까?`;
+        return `${user}님이 그룹 관련 활동을 했습니다.`;
       }
 
     case 'REMINDER':
