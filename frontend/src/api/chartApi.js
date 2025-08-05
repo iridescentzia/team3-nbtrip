@@ -1,8 +1,8 @@
-import axios from 'axios';
+import apiClient from '@/api/index.js';
 
 const chartApi = {
   getChart(tripId) {
-    return axios
+    return apiClient
       .get(`/api/report/${tripId}`) // 백엔드에서 제공하는 API
       .then((res) => res.data); // data만 추출해서 반환
   },

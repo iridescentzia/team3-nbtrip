@@ -1,5 +1,5 @@
 <template>
-  <Header />
+  <Header title="전체 여행 목록" :backAction="() => router.back()" />
   <div class="travel-report-page">
     <!-- 헤더 -->
     <div class="report-info-box">
@@ -56,7 +56,7 @@ import {
   PointElement,
   LineElement,
 } from 'chart.js';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import chartApi from '@/api/chartApi';
 import Header from '@/components/layout/Header.vue';
 import AIReport from './AiReport.vue';
@@ -73,6 +73,7 @@ ChartJS.register(
 
 // 경로에서 tripId 추출
 const route = useRoute();
+const router = useRouter();
 const tripId = ref(Number(route.params.tripId));
 
 // 여행 정보
@@ -86,9 +87,6 @@ const activeTab = ref('category');
 // 차트 데이터
 const categoryData = ref({ labels: [], datasets: [] });
 const dateData = ref({ labels: [], datasets: [] });
-
-// AI 분석 리포트
-const aiReport = ref('');
 
 // 차트 옵션
 const categoryOptions = {
@@ -141,12 +139,12 @@ onMounted(async () => {
           label: '카테고리별 지출',
           data: resp.donutData.map((d) => d.total_amount),
           backgroundColor: [
-            '#FF6384',
-            '#36A2EB',
-            '#FFCE56',
-            '#4BC0C0',
-            '#9966FF',
-            '#FF9F40',
+            '#FDE68A', // 식음료 - n빵트립 메인색 파스텔화 (연한 노란색)
+            '#BFDBFE', // 교통 - 파스텔 스카이블루
+            '#DDD6FE', // 숙박 - 파스텔 라벤더
+            '#BBF7D0', // 관광 - 파스텔 민트그린
+            '#FECACA', // 쇼핑 - 파스텔 코랄핑크
+            '#E5E7EB', // 기타 - 파스텔 그레이
           ],
         },
       ],
@@ -181,14 +179,14 @@ onMounted(async () => {
   background: #fff;
 }
 .travel-report-page {
-  max-width: 100%;
-  margin: 0 auto;
-  margin-top: 56px;
+  width: 100%;
   background-color: #f9fafb;
   box-sizing: border-box;
+  padding-top: 56px;
 }
 
 .report-header {
+  padding-top: 15px;
   text-align: center;
   margin-bottom: 16px;
 }
@@ -232,21 +230,24 @@ onMounted(async () => {
 }
 
 .chart-area {
+  margin-left: 30px;
+  width: 300px;
   height: 300px;
   margin-bottom: 24px;
   margin-top: 30px;
 }
 
 .ai-report {
-  background: #fff;
+  background-color: #fff;
   border-radius: 12px;
-  margin: 20px 16px;
-  padding: 20px 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  font-size: 14px;
-  color: #333;
-  min-height: 140; /* ✅ 추가 */
-  min-width: 200;
+  margin: 16px auto;
+
+  /* ✅ 너비 고정 */
+  min-width: 250px; /* 선택: 너무 작게 줄어드는 것 방지 */
+
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  min-height: 160px;
+  transition: all 0.3s ease;
 }
 
 .ai-report h3 {

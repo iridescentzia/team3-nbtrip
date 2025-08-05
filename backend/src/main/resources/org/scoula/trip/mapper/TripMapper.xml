@@ -16,7 +16,7 @@
 
     <update id="changeMemberStatus">
         UPDATE trip_member
-        SET member_status = 'LEFT'
+        SET member_status = #{status}
         WHERE trip_id = #{tripId} AND user_id = #{userId}
     </update>
 
@@ -30,7 +30,22 @@
         SET trip_status = 'CLOSED'
         WHERE trip_id =#{tripId}
     </update>
-
+    <!-- 여행 업데이트   -->
+    <update id="updateTrip">
+        UPDATE trip
+        <set>
+            <if test="tripName != null and tripName != ''">
+                trip_name = #{tripName},
+            </if>
+            <if test="startDate != null">
+                start_date = #{startDate},
+            </if>
+            <if test="endDate != null">
+                end_date = #{endDate},
+            </if>
+        </set>
+        WHERE trip_id = #{tripId}
+    </update>
     <select id="getTripDetail" resultMap="tripMap">
         SELECT *
         FROM trip t
