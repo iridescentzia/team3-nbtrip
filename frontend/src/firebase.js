@@ -58,8 +58,7 @@ onMessage(messaging, (payload) => {
   if (Notification.permission === 'granted' && payload.notification) {
     const { title, body } = payload.notification;
     new Notification(title, {
-      body,
-      icon: '/firebase-logo.png' // 원하면 커스텀 아이콘으로 변경 가능
+      body, 
     });
   }
 });
