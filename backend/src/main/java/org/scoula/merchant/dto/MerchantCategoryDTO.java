@@ -11,10 +11,12 @@ import org.scoula.merchant.domain.MerchantCategoryVO;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MerchantCategoryDTO {
+    private int categoryId;
     private String categoryName;
 
     public static MerchantCategoryDTO of(MerchantCategoryVO vo) {
         return MerchantCategoryDTO.builder()
+                .categoryId(vo.getCategoryId())
                 .categoryName(vo.getCategoryName())
                 .build();
     }
