@@ -19,7 +19,11 @@ export const useNotificationStore = defineStore('notification', {
           this.notifications = data.filter(n =>
             ['SETTLEMENT', 'REMINDER', 'COMPLETED'].includes(n.notificationType)
           );
-        } else{
+        } else if(category === 'GROUP_EVENT'){
+          this.notifications = data.filter(n =>
+            ['INVITE', 'GROUP_EVENT'].includes(n.notificationType)
+          );
+        }else{
           this.notifications = data.filter(n => n.notificationType === category);
         }
 
