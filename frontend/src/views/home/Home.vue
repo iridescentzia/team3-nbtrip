@@ -15,10 +15,9 @@ import axios from 'axios';
 import { useAuthStore } from '@/stores/authStore.js';
 import { getMyUnsettledTrips } from '@/api/settlementApi.js';
 import { getMyInfo } from '@/api/memberApi.js';
-import { 
-  Bell, 
-  CalendarPlus, 
-
+import {
+  Bell,
+  CalendarPlus,
   BellRing,
   PlaneTakeoff,
   Wallet,
@@ -52,13 +51,10 @@ onMounted(async () => {
     if (Array.isArray(tripRes)) {
       ongoingTrips.value = tripRes.filter(trip => trip.tripStatus === 'ACTIVE');
     }
-    
 
 
     // 미정산 내역
-    const response = await axios.get('/api/settlements/unsettled/me', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await getMyUnsettledTrips();
     unsettledList.value = response.data;
   } catch (err) {
     console.error('API 에러:', err);
@@ -123,10 +119,10 @@ const goToMyPage = () => router.push("/mypage");
             <span class="section-title">진행 중인 여행</span>
           </div>
           <TravelInformationCard
-            v-for="trip in ongoingTrips"
-            :key="trip.tripId"
-            class="card"
-            :trip="trip"
+              v-for="trip in ongoingTrips"
+              :key="trip.tripId"
+              class="card"
+              :trip="trip"
           />
         </section>
         <!-- 3. 내 계좌 요약 -->
@@ -135,9 +131,9 @@ const goToMyPage = () => router.push("/mypage");
             <Wallet class="main-icon"/>
             <span class="section-title">내 계좌</span>
           </div>
-          <AccountCard class="card" 
-          v-if="userInfo.userId" 
-          :user-id="userInfo.userId"
+          <AccountCard class="card"
+                       v-if="userInfo.userId"
+                       :user-id="userInfo.userId"
           />
         </section>
       </div>
@@ -145,6 +141,7 @@ const goToMyPage = () => router.push("/mypage");
         <span class="plus-icon">+</span> 새로운 여행
       </button>
     </div>
+
     <Footer class="footer"/>
   </div>
 </template>
@@ -266,7 +263,7 @@ const goToMyPage = () => router.push("/mypage");
 
 .floating-button {
   position: sticky;
-  bottom: 18px; 
+  bottom: 18px;
   left: 600px;
 
   display: flex;
@@ -297,4 +294,5 @@ const goToMyPage = () => router.push("/mypage");
   margin-right: 6px;
 }
 </style>
+
 
