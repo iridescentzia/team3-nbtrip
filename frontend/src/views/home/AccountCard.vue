@@ -148,10 +148,7 @@ const bankCodeMap = {
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-.account-card:hover {
-  transform: translateY(-2px); /* 호버 시 살짝 떠오르는 효과 */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
+
 
 .top-row {
   display: flex;
