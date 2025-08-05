@@ -1,115 +1,127 @@
 <template>
-    <Header title="결제 내역 추가"></Header>
+  <Header title="결제 내역 추가" @back="router.back"/>
 
-    <!-- 메인 영역 -->
-    <main class="content-container">
-      <!-- 내용 입력 -->
-      <div class="form-section">
-        <label class="form-label">내용</label>
-        <div class="input-box">
-          <input v-model="form.content"  placeholder="지출 내용을 입력하세요" />       
-        </div>
+  <!-- 메인 입력 영역 -->
+  <main class="content-container">
+    <!-- 내용 입력 -->
+    <div class="form-section">
+      <label class="form-label">내용</label>
+      <div class="input-box">
+        <input 
+        class="input-text"
+        v-model="form.content" 
+        placeholder="지출 내용을 입력하세요" />
       </div>
+    </div>
 
-      <!-- 금액 입력 -->
-      <div class="form-section">
-        <label class="form-label">금액</label>
-        <div class="input-box">
-          <input
-            v-model="form.amount"
-            class="input-text"
-            placeholder="금액을 입력하세요"
-            @input="formatAmountInput"
-          />
-          <span class="input-suffix">원</span>
-        </div>
+    <!-- 금액 입력 -->
+    <div class="form-section">
+      <label class="form-label">금액</label>
+      <div class="input-box">
+        <input
+          v-model="form.amount"
+          class="input-text"
+          placeholder="금액을 입력하세요"
+          @input="formatAmountInput"
+        />
+        <span class="input-suffix">원</span>
       </div>
+    </div>
 
-      <!-- 날짜 입력 -->
-      <div class="form-section">
-        <label class="form-label">날짜</label>
-        <div class="input-box date-picker">
-          <VueDatePicker
-            v-model="date"          
-            :enable-time-picker="true"
-            format="yyyy-MM-dd HH:mm"         
-            class="date-picker"
-            />
-        </div>
+    <!-- 날짜 입력 -->
+    <div class="form-section">
+      <label class="form-label">날짜</label>
+      <div class="input-box date-picker">
+        <VueDatePicker
+          v-model="date"
+          :enable-time-picker="true"
+          format="yyyy-MM-dd HH:mm"
+          class="date-picker"
+        />
       </div>
+    </div>
 
-
-      <!-- 카테고리 선택 -->
-      <div class="form-section">
-        <label class="form-label">카테고리</label>
-        <select v-model="form.category" class="select-box">
-          <option
-            v-for="category in tripStore.merchantCategories"
-            :key="category.categoryId"
-            :value="category.categoryId"
-          >
-            {{ category.categoryName }}
-          </option>
-        </select>
-      </div>
+    <!-- 카테고리 선택 -->
+    <div class="form-section">
+      <label class="form-label">카테고리</label>
+      <select v-model="form.category" class="select-box">
+        <option
+          v-for="category in tripStore.merchantCategories"
+          :key="category.categoryId"
+          :value="category.categoryId"
+        >
+          {{ category.categoryName }}
+        </option>
+      </select>
+    </div>
 
     <!-- 결제자 선택 -->
     <div class="form-section">
-    <label class="form-label">결제자</label>
-    <select
-        v-model="form.payerUserId"
-        class="select-box"
-    >
+      <label class="form-label">결제자</label>
+      <select v-model="form.payerUserId" class="select-box">
         <option
-        v-for="member in tripStore.currentTripMembers"
-        :key="member.userId"
-        :value="member.userId"
+          v-for="member in tripStore.currentTripMembers"
+          :key="member.userId"
+          :value="member.userId"
         >
-        {{ member.nickname }}
+          {{ member.nickname }}
         </option>
-    </select>
+      </select>
     </div>
 
+    <!-- 결제 참여자 선택 및 분배 금액 -->
+    <div class="form-section">
+      <label class="form-label">결제 참여자</label>
+      <div class="participant-list">
+        <div
+          v-for="member in tripStore.currentTripMembers"
+          :key="member.userId"
+          class="participant-item"
+        >
+          <div class="badge">{{ member.nickname.charAt(0) }}</div>
+          <span class="name">{{ member.nickname }}</span>
 
-      <!-- 결제 참여자 -->
-      <div class="form-section">
-        <label class="form-label">결제 참여자</label>
-        <div class="participant-list">
-          <div
-            v-for="member in tripStore.currentTripMembers"
-            :key="member.userId"
-            class="participant-item"
-          >
-            <div class="badge">{{ member.nickname.charAt(0) }}</div>
-            <span class="name">{{ member.nickname }}</span>
-            <div class="toggle-wrapper" @click="toggleMember(member.userId)">
-              <div class="toggle" :class="{ on: isSelected(member.userId) }">
-                <div class="circle"></div>
-              </div>
+          <!-- 참여자 토글 -->
+          <div class="toggle-wrapper" @click="toggleMember(member.userId)">
+            <div class="toggle" :class="{ on: isSelected(member.userId) }">
+              <div class="circle"></div>
             </div>
+          </div>
+
+          <!-- 분배 금액 입력 -->
+          <div v-if="isSelected(member.userId)" class="input-box" style="margin-top: 8px;">
+            <input
+              type="number"
+              :value="getSplitAmount(member.userId)"
+              @input="updateSplitAmount(member.userId, $event.target.value)"
+              class="input-text"
+              style="width: 100px;"
+            />
+            <span class="input-suffix">원</span>
           </div>
         </div>
       </div>
+    </div>
 
-        <!-- 메모 -->
-      <div class="form-section">
-        <label class="form-label">메모</label>
-        <div class="textarea-box">
-          <textarea
-            v-model="form.memo"
-            class="input-text"
-            placeholder="상세 내용을 입력하세요..."
-            rows="4"
-            style="width: 100%; border: none; outline: none; resize: none;"
-          ></textarea>
-        </div>
+    <!-- 메모 -->
+    <div class="form-section">
+      <label class="form-label">메모</label>
+      <div class="textarea-box">
+        <textarea
+          v-model="form.memo"
+          class="input-text"
+          placeholder="상세 내용을 입력하세요..."
+          rows="4"
+          style="width: 100%; border: none; outline: none; resize: none;"
+        ></textarea>
       </div>
-    </main>
+    </div>
+  </main>
 
-    <!-- 하단 버튼 -->
-    <footer class="footer">
-      <button class="save-button" @click="handleSave">저장</button>
-    </footer>
+  <!-- 하단 저장 버튼 -->
+  <footer class="footer">
+    <button class="save-button" @click="handleSave">저장</button>
+  </footer>
 </template>
 
 <script setup>
@@ -119,7 +131,11 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import { useTripStore } from '@/stores/trip';
 import paymentApi from '@/api/paymentApi';
+import { useRoute, useRouter } from 'vue-router';
 // import { useToast } from 'vue-toastification';
+
+const router = useRouter();
+
 
 // const toast = useToast();
 const tripStore = useTripStore();
@@ -216,7 +232,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* 클래스 단위 정리된 예시 */
 .add-payment {
   max-width: 384px;
   margin: 0 auto;
@@ -274,33 +289,34 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
 }
 
 .input-text,
 .input-suffix {
   font-size: 16px;
   color: #000;
+  border: none;
+  outline: none;
+  font-family: 'IBM Plex Sans KR', sans-serif;
 }
 
-.edit-icon,
-.calendar-icon {
-  width: 18px;
-  height: 18px;
+/* input[type=number]의 스핀버튼 제거 */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
+
 
 .select-box {
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 10px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.selected-value {
   font-size: 16px;
-  color: #000;
+  width: 100%;
+  text-align: center;
 }
 
 .participant-list {
@@ -317,10 +333,12 @@ onMounted(async () => {
   align-items: center;
   padding: 12px;
   position: relative;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .badge {
-  background: #ffd166;
+  background: rgba(255, 209, 102, 0.65);
   border-radius: 9999px;
   color: white;
   font-weight: bold;
@@ -329,29 +347,13 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-right: 12px;
 }
 
 .name {
   flex: 1;
   font-weight: 600;
   color: #4a4a4a;
-}
-
-.checkbox {
-  width: 24px;
-  height: 24px;
-  border-radius: 9999px;
-}
-
-.checkbox.on {
-  background-color: #ffd166;
-  border: 4px solid #ffd166;
-}
-
-.checkbox.off {
-  background-color: #989898a6;
-  border: 4px solid #808080;
+  min-width: 70px;
 }
 
 .toggle-wrapper {
@@ -370,7 +372,7 @@ onMounted(async () => {
 }
 
 .toggle.on {
-  background-color: #ffd166; /* 토글 ON 색상 */
+  background-color: rgba(255, 209, 102, 0.65);
 }
 
 .toggle .circle {
@@ -397,11 +399,6 @@ onMounted(async () => {
   position: relative;
 }
 
-.placeholder {
-  color: #9ca3af;
-  font-size: 16px;
-}
-
 .footer {
   display: flex;
   justify-content: space-between;
@@ -411,25 +408,15 @@ onMounted(async () => {
 }
 
 .save-button {
-  background-color: #ffd166;
+  background-color:rgba(255, 209, 102, 0.65);
   border-radius: 12px;
   padding: 16px 24px;
-  font-weight: bold;
+  font-weight: 1000;
   border: none;
   flex: 1;
   margin-left: 8px;
-}
-
-.delete-button {
-  background-color: #ff1c0c33;
-  border-radius: 12px;
-  padding: 16px;
-  border: none;
-  width: 56px;
-  height: 56px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  font-size: 16px;
+  color: #4A4A4A;
 }
 
 /* 스크롤바 */

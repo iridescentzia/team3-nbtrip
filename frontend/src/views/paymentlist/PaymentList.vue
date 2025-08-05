@@ -35,6 +35,10 @@
         @init-total="onInitTotal" 
       />
     </div>
+      <!-- 고정 버튼 -->
+    <button class="floating-add-button" @click="goToRegister">
+      + 결제 추가
+    </button>
 </template>
 
 <script setup>
@@ -45,9 +49,15 @@ import PaymentListInfo from './PaymentListInfo.vue';
 
 import { onMounted, ref } from 'vue';
 import { useTripStore } from '@/stores/trip.js';
+import { useRouter } from 'vue-router';
 import Summary from '@/components/common/Summary.vue';
 
 const tripStore = useTripStore();
+
+const goToRegister = () => {
+  router.push('/paymentlist/register2');
+};
+
 
 const formatDate = (dateInput) => {
   let date;
@@ -118,6 +128,9 @@ onMounted(async () => {
   padding: 1.25rem;
   overflow-y: auto;
   padding-top: 56px;
+  position: relative;
+  max-width: 384px;
+  /* margin: 0 auto; */
 }
 
 /* 스크롤바 */
@@ -141,4 +154,33 @@ onMounted(async () => {
   background-color: #888;
 }
 
+.floating-add-button {
+  position: fixed;
+  bottom: 90px;
+  left: 55%;
+  transform: translateX(-50%); /* 가운데 정렬 */
+  width: 120px;
+  max-width: 384px;
+
+  background-color: rgb(255, 217, 130);
+  color: #4A4A4A;
+  font-weight: bold;
+  font-size: 16px;
+  padding: 14px 0;
+  border: none;
+  border-radius: 9999px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  z-index: 1000;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  font-family: 'IBM Plex Sans KR', sans-serif;
+}
+
+.floating-add-button:hover {
+  background-color: #FFD166;
+}
+
+.floating-add-button:active {
+  transform: translateX(-50%) scale(0.95);
+}
 </style>
