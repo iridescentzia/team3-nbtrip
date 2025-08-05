@@ -20,6 +20,8 @@ public class PaymentListVO {
     /** 결제자 */
     private String userId;
 
+    private String nickname;
+
     /** "결제 날짜 */
     private String payAt;
 

@@ -116,4 +116,11 @@ public interface SettlementMapper {
      * @return 상태별 카운트가 포함된 DTO
      */
     SettlementDTO.RemainingSettlementResponseDto getRemainingSettlementCounts(@Param("tripId") int tripId);
+
+    /**
+     * 특정 사용자의 미정산 여행 목록을 조회함.
+     * @param userId 사용자의 ID
+     * @return 미정산 여행 정보 DTO 리스트
+     */
+    List<SettlementDTO.UnsettledTripInfo> findUnsettledTripsByUserId(@Param("userId") int userId);
 }

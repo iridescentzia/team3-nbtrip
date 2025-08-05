@@ -8,6 +8,7 @@ import org.scoula.trip.dto.TripCreateDTO;
 import org.scoula.security.accounting.domain.CustomUser;
 import org.scoula.trip.dto.TripDTO;
 import org.scoula.trip.dto.TripMemberDTO;
+import org.scoula.trip.dto.TripUpdateDTO;
 import org.scoula.trip.service.TripService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -91,7 +92,7 @@ public class TripController {
     public ResponseEntity<Integer> changeMemberStatus(@AuthenticationPrincipal CustomUser customUser, @PathVariable int tripId, @PathVariable int userId){
 
         if(service.isOwner(tripId, customUser.getUserId())){
-            return ResponseEntity.ok().body(service.changeMemberStatus(tripId, userId));
+            return ResponseEntity.ok().body(service.changeMemberStatus(tripId, userId,TripMemberStatus.LEFT));
         }
         else{
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);
@@ -107,6 +108,15 @@ public class TripController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);
         }
     }
+    //tripId인 여행 수정하기
+    @PutMapping("/{tripId}/update")
+    public ResponseEntity<TripDTO> updateTrip(@AuthenticationPrincipal CustomUser customUser,
+                                              @PathVariable int tripId,
+                                              @RequestBody TripUpdateDTO tripUpdateDTO){
+        tripUpdateDTO.setTripId(tripId); // URL값 우선
+        return ResponseEntity.ok().body(service.updateTrip(tripUpdateDTO));
+    }
+
     @PostMapping("")
     public ResponseEntity<TripDTO> createTrip(@AuthenticationPrincipal CustomUser customUser, @RequestBody TripCreateDTO tripCreateDTO) {
         tripCreateDTO.setOwnerId(customUser.getUserId());

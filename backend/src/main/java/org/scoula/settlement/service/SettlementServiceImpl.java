@@ -468,4 +468,10 @@ public class SettlementServiceImpl implements SettlementService {
             return false; // 예외 발생 시 안전하게 false 반환
         }
     }
+
+    @Override
+    public List<SettlementDTO.UnsettledTripInfo> getUnsettledTrips(int userId) {
+        // Mapper의 메소드를 호출하여 DB 작업을 위임하고, 결과를 그대로 반환함.
+        return mapper.findUnsettledTripsByUserId(userId);
+    }
 }
