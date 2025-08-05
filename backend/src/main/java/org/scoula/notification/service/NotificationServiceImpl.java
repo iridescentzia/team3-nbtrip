@@ -94,6 +94,7 @@ public class NotificationServiceImpl implements NotificationService {
             // DB insert (여행 멤버 모두에게)
             mapper.createTransactionNotificationForAll(dto.toVO());
 
+
             // 푸시 전송
             List<Integer> memberIds = mapper.findUserIdsByTripId(dto.getTripId());
             for (Integer userId : memberIds) {
@@ -107,6 +108,28 @@ public class NotificationServiceImpl implements NotificationService {
                         );
                     } catch (Exception e) {
                         log.error("TRANSACTION 푸시 실패: userId={}, tripId={}", userId, dto.getTripId(), e);
+
+                    }
+                }
+
+            }
+        }
+        // 정산 요청 알림 trip 멤버 전원에게 알림 insert + 푸시 전송
+        if (type.equals("SETTLEMENT")) {
+            mapper.createSettlementNotificationForAll(dto.toVO());
+            List<Integer> memberIds = mapper.findUserIdsByTripId(dto.getTripId());
+            for (Integer userId : memberIds) {
+                String fcmToken = mapper.findFcmTokenByUserId(userId);
+                if (fcmToken != null && !fcmToken.isBlank()) {
+                    try {
+                        fcmService.sendPushNotification(
+                                fcmToken,
+                                "정산 요청이 도착했어요",
+                                "여행 정산을 확인해 주세요"
+                        );
+                    } catch (Exception e) {
+                        log.error("SETTLEMENT 푸시 실패: userId={}, tripId={}", userId, dto.getTripId(), e);
+
                     }
                 }
 
