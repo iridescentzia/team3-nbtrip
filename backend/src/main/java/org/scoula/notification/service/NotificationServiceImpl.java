@@ -94,7 +94,6 @@ public class NotificationServiceImpl implements NotificationService {
             // DB insert (여행 멤버 모두에게)
             mapper.createTransactionNotificationForAll(dto.toVO());
 
-
             // 푸시 전송
             List<Integer> memberIds = mapper.findUserIdsByTripId(dto.getTripId());
             for (Integer userId : memberIds) {

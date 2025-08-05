@@ -1,41 +1,36 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
+import AccountCard from './AccountCard.vue';
+import TravelInformationCard from './TravelInformationCard.vue';
+import SettlementCard from './SettlementCard.vue';
+import Footer from '@/components/layout/Footer.vue';
 
-import AccountCard from './AccountCard.vue'
-import TravelInformationCard from './TravelInformationCard.vue'
-import SettlementCard from './SettlementCard.vue'
-import Footer from "@/components/layout/Footer.vue";
-
-import tripApi from "@/api/tripApi.js";
+import tripApi from '@/api/tripApi.js';
 
 import axios from 'axios';
 import { useAuthStore } from '@/stores/authStore.js';
 import { getMyUnsettledTrips } from '@/api/settlementApi.js';
 import { getMyInfo } from '@/api/memberApi.js';
-import { 
-  Bell, 
-  CalendarPlus, 
-
+import {
+  Bell,
+  CalendarPlus,
   BellRing,
   PlaneTakeoff,
   Wallet,
-} from "lucide-vue-next";
-
+} from 'lucide-vue-next';
 
 const router = useRouter();
 
-const userInfo = ref({ nickname: '', name: '' })
+const userInfo = ref({ nickname: '', name: '' });
 const ongoingTrips = ref([]);
 const unsettledList = ref([]);
-
 
 // API 호출
 onMounted(async () => {
   try {
-
     const token = localStorage.getItem('accessToken');
     const res = await getMyInfo();
 
@@ -50,15 +45,13 @@ onMounted(async () => {
     // 여행 목록
     const tripRes = await tripApi.fetchTrips();
     if (Array.isArray(tripRes)) {
-      ongoingTrips.value = tripRes.filter(trip => trip.tripStatus === 'ACTIVE');
+      ongoingTrips.value = tripRes.filter(
+        (trip) => trip.tripStatus === 'ACTIVE'
+      );
     }
-    
-
 
     // 미정산 내역
-    const response = await axios.get('/api/settlements/unsettled/me', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await getMyUnsettledTrips();
     unsettledList.value = response.data;
   } catch (err) {
     console.error('API 에러:', err);
@@ -70,32 +63,29 @@ onMounted(async () => {
 });
 const userNameInitial = computed(() => userInfo.value.name?.charAt(0) || '');
 
-
 const goToNotification = () => router.push('/notification');
-const goToGroupCreate = () => router.push("/trip/create");
-const goToMyPage = () => router.push("/mypage");
-
+const goToGroupCreate = () => router.push('/trip/create');
+const goToMyPage = () => router.push('/mypage');
 </script>
-
-
 
 <template>
   <div class="home-content">
-
     <div class="content">
       <!-- 헤더 -->
       <div class="header-section">
         <!-- 인사말 -->
         <div class="greeting-box">
           <span class="welcome">안녕하세요.</span>
-          <span class="nickname" v-if="userInfo.nickname">{{ userInfo.nickname }}님!</span>
+          <span class="nickname" v-if="userInfo.nickname"
+            >{{ userInfo.nickname }}님!</span
+          >
         </div>
         <!-- 아이콘 -->
         <div class="icon-group">
           <div class="icon-btn" @click="goToNotification">
             <Bell class="header-icon" />
           </div>
-          <div class="icon-btn" @click= "goToGroupCreate">
+          <div class="icon-btn" @click="goToGroupCreate">
             <CalendarPlus class="header-icon" />
           </div>
           <div class="icon-btn" @click="goToMyPage">
@@ -110,16 +100,15 @@ const goToMyPage = () => router.push("/mypage");
         <!-- 1. 정산 요청 -->
         <section v-if="unsettledList.length > 0" class="settlement-pending">
           <div class="section-header">
-            <BellRing class="main-icon"/>
+            <BellRing class="main-icon" />
             <span class="section-title">아직 안 한 정산</span>
           </div>
           <SettlementCard :settlements="unsettledList" />
-
         </section>
         <!-- 2. 진행 중인 여행 -->
         <section class="ongoing-trips">
           <div class="section-header">
-            <PlaneTakeoff class="main-icon"/>
+            <PlaneTakeoff class="main-icon" />
             <span class="section-title">진행 중인 여행</span>
           </div>
           <TravelInformationCard
@@ -132,12 +121,13 @@ const goToMyPage = () => router.push("/mypage");
         <!-- 3. 내 계좌 요약 -->
         <section class="account-summary">
           <div class="section-header">
-            <Wallet class="main-icon"/>
+            <Wallet class="main-icon" />
             <span class="section-title">내 계좌</span>
           </div>
-          <AccountCard class="card" 
-          v-if="userInfo.userId" 
-          :user-id="userInfo.userId"
+          <AccountCard
+            class="card"
+            v-if="userInfo.userId"
+            :user-id="userInfo.userId"
           />
         </section>
       </div>
@@ -145,7 +135,9 @@ const goToMyPage = () => router.push("/mypage");
         <span class="plus-icon">+</span> 새로운 여행
       </button>
     </div>
-    <Footer class="footer"/>
+    <Footer class="footer" />
+
+    <Footer class="footer" />
   </div>
 </template>
 
@@ -186,7 +178,7 @@ const goToMyPage = () => router.push("/mypage");
 .nickname {
   font-size: 24px;
   font-weight: 700;
-  color: #4A4A4A;
+  color: #4a4a4a;
 }
 
 .welcome {
@@ -194,12 +186,11 @@ const goToMyPage = () => router.push("/mypage");
   color: #777;
 }
 
-
 .header-icon {
   display: flex;
   width: 35px;
   height: 32px;
-  color: #4A4A4A;
+  color: #4a4a4a;
 }
 
 .icon-group {
@@ -211,12 +202,11 @@ const goToMyPage = () => router.push("/mypage");
   transition: background-color 0.2s ease;
 }
 
-
 .profile-circle {
   width: 37px;
   height: 37px;
   border-radius: 50%;
-  background-color: #FDDF99;
+  background-color: #fddf99;
   color: #333;
   display: flex;
   justify-content: center;
@@ -246,14 +236,14 @@ const goToMyPage = () => router.push("/mypage");
   margin-bottom: 12px; /* 아래 내용과 간격 */
 }
 
-.main-icon{
+.main-icon {
   width: 24px;
   height: 24px;
-  color: #4A4A4A;
+  color: #4a4a4a;
   margin-bottom: 11px;
 }
 
-.card{
+.card {
   width: 100%;
   display: flex;
   justify-content: center;
@@ -266,7 +256,7 @@ const goToMyPage = () => router.push("/mypage");
 
 .floating-button {
   position: sticky;
-  bottom: 18px; 
+  bottom: 18px;
   left: 600px;
 
   display: flex;
@@ -274,10 +264,10 @@ const goToMyPage = () => router.push("/mypage");
   justify-content: center;
 
   padding: 8px 18px;
-  background-color: #FFE58A;
+  background-color: #ffe58a;
   border: none;
   border-radius: 999px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   font-size: 14px;
   font-weight: 600;
@@ -297,4 +287,3 @@ const goToMyPage = () => router.push("/mypage");
   margin-right: 6px;
 }
 </style>
-
