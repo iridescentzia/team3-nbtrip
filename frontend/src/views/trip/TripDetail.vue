@@ -1,6 +1,7 @@
 <script setup>
 import Header from "@/components/layout/Header.vue";
 import TravelCard2 from "@/components/common/TravelCard2.vue";
+import TripPaymentList from "@/views/trip/TripPaymentList.vue";
 import tripApi from "@/api/tripApi.js";
 import memberApi from "@/api/memberApi.js";
 import {ref} from "vue";
@@ -11,6 +12,7 @@ const tripDetail = ref({
   tripName: '',
   startDate: '',
   endDate: '',
+  amount: 0,
 });
 const tripStatus = ref('');
 const headerTitle = ref('');
@@ -23,12 +25,15 @@ const newTitle = ref("");
 const load = async () => {
   const data = await tripApi.getTripDetail(route.params.tripId);
   if (!data) return;
+  tripDetail.value = {
+    amount: 0,
+    ...data
+  };
   try {
     disableDates.value = await tripApi.getDisabledDates(Number(route.params.tripId));
   } catch (e) {
     console.error('비활성화 날짜 불러오기 실패:', e);
   }
-  tripDetail.value = data;
   tripStatus.value = data.tripStatus;
 
   headerTitle.value =
@@ -51,6 +56,8 @@ const load = async () => {
         };
       })
   );
+
+
   console.log(data.members);
   console.log(members.value);
 };
@@ -87,6 +94,7 @@ const handleUpdate = async () => {
   try {
     await tripApi.updateTrip(params);
     alert("여행 정보가 성공적으로 업데이트되었습니다.");
+    await load();
   } catch (error) {
     console.error("업데이트 실패:", error);
     alert("업데이트 중 오류가 발생했습니다.");
@@ -106,8 +114,12 @@ load();
       :tripStatus="tripStatus"
       v-slot="{ activeTab }"
     >
-      <div v-if="activeTab === '그룹 지출 내역'">지출 내역</div>
-      <div v-else-if="activeTab === '선결제 내역'">선결제 내역</div>
+      <div v-if="activeTab === '그룹 지출 내역'">
+        <trip-payment-list/>
+      </div>
+      <div v-else-if="activeTab === '선결제 내역'">
+
+      </div>
       <div v-else>
         <label for="editName">여행 이름 수정</label><br>
         <input
