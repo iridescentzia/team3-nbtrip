@@ -64,6 +64,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .userId(userId)
                 .fromUserId(userId)
                 .tripId(tripId)
+                .paymentId(paymentVO.getPaymentId())
                 .notificationType("TRANSACTION")
                 .actionType("CREATE")
                 .build();
@@ -90,6 +91,17 @@ public class PaymentServiceImpl implements PaymentService {
 
         // 결제 참여자 저장 및 금액 분배
         saveParticipants(paymentDTO, paymentVO, false, userId);
+
+        // 결제 알림 생성
+        NotificationDTO notificationDTO = NotificationDTO.builder()
+                .userId(userId)
+                .fromUserId(userId)
+                .tripId(tripId)
+                .paymentId(paymentVO.getPaymentId())
+                .notificationType("TRANSACTION")
+                .actionType("CREATE")
+                .build();
+        notificationService.createNotification(notificationDTO);
     }
 
     /* 검증 */
@@ -186,6 +198,17 @@ public class PaymentServiceImpl implements PaymentService {
 
         // 결제 참여자 및 금액 분배 수정
         syncParticipants(paymentDTO, existingPayment, false, userId);
+
+        // 수정 알림 생성
+        NotificationDTO notificationDTO = NotificationDTO.builder()
+                .userId(userId)
+                .fromUserId(userId)
+                .tripId(existingPayment.getTripId())
+                .paymentId(existingPayment.getPaymentId())
+                .notificationType("TRANSACTION")
+                .actionType("UPDATE")
+                .build();
+        notificationService.createNotification(notificationDTO);
     }
 
 
@@ -216,7 +239,19 @@ public class PaymentServiceImpl implements PaymentService {
         int result = paymentMapper.updateManualPayment(updatedPayment);
         if (result == 0) throw new RuntimeException("결제 수정 실패");
 
+        // 결제 참여자 및 금액 분배 수정
         syncParticipants(paymentDTO, updatedPayment, false, userId);
+
+        // 수정 알림 생성
+        NotificationDTO notificationDTO = NotificationDTO.builder()
+                .userId(userId)
+                .fromUserId(userId)
+                .tripId(existingPayment.getTripId())
+                .paymentId(existingPayment.getPaymentId())
+                .notificationType("TRANSACTION")
+                .actionType("UPDATE")
+                .build();
+        notificationService.createNotification(notificationDTO);
     }
 
 
