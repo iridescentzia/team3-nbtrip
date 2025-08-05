@@ -124,7 +124,7 @@ function switchTab(tab) {
 onMounted(async () => {
   try {
     const resp = await chartApi.getChart(tripId.value);
-    console.log('api 불러오는중');
+    console.log('api 불러오는중', resp);
 
     // 여행 정보 표시용
     tripName.value = resp.tripData.tripName;

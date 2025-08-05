@@ -64,4 +64,11 @@
         WHERE trip_id = #{tripId}
     </select>
 
+    <select id="selectTripMember" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM trip_member
+        WHERE trip_id = #{tripId}
+          AND user_id = #{userId}
+    </select>
+
 </mapper>
