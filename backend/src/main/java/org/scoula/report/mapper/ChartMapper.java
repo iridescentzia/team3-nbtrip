@@ -25,4 +25,5 @@ public interface ChartMapper {
 
     TripInfoDTO selectTripInfo(@Param("tripId")Integer tripId);
 
+    boolean selectTripMember(@Param("tripId")Integer tripId, @Param("userId")Integer userId);
 }

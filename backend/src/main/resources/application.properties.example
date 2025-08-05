@@ -9,4 +9,8 @@ jdbc.password=1234
 app.crypto.secret-key=MySecretKey1234567890123456789012
 
 # openai api key
+<<<<<<< HEAD:backend/src/main/resources/application.properties
 
+=======
+openai.api.key=여기에 키를 적어주세요
+>>>>>>> aa6a19c392a2934da8ebdbcbfdeb5f21aa9bc257:backend/src/main/resources/application.properties.example
