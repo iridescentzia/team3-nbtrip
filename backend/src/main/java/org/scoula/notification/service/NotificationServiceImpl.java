@@ -89,7 +89,6 @@ public class NotificationServiceImpl implements NotificationService {
             if (dto.getActionType() == null || dto.getActionType().isBlank()) {
                 dto.setActionType("CREATE"); // 기본값 생성
             }
-        }
 
 
             // 정산 요청 알림 trip 멤버 전원에게 알림 insert + 푸시 전송
@@ -156,6 +155,7 @@ public class NotificationServiceImpl implements NotificationService {
 
 
         }
+    }
 
     // 알림 읽음 처리
     @Override
