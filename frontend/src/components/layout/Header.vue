@@ -1,5 +1,5 @@
 <script setup>
-import { ChevronLeft } from 'lucide-vue-next';
+import { ChevronLeft, Home } from 'lucide-vue-next';
 
 const props = defineProps({
   // 헤더 제목
@@ -52,7 +52,15 @@ const handleBackClick = () => {
     </div>
 
     <!-- 오른쪽 영역 (비어 있음) -->
-    <div class="right"></div>
+    <div class="right">
+      <!-- <button
+        v-if="showBackButton"
+        class="home-button-wrapper"
+        @click="handleHomeClick"
+      >
+        <Home class="home-button" />
+      </button> -->
+    </div>
   </header>
 </template>
 

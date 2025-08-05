@@ -1,10 +1,12 @@
 <template>
-  <Header title="전체 여행 목록" :backAction="() => router.back()" />
+  <Header title="여행 리포트" :backAction="() => router.back()" />
   <div class="travel-report-page">
     <!-- 헤더 -->
     <div class="report-info-box">
       <div class="report-header">
-        <h1 class="trip-name">{{ tripName }}</h1>
+        <h1 class="trip-name">
+          {{ tripName }} <FileChartColumn class="icon" />
+        </h1>
         <p class="trip-date">{{ startDate }} ~ {{ endDate }}</p>
       </div>
 
@@ -60,6 +62,7 @@ import { useRoute, useRouter } from 'vue-router';
 import chartApi from '@/api/chartApi';
 import Header from '@/components/layout/Header.vue';
 import AIReport from './AiReport.vue';
+import { FileChartColumn } from 'lucide-vue-next';
 
 ChartJS.register(
   ArcElement,
@@ -254,5 +257,12 @@ onMounted(async () => {
   font-size: 15px;
   font-weight: bold;
   margin-bottom: 8px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  color: #666;
+  transition: color 0.2s;
 }
 </style>
