@@ -100,11 +100,11 @@ load();
   <Header :title="headerTitle" />
   <div class="content-container">
     <TravelCard2
-        :tripName="tripDetail.tripName"
-        :startDate="tripDetail.startDate"
-        :endDate="tripDetail.endDate"
-        :tripStatus="tripStatus"
-        v-slot="{ activeTab }"
+      :tripName="tripDetail.tripName"
+      :startDate="tripDetail.startDate"
+      :endDate="tripDetail.endDate"
+      :tripStatus="tripStatus"
+      v-slot="{ activeTab }"
     >
       <div v-if="activeTab === '그룹 지출 내역'">지출 내역</div>
       <div v-else-if="activeTab === '선결제 내역'">선결제 내역</div>
