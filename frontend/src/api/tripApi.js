@@ -17,10 +17,16 @@ export default {
         console.log('보내는 데이터:', params);
         await api.post(`${BASE_URL}/`, params);
     },
-    async getDisabledDates(){
+    async getDisabledDates(tripId){
         const { data } = await api.get(`${BASE_URL}/`);
         console.log("data:" + JSON.stringify(data));
-        const period = data.map(item => [item.startDate, item.endDate]);
+
+        // tripId가 있으면 해당 tripId 제외
+        const filteredData = tripId
+            ? data.filter(item => item.tripId !== tripId)
+            : data;
+
+        const period = filteredData.map(item => [item.startDate, item.endDate]);
         const allDates = [];
         period.forEach(([start, end]) => {
             const current = new Date(start);
@@ -85,6 +91,9 @@ export default {
     async getTripsByStatus(status) {
         const { data } = await api.get(`${BASE_URL}/status/${status}`);
         return data;
+    },
+    async updateTrip(param){
+        await api.put(`${BASE_URL}/${param.tripId}/update`, param);
     }
 
 }

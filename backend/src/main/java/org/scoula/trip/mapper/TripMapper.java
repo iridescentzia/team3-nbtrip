@@ -22,7 +22,7 @@ public interface TripMapper {
     List<TripVO> getJoinedTrips(int userId);
     void createTrip(TripVO tripVO);
     int joinTrip(@Param("tripId") int tripId, @Param("userId") int userId);
-    int changeMemberStatus(@Param("tripId") int tripId, @Param("userId") int userId);
+    int changeMemberStatus(@Param("tripId") int tripId, @Param("userId") int userId, @Param("status") TripMemberStatus status);
     void inviteTrip(@Param("tripId") int tripId, @Param("userId") int userId, @Param("status")TripMemberStatus status);
     int changeTripStatus(int tripId);
     boolean isOwner(@Param("tripId") int tripId, @Param("userId") int userId);
@@ -34,4 +34,5 @@ public interface TripMapper {
     String findTripNameById(int tripId);
     // 본인이 참가한 상태별 여행 조회
     List<TripVO> getTripsByStatus(@Param("userId") int userId, @Param("status") String status);
+    int updateTrip(TripVO tripVO);
 }

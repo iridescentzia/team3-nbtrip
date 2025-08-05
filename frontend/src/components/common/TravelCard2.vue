@@ -1,11 +1,13 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { FileChartColumn, Trash2 } from 'lucide-vue-next';
+import { useRouter, useRoute } from 'vue-router';
 
 const props = defineProps({
   tripName: String,
   startDate: String,
   endDate: String,
+  tripStatus: String,
 });
 
 const formattedDate = computed(() => {
@@ -21,23 +23,32 @@ function selectTab(tab) {
   activeTab.value = tab;
 }
 
+const router = useRouter();
+const route = useRoute();
+
 // 아이콘 클릭 시 차트 페이지로 이동
 function goToChart() {
+  const tripId = route.params.tripId;
   router.push({
-    name: 'chart',
-    params: { tripId: 1 },
+    name: 'report',
+    params: { tripId },
   });
 }
 </script>
 
-<<template>
+<
+<template>
   <div class="travel-card">
     <!-- 카드 헤더 -->
     <div class="card-header">
       <div class="title-date">
         <div class="title-row">
           <div class="trip-name">{{ props.tripName }}</div>
-          <FileChartColumn class="icon" @click="goToChart" />
+          <!-- 아이콘 wrapper 추가 -->
+          <div v-if="props.tripStatus === 'CLOSED'" class="icon-wrapper">
+            <FileChartColumn class="icon" @click="goToChart" />
+            <span class="red-dot"></span>
+          </div>
         </div>
         <div class="trip-date">{{ formattedDate }}</div>
       </div>
@@ -49,124 +60,141 @@ function goToChart() {
     <!-- 탭 목록 -->
     <div class="tab-list">
       <div
-          v-for="tab in tabs"
-          :key="tab"
-          class="tab-item"
-          :class="{ active: activeTab === tab }"
-          @click="selectTab(tab)"
+        v-for="tab in tabs"
+        :key="tab"
+        class="tab-item"
+        :class="{ active: activeTab === tab }"
+        @click="selectTab(tab)"
       >
         {{ tab }}
       </div>
     </div>
   </div>
   <div class="tab-content">
-    <slot :active-tab="activeTab"/>
+    <slot :active-tab="activeTab" />
   </div>
 </template>
 
 <style scoped>
 .travel-card {
-width: 100%;
-max-width: 343px;
-margin: 0 auto 1rem auto;
-padding: 0;
-box-sizing: border-box;
-border-radius: 16px;
-font-family: 'IBM Plex Sans KR', sans-serif;
-display: flex;
-flex-direction: column;
-justify-content: space-between;
+  width: 100%;
+  max-width: 343px;
+  margin: 0 auto 1rem auto;
+  padding: 0;
+  box-sizing: border-box;
+  border-radius: 16px;
+  font-family: 'IBM Plex Sans KR', sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 
-background: white;
-box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-
+  background: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {
-display: flex;
-justify-content: space-between;
-align-items: flex-start;
-margin-bottom: 10px;
-padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  padding: 16px;
 }
 
 .title-date {
-display: flex;
-flex-direction: column;
-gap: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .title-row {
-display: flex;
-align-items: center;
-/*gap: 8px;*/
-/* justify-content: space-between; */
+  display: flex;
+  align-items: center;
+  /*gap: 8px;*/
+  /* justify-content: space-between; */
 }
 
 .trip-name {
-color: #000;
-font-size: 24px;
-font-weight: 1000;
-margin: 0;
-margin-right:5px;
+  color: #000;
+  font-size: 24px;
+  font-weight: 1000;
+  margin: 0;
+  margin-right: 5px;
 }
 
 .trip-date {
-color: #6D6D6D;
-font-size: 15px;
-opacity: 0.8;
+  color: #6d6d6d;
+  font-size: 15px;
+  opacity: 0.8;
 }
 
 .icon {
-width: 20px;
-height: 20px;
-color: #666;
-cursor: pointer;
-transition: color 0.2s;
+  width: 20px;
+  height: 20px;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.2s;
 }
 
 .icon:hover {
-color: #333;
+  color: #333;
 }
 
 .trash-icon {
-margin-top: 8px;
+  margin-top: 8px;
 }
 
 .divider {
-width: 100%;
-height: 1px;
-background-color: #666;
-margin: 8px 0;
-opacity: 0.1;
+  width: 100%;
+  height: 1px;
+  background-color: #666;
+  margin: 8px 0;
+  opacity: 0.1;
 }
 
 .tab-list {
-display: flex;
-justify-content: space-between;
-align-items: center;
-gap: 8px;
-padding: 0 16px 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px 8px 16px;
 }
 
 .tab-item {
-flex: 1;
-padding: 4px 8px;
-border-radius: 12px;
-font-size: 16px;
-font-weight: 600;
-text-align: center;
-white-space: nowrap;
-cursor: pointer;
-transition: background-color 0.2s;
-color: #575757;
+  flex: 1;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  color: #575757;
 }
 
 .tab-item:hover {
-background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .tab-item.active {
-color: #FDB100;
+  color: #fdb100;
+}
+
+.icon-wrapper {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+/* 빨간 알림 점 */
+.red-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 7px;
+  height: 7px;
+  background-color: #ff6b6b; /* 연한 빨간색 */
+  border-radius: 50%;
+  border: 2px solid white; /* 외곽 경계 */
 }
 </style>
