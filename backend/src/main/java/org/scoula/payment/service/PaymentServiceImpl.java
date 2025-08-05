@@ -3,6 +3,10 @@ package org.scoula.payment.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.scoula.account.service.AccountService;
+import org.scoula.member.domain.MemberVO;
+import org.scoula.member.mapper.MemberMapper;
+import org.scoula.merchant.domain.MerchantVO;
+import org.scoula.merchant.mapper.MerchantMapper;
 import org.scoula.merchant.service.MerchantService;
 import org.scoula.notification.dto.NotificationDTO;
 import org.scoula.notification.service.NotificationService;
@@ -30,6 +34,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final ParticipantMapper participantMapper;
     private final AccountService accountService;
     private final MerchantService merchantService;
+    private final MerchantMapper merchantMapper;
+    private final MemberMapper memberMapper;
     private final NotificationService notificationService;
 
     /* QR 결제 처리 */
@@ -60,6 +66,12 @@ public class PaymentServiceImpl implements PaymentService {
         saveParticipants(paymentDTO, paymentVO, true, userId);
 
         // 결제 알림 생성
+        MemberVO member = memberMapper.findById(userId);
+        String fromUserNickname = member != null ? member.getNickname() : "알 수 없음";
+
+        MerchantVO merchant = merchantMapper.getMerchant(paymentDTO.getMerchantId());
+        String merchantName = merchant != null ? merchant.getMerchantName() : "알 수 없음";
+
         NotificationDTO notificationDTO = NotificationDTO.builder()
                 .userId(userId)
                 .fromUserId(userId)
@@ -67,6 +79,8 @@ public class PaymentServiceImpl implements PaymentService {
                 .paymentId(paymentVO.getPaymentId())
                 .notificationType("TRANSACTION")
                 .actionType("CREATE")
+                .fromUserNickname(fromUserNickname)
+                .merchantName(merchantName)
                 .build();
         notificationService.createNotification(notificationDTO);
     }

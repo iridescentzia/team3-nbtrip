@@ -28,12 +28,12 @@ messaging.onBackgroundMessage(function (payload) {
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-//테스트 용
-self.addEventListener('push', (event) => {
-  console.log('푸시 이벤트 수신 (테스트):', event);
-  event.waitUntil(
-    self.registration.showNotification('테스트 알림', {
-      body: '서비스워커 수신 테스트',
-    })
-  );
-});
+// //테스트 용
+// self.addEventListener('push', (event) => {
+//   console.log('푸시 이벤트 수신 (테스트):', event);
+//   event.waitUntil(
+//     self.registration.showNotification('테스트 알림', {
+//       body: '서비스워커 수신 테스트',
+//     })
+//   );
+// });
