@@ -56,9 +56,7 @@ onMounted(async () => {
 
 
     // 미정산 내역
-    const response = await axios.get('/api/settlements/unsettled/me', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await getMyUnsettledTrips();
     unsettledList.value = response.data;
   } catch (err) {
     console.error('API 에러:', err);
