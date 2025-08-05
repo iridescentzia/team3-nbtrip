@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import tripApi from '@/api/tripApi'; // 전체 default 객체로 불러오기
+import tripApi from '@/api/tripApi'; 
 import memberApi from '@/api/memberApi';
+import merchantApi from '@/api/merchantApi';
 
 export const useTripStore = defineStore('trip', () => {
   const trips = ref([]);
   const currentTripMembers = ref([]); // 현재 여행 멤버 목록
+  const merchantCategories = ref([]);
 
   // 현재 tripApi는 userId = 1인 trip만 불러옴
   // 여행 목록 불러오기
@@ -69,11 +71,25 @@ const fetchCurrentTripMemberNicknames = async () => {
   }
 }
 
+// 카테고리 목록 불러오기
+const fetchMerchantCategories = async () => {
+  try{
+    const data = await merchantApi.getAllMerchantCategories()
+    merchantCategories.value = data
+    console.log("카테고리 목록: ", merchantCategories.value)
+  } catch(e) {
+    console.error('카테고리 목록 불러오기 실패: ', e)
+    merchantCategories.value = []
+  }
+}
+
   return {
     trips,
     fetchTrips,
     currentTrip,
     currentTripMembers,
-    fetchCurrentTripMemberNicknames
+    fetchCurrentTripMemberNicknames,
+    fetchMerchantCategories,
+    merchantCategories
   };
 });
