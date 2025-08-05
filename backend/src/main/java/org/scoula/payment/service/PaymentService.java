@@ -8,4 +8,8 @@ public interface PaymentService {
 
     // 선결제/기타 결제 수동 등록
     void registerManualPayment(PaymentDTO paymentDTO, int userId, int tripId);
+
+    // 결제 상세 수정
+    void updateQrPayment(int paymentId, PaymentDTO dto, int userId);
+    void updateManualPayment(int paymentId, PaymentDTO dto, int userId);
 }

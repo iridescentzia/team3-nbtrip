@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.scoula.account.service.AccountService;
 import org.scoula.merchant.service.MerchantService;
+import org.scoula.notification.dto.NotificationDTO;
+import org.scoula.notification.service.NotificationService;
 import org.scoula.payment.domain.ParticipantVO;
 import org.scoula.payment.domain.PaymentType;
 import org.scoula.payment.domain.PaymentVO;
@@ -16,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +30,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final ParticipantMapper participantMapper;
     private final AccountService accountService;
     private final MerchantService merchantService;
+    private final NotificationService notificationService;
 
     /* QR 결제 처리 */
     @Override
@@ -53,6 +58,16 @@ public class PaymentServiceImpl implements PaymentService {
 
         // 결제 참여자 저장 및 금액 분배
         saveParticipants(paymentDTO, paymentVO, true, userId);
+
+        // 결제 알림 생성
+        NotificationDTO notificationDTO = NotificationDTO.builder()
+                .userId(userId)
+                .fromUserId(userId)
+                .tripId(tripId)
+                .notificationType("TRANSACTION")
+                .actionType("CREATE")
+                .build();
+        notificationService.createNotification(notificationDTO);
     }
 
 
@@ -76,7 +91,6 @@ public class PaymentServiceImpl implements PaymentService {
         // 결제 참여자 저장 및 금액 분배
         saveParticipants(paymentDTO, paymentVO, false, userId);
     }
-
 
     /* 검증 */
     private void validatePayment(PaymentDTO paymentDTO, int userId) {
@@ -152,6 +166,141 @@ public class PaymentServiceImpl implements PaymentService {
         if (result != participantCount) {
             log.error("참여자 저장 실패");
             throw new RuntimeException("결제 참여자 저장 실패");
+        }
+    }
+
+    /* QR 결제 상세 수정 */
+    @Override
+    @Transactional
+    public void updateQrPayment(int paymentId, PaymentDTO paymentDTO, int userId) {
+        validatePayment(paymentDTO, userId);
+
+        // 기존 결제 조회
+        PaymentVO existingPayment = paymentMapper.selectPaymentById(paymentId);
+        if (existingPayment == null) {
+            throw new RuntimeException("결제 내역이 존재하지 않습니다.");
+        }
+
+        // 메모 수정
+        paymentMapper.updateMemo(paymentId, paymentDTO.getMemo());
+
+        // 결제 참여자 및 금액 분배 수정
+        syncParticipants(paymentDTO, existingPayment, false, userId);
+    }
+
+
+    /* 선결제/기타 결제 상세 수정 */
+    @Override
+    @Transactional
+    public void updateManualPayment(int paymentId, PaymentDTO paymentDTO, int userId) {
+        validatePayment(paymentDTO, userId);
+
+        LocalDateTime payAt = (paymentDTO.getPaymentDate() != null && paymentDTO.getPaymentTime() != null)
+                ? LocalDateTime.of(paymentDTO.getPaymentDate(), paymentDTO.getPaymentTime())
+                : LocalDateTime.now();
+
+        PaymentVO existingPayment = paymentMapper.selectPaymentById(paymentId);
+        if (existingPayment == null) {
+            throw new RuntimeException("결제 내역이 존재하지 않습니다.");
+        }
+
+        PaymentVO updatedPayment = new PaymentVO();
+        updatedPayment.setPaymentId(paymentId);
+        updatedPayment.setUserId(userId);
+        updatedPayment.setTripId(existingPayment.getTripId()); // 기존값 유지
+        updatedPayment.setAmount(paymentDTO.getAmount());
+        updatedPayment.setMerchantId(paymentDTO.getMerchantId());
+        updatedPayment.setMemo(paymentDTO.getMemo());
+        updatedPayment.setPayAt(payAt);
+
+        int result = paymentMapper.updateManualPayment(updatedPayment);
+        if (result == 0) throw new RuntimeException("결제 수정 실패");
+
+        syncParticipants(paymentDTO, updatedPayment, false, userId);
+    }
+
+
+    /* 결제 참여자 및 분배 금액 수정 */
+    private void syncParticipants(PaymentDTO paymentDTO, PaymentVO paymentVO, boolean isAutoSplit, int payerId) {
+        int paymentId = paymentVO.getPaymentId();
+
+        // 기존 참여자 조회
+        List<ParticipantVO> existingParticipants = participantMapper.findByPaymentId(paymentId);
+        Map<Integer, ParticipantVO> existingMap = existingParticipants.stream()
+                .collect(Collectors.toMap(ParticipantVO::getUserId, vo -> vo));
+
+        // 새 참여자 목록
+        List<ParticipantDTO> newParticipants = paymentDTO.getParticipants();
+        Map<Integer, ParticipantDTO> newMap = newParticipants.stream()
+                .collect(Collectors.toMap(ParticipantDTO::getUserId, dto -> dto));
+
+        // 삭제 대상 처리
+        for (Integer existingUserId : existingMap.keySet()) {
+            if (!newMap.containsKey(existingUserId)) {
+                int deletedRows = participantMapper.deleteParticipant(paymentId, existingUserId);
+                if (deletedRows != 1) {
+                    throw new RuntimeException("결제 참여자 삭제 실패 - userId: " + existingUserId);
+                }
+            }
+        }
+
+        // 추가 대상 처리
+        for (ParticipantDTO participantDTO : newParticipants) {
+            if (!existingMap.containsKey(participantDTO.getUserId())) {
+                ParticipantVO newParticipantVO = ParticipantVO.builder()
+                        .paymentId(paymentId)
+                        .userId(participantDTO.getUserId())
+                        .splitAmount(0) // 분배 전 초기값
+                        .build();
+                int insertedRows = participantMapper.insertParticipant(newParticipantVO);
+                if (insertedRows != 1) {
+                    throw new RuntimeException("결제 참여자 추가 실패 - userId: " + participantDTO.getUserId());
+                }
+            }
+        }
+
+        // 금액 분배 계산
+        int participantCount = newParticipants.size();
+        int baseSplitAmount = paymentDTO.getAmount() / participantCount;
+        int remainderAmount = paymentDTO.getAmount() % participantCount;
+
+        boolean allSplitAmountZero = newParticipants.stream()
+                .allMatch(p -> p.getSplitAmount() == 0);
+
+        List<ParticipantVO> updatedParticipants = newParticipants.stream()
+                .map(p -> {
+                    int splitAmount;
+                    if (isAutoSplit || allSplitAmountZero) {
+                        splitAmount = baseSplitAmount;
+                        if (Integer.valueOf(p.getUserId()).equals(payerId)) {
+                            splitAmount += remainderAmount;
+                        }
+                    } else {
+                        splitAmount = p.getSplitAmount();
+                    }
+                    return ParticipantVO.builder()
+                            .paymentId(paymentId)
+                            .userId(p.getUserId())
+                            .splitAmount(splitAmount)
+                            .build();
+                })
+                .toList();
+
+        // 검증
+        int totalSplit = updatedParticipants.stream().mapToInt(ParticipantVO::getSplitAmount).sum();
+        if (totalSplit != paymentDTO.getAmount()) {
+            throw new RuntimeException("분배 금액 총합 오류");
+        }
+
+        // 분배 금액 update
+        for (ParticipantVO updated : updatedParticipants) {
+            ParticipantVO existing = existingMap.get(updated.getUserId());
+            if (existing == null || existing.getSplitAmount() != updated.getSplitAmount()) {
+                int updatedRows = participantMapper.updateAmount(paymentId, updated.getUserId(), updated.getSplitAmount());
+                if (updatedRows != 1) {
+                    throw new RuntimeException("분배 금액 업데이트 실패 - userId: " + updated.getUserId());
+                }
+            }
         }
     }
 }
