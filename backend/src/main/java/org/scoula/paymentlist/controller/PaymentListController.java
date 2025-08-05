@@ -28,4 +28,11 @@ public class PaymentListController {
         log.info("api 불러오는중");
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/payment/{paymentId}")
+    public ResponseEntity<Map<String, Object>> getPaymentById(@PathVariable int paymentId) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("payment", paymentService.getPaymentListByPaymentId(paymentId));
+        return ResponseEntity.ok(response);
+    }
 }

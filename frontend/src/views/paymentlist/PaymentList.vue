@@ -105,6 +105,7 @@ function onCategoryFiltered(categoryIds){
 
 onMounted(async () => {
   await tripStore.fetchTrips()
+  console.log("currenttrip: ",tripStore.currentTrip)
   if (tripStore.currentTrip) {
     await tripStore.fetchCurrentTripMemberNicknames()
   }

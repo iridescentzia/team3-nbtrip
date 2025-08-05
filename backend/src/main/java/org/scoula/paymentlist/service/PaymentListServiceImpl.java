@@ -23,4 +23,12 @@ public class PaymentListServiceImpl implements PaymentListService {
                 .toList();
     }
 
+    @Override
+    public PaymentListDTO getPaymentListByPaymentId(Integer paymentId) {
+        return mapper.selectPaymentById(paymentId)
+                .stream()
+                .findFirst()
+                .map(PaymentListDTO::of)
+                .orElse(null);
+    }
 }

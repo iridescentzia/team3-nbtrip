@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface PaymentListService {
     List<PaymentListDTO> getPaymentList(Integer tripId);
+    PaymentListDTO getPaymentListByPaymentId(Integer paymentId);
+
 }
 
