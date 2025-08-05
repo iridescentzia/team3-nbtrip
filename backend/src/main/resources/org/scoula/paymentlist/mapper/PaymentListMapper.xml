@@ -63,6 +63,4 @@
                  JOIN merchant_category mc ON m.category_id = mc.category_id
         WHERE p.payment_id = #{paymentId}
     </select>
-
-
 </mapper>
