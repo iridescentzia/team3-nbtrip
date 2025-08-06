@@ -13,12 +13,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MemberResponseDTO {
-    // 민감 정보(password, fcmToken, phoneNumber) 제외
+    // 민감 정보(password, fcmToken) 제외
     private int userId;
     private String email;
     private String nickname;
     private String name;
     private String maskedPhoneNumber;
+    private String phoneNumber;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
