@@ -2,6 +2,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import tripApi from "@/api/tripApi.js";
 import {useTravelCreateStore} from "@/stores/tripStore.js";
+import {useRouter} from "vue-router";
 import { MoveRight, Search } from 'lucide-vue-next';
 import Header from "@/components/layout/Header.vue";
 import { Lightbulb } from 'lucide-vue-next';
@@ -12,7 +13,7 @@ const inputValue = ref('');
 const showList = ref(false);
 const options = ref([]);
 const addedItems = ref([]);
-
+const router = useRouter();
 var timer;
 const debouncedFetch = value => {
   clearTimeout(timer);
@@ -44,7 +45,6 @@ function onInput(e) {
 }
 
 function onButtonClick(option) {
-  // 나중에 로그인된 id로 변경
   console.log(option);
   const alreadyAdded = addedItems.value.some(
       (item) => item.userId === option.userId
@@ -84,6 +84,7 @@ async function createTrip() {
     const response = await tripApi.createTrip(payload);
     console.log('여행 생성 성공:', response);
     alert('여행이 생성되었습니다!');
+    router.replace('/');
   } catch (error) {
     console.error('여행 생성 실패:', error);
   }

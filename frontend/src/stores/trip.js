@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import tripApi from '@/api/tripApi'; 
 import memberApi from '@/api/memberApi';
 import merchantApi from '@/api/merchantApi';

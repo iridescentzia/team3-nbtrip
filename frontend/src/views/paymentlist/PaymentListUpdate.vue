@@ -3,14 +3,14 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Header from '@/components/layout/Header.vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
-import { useTripStore } from '@/stores/trip';
 import paymentlistApi from '@/api/paymentlistApi';
 import paymentApi from '@/api/paymentApi';
+import {usePaymentListStore} from "@/stores/tripStore.js";
 
 const route = useRoute();
 const router = useRouter();
 const paymentId = route.params.paymentId;
-const tripStore = useTripStore();
+const tripStore = usePaymentListStore();
 
 const paymentType = ref('');
 const date = ref(new Date());
@@ -63,7 +63,8 @@ const formatDateTime = (date) => {
 };
 
 onMounted(async () => {
-  //await tripStore.fetchTrips();
+  //어차피 거래내역 클릭해서 들어가니까 필요 없을 듯?
+  //await tripStore.fetchTrip(route.params.tripId);
   await tripStore.fetchCurrentTripMemberNicknames();
   await tripStore.fetchMerchantCategories();
 

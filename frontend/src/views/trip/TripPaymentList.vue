@@ -5,11 +5,11 @@ import PaymentListInfo from "@/views/paymentlist/PaymentListInfo.vue";
 import tripApi from "@/api/tripApi.js";
 import {useRouter, useRoute} from "vue-router";
 import { onMounted, ref } from 'vue';
-import { useTripStore } from '@/stores/trip.js';
+import {usePaymentListStore} from "@/stores/tripStore.js";
 import Summary from '@/components/common/Summary.vue';
 const route = useRoute();
 const router = useRouter();
-const tripStore = useTripStore();
+const tripStore = usePaymentListStore();
 const trip = ref();
 
 const formatDate = (dateInput) => {
