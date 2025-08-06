@@ -73,6 +73,8 @@ onMounted(async () => {
     paymentType.value = p.paymentType;
     console.log("paymentType: ", paymentType.value)
 
+    console.log("tripStore.merchantCategories: ", tripStore.merchantCategories)
+
     const res = await paymentApi.getParticipantsByPaymentId(paymentId);
     selectedMembers.value = res.map(p => ({
       userId: p.userId,
@@ -167,7 +169,7 @@ const handleSave = async () => {
         class="input-text"
         v-model="form.content" 
         placeholder="지출 내용을 입력하세요" 
-        :readonly="paymentType == 'QR'"
+        :disabled="paymentType == 'QR'"
         />
       </div>
     </div>
@@ -180,7 +182,7 @@ const handleSave = async () => {
           v-model="form.amount"
           class="input-text"
           placeholder="금액을 입력하세요"
-          :readonly="paymentType == 'QR'"
+          :disabled="paymentType == 'QR'"
           @input="formatAmountInput"
         />
         <span class="input-suffix">원</span>
@@ -194,6 +196,7 @@ const handleSave = async () => {
         <VueDatePicker
           v-model="date"
           :enable-time-picker="true"
+          :disabled="paymentType === 'QR'"
           format="yyyy-MM-dd HH:mm"
           class="date-picker"
         />
@@ -203,11 +206,11 @@ const handleSave = async () => {
     <!-- 카테고리 선택 -->
     <div class="form-section">
       <label class="form-label">카테고리</label>
-      <select v-model="form.category" class="select-box">
+      <select v-model="form.category" class="select-box" :disabled="paymentType === 'QR'">
         <option
           v-for="category in tripStore.merchantCategories"
           :key="category.categoryId"
-          :value="category.categoryId"
+          :value="category.categoryId"      
         >
           {{ category.categoryName }}
         </option>
@@ -217,7 +220,7 @@ const handleSave = async () => {
     <!-- 결제자 선택 -->
     <div class="form-section">
       <label class="form-label">결제자</label>
-      <select v-model="form.payerUserId" class="select-box">
+      <select v-model="form.payerUserId" class="select-box" :disabled="paymentType === 'QR'">
         <option
           v-for="member in tripStore.currentTripMembers"
           :key="member.userId"
@@ -347,11 +350,16 @@ const handleSave = async () => {
 
 .input-text,
 .input-suffix {
-  font-size: 16px;
+  font-size: 18px;
   color: #000;
   border: none;
   outline: none;
   font-family: 'IBM Plex Sans KR', sans-serif;
+}
+
+.input-text:disabled{
+  color:rgb(170, 170, 170);
+  background-color: transparent  ;
 }
 
 /* input[type=number]의 스핀버튼 제거 */
@@ -361,13 +369,17 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 
+::v-deep(.date-picker input) {
+  font-size: 16px;
+  color: #000;
+}
 
 .select-box {
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 10px 16px;
-  font-size: 16px;
+  font-size: 18px;
   width: 100%;
   text-align: center;
   cursor: pointer;
