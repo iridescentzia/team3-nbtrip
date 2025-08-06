@@ -2,6 +2,7 @@ package org.scoula.payment.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.scoula.payment.domain.ParticipantVO;
 import org.scoula.payment.domain.PaymentType;
 import org.scoula.payment.dto.PaymentDTO;
 import org.scoula.payment.service.PaymentService;
@@ -154,5 +155,12 @@ public class PaymentController {
             log.error("기타 결제 수정 실패: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
+    }
+
+    // 결제 참여자 조회
+    @GetMapping("/{paymentId}/participants")
+    public ResponseEntity<List<ParticipantVO>> getParticipants(@PathVariable int paymentId) {
+        List<ParticipantVO> participants = paymentService.getParticipantsByPaymentId(paymentId);
+        return ResponseEntity.ok(participants);
     }
 }
