@@ -224,7 +224,7 @@ const formatDateTime = (date) => {
 
 // 마운트 시 카테고리 목록 불러오기
 onMounted(async () => {
-  await tripStore.fetchTrips();
+  //await tripStore.fetchTrips();
   await tripStore.fetchCurrentTripMemberNicknames(); // 이거 꼭 호출해야 닉네임 목록 들어옴
   await tripStore.fetchMerchantCategories();
 });

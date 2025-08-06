@@ -65,7 +65,7 @@ const formatDateTime = (date) => {
 };
 
 onMounted(async () => {
-  await tripStore.fetchTrips();
+  //await tripStore.fetchTrips();
   await tripStore.fetchCurrentTripMemberNicknames();
   await tripStore.fetchMerchantCategories();
 
