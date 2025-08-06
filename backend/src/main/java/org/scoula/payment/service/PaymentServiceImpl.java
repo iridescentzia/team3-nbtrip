@@ -352,4 +352,10 @@ public class PaymentServiceImpl implements PaymentService {
             }
         }
     }
+
+    // 결제 참여자 조회
+    @Override
+    public List<ParticipantVO> getParticipantsByPaymentId(int paymentId) {
+        return participantMapper.findByPaymentId(paymentId);
+    }
 }
