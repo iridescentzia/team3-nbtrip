@@ -258,7 +258,7 @@ const resetFilter = () => {
 }
 
 onMounted(async () => {
-  await tripStore.fetchTrips();
+  // await tripStore.fetchTrip();
   await tripStore.fetchMerchantCategories();
 });
 </script>
