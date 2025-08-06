@@ -28,7 +28,7 @@
 
     <!-- 결제 참여자 분배 금액 수정 -->
     <update id="updateAmount">
-        UPDATE participant
+        UPDATE payment_participant
         SET split_amount = #{splitAmount}
         WHERE payment_id = #{paymentId}
         AND user_id = #{userId}
