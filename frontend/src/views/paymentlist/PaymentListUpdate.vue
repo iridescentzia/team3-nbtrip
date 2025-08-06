@@ -284,7 +284,8 @@ const handleSave = async () => {
 
   <!-- 하단 저장 버튼 -->
   <footer class="footer">
-    <button class="save-button" @click="handleSave">저장</button>
+    <button class="delete-button">삭제</button>
+    <button class="save-button" @click="handleSave">저장</button>    
   </footer>
 </template>
 
@@ -465,6 +466,18 @@ input[type="number"]::-webkit-outer-spin-button {
   background: #f8f9fa;
 }
 
+.delete-button{
+  background-color:rgba(255, 29, 12, 0.20);
+  border-radius: 12px;
+  padding: 16px 24px;
+  font-weight: 1000;
+  border: none;
+  flex: 1;
+  margin-left: 8px;
+  font-size: 16px;
+  color: #4A4A4A;
+
+}
 .save-button {
   background-color:rgba(255, 209, 102, 0.65);
   border-radius: 12px;

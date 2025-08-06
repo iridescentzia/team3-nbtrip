@@ -160,9 +160,9 @@ onMounted(async () => {
 }
 
 .floating-add-button {
-  position: fixed;
-  bottom: 90px;
-  left: 55%;
+  position: sticky;
+  bottom: 80px;
+  left: 77%;
   transform: translateX(-50%); /* 가운데 정렬 */
   width: 120px;
   max-width: 384px;
