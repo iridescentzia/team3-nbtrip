@@ -52,8 +52,6 @@ const updateSplitAmount = (userId, value) => {
   }
 };
 
-
-
 const formatAmountInput = () => {
   const numberOnly = form.value.amount.replace(/[^0-9]/g, '');
   form.value.amount = Number(numberOnly).toLocaleString();
@@ -137,7 +135,6 @@ const handleSave = async () => {
     console.log("userId:", p.userId, "typeof:", typeof p.userId)
   );
 
-
   try {
     if (paymentType.value === 'OTHER') {
       await paymentApi.updateOtherPayment(paymentId, payload);
@@ -150,13 +147,11 @@ const handleSave = async () => {
     }
 
     console.log('결제 내역 수정 완료!');
-    // router.push('/paymentlist');
+    router.go(-1)
   } catch (e) {
     console.error('수정 실패:', e.response?.data || e);
   }
 };
-
-
 </script>
 
 <template>

@@ -137,7 +137,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['date-filtered', 'participant-filtered'])
+const emit = defineEmits(['date-filtered', 'participant-filtered', 'category-filtered'])
 
 const tripStore = useTripStore();
 
