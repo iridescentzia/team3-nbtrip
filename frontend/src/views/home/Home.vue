@@ -296,3 +296,5 @@ const goToMyPage = () => router.push("/mypage");
 </style>
 
 
+
+
