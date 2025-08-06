@@ -2,6 +2,7 @@ package org.scoula.payment.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.scoula.payment.domain.PaymentType;
 import org.scoula.payment.dto.PaymentDTO;
 import org.scoula.payment.service.PaymentService;
 import org.scoula.security.accounting.domain.CustomUser;
@@ -99,6 +100,59 @@ public class PaymentController {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());
+        }
+    }
+
+    // QR 결제 수정
+    @PutMapping("/qr/{paymentId}")
+    public ResponseEntity<String> updateQrPayment(
+            @PathVariable int paymentId,
+            @RequestBody PaymentDTO paymentDTO,
+            @AuthenticationPrincipal CustomUser customUser) {
+        Integer userId = customUser.getUserId();
+        paymentDTO.setPaymentType(PaymentType.QR);
+        try {
+            paymentService.updateQrPayment(paymentId, paymentDTO, userId);
+            return ResponseEntity.ok("QR 결제 수정 완료");
+        } catch (RuntimeException e) {
+            log.error("QR 결제 수정 실패: {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
+    }
+
+    // 선결제 수정
+    @PutMapping("/prepaid/{paymentId}")
+    public ResponseEntity<String> updatePrepaidPayment(
+            @PathVariable int paymentId,
+            @RequestBody PaymentDTO paymentDTO,
+            @AuthenticationPrincipal CustomUser customUser) {
+        Integer userId = customUser.getUserId();
+        paymentDTO.setPaymentType(PaymentType.PREPAID);
+        try {
+            paymentService.updateManualPayment(paymentId, paymentDTO, userId);
+            return ResponseEntity.ok("선결제 수정 완료");
+        } catch (RuntimeException e) {
+            log.error("선결제 수정 실패: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    // 기타 결제 수정
+    @PutMapping("/other/{paymentId}")
+    public ResponseEntity<String> updateOtherPayment(
+            @PathVariable int paymentId,
+            @RequestBody PaymentDTO paymentDTO,
+            @AuthenticationPrincipal CustomUser customUser) {
+        Integer userId = customUser.getUserId();
+        paymentDTO.setPaymentType(PaymentType.OTHER);
+        try {
+            paymentService.updateManualPayment(paymentId, paymentDTO, userId);
+            return ResponseEntity.ok("기타 결제 수정 완료");
+        } catch (RuntimeException e) {
+            log.error("기타 결제 수정 실패: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 }

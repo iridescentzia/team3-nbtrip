@@ -43,3 +43,6 @@ bin/
 
 # Frontend build output
 /backend/src/main/webapp/resources/
+
+# OpenAI API key
+/backend/src/main/resources/application.properties

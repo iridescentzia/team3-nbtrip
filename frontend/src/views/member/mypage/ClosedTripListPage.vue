@@ -10,7 +10,7 @@ const router = useRouter()
 
 // 여행 상세 페이지 이동
 const goToTripDetail = (tripId) => {
-  router.push(`/trips/${tripId}`)
+  router.push(`/trip/${tripId}`)
 }
 
 // Header에서 이전 페이지로 이동

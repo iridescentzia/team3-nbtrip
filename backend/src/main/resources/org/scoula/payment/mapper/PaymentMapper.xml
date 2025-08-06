@@ -8,4 +8,30 @@
         INSERT INTO payment ( trip_id, merchant_id, user_id, pay_at, amount, memo, payment_type )
         VALUES ( #{tripId}, #{merchantId}, #{userId}, #{payAt}, #{amount}, #{memo}, #{paymentType} )
     </insert>
+
+    <!-- 결제 ID 기준 단건 조회 -->
+    <select id="selectPaymentById" resultType="org.scoula.payment.domain.PaymentVO">
+        SELECT payment_id, trip_id, merchant_id, user_id, pay_at, amount, memo, payment_type
+        FROM payment
+        WHERE payment_id = #{paymentId}
+    </select>
+
+    <!-- 결제 상세 수정 -->
+    <!-- 메모 등록 -->
+    <update id="updateMemo">
+        UPDATE payment
+        SET memo = #{memo}
+        WHERE payment_id = #{paymentId}
+    </update>
+
+    <!-- 선결제/기타 결제 상세 수정 -->
+    <update id="updateManualPayment">
+        UPDATE payment
+        SET amount = #{amount},
+            pay_at = #{payAt},
+            user_id = #{userId},
+            merchant_id = #{merchantId},
+            memo = #{memo}
+        WHERE payment_id = #{paymentId}
+    </update>
 </mapper>
