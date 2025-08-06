@@ -7,6 +7,7 @@
 
     <!-- VO 필드 매핑 -->
     <resultMap id="PaymentListResultMap" type="org.scoula.paymentlist.domain.PaymentListVO">
+        <result property="paymentId" column="paymentId"/>
         <result property="merchantId" column="merchantId"/>
         <result property="merchantName" column="merchantName"/>
         <result property="categoryId" column="categoryId"/>
@@ -19,11 +20,12 @@
         <result property="memo" column="memo"/>
     </resultMap>
 
-    <!-- 결제 내역 불러오기 -->
+    <!-- 결제 내역 불러오기: 사용자가 해당 trip에 속한 경우에만 -->
     <select id="selectPaymentList"
             parameterType="int"
             resultMap="PaymentListResultMap">
         SELECT
+            p.payment_id AS paymentId,
             m.merchant_id AS merchantId,
             m.merchant_name AS merchantName,
             mc.category_id AS categoryId,
@@ -38,7 +40,34 @@
                 JOIN users u ON p.user_id = u.user_id
                 JOIN merchant m ON p.merchant_id = m.merchant_id
                 JOIN merchant_category mc ON m.category_id = mc.category_id
+                JOIN trip_member tm ON p.trip_id = tm.trip_id
         WHERE p.trip_id = #{tripId}
+          AND tm.user_id = #{userId}
         ORDER BY p.pay_at desc;
+    </select>
+
+    <!-- paymentId로 단일 결제 내역 불러오기: 사용자 검증 포함 -->
+    <select id="selectPaymentById"
+            parameterType="int"
+            resultMap="PaymentListResultMap">
+        SELECT
+            p.payment_id AS paymentId,
+            m.merchant_id AS merchantId,
+            m.merchant_name AS merchantName,
+            mc.category_id AS categoryId,
+            mc.category_name AS categoryName,
+            u.user_id AS userId,
+            u.nickname AS nickname,
+            p.pay_at AS payAt,
+            p.amount,
+            p.payment_type AS paymentType,
+            p.memo
+        FROM payment p
+                 JOIN users u ON p.user_id = u.user_id
+                 JOIN merchant m ON p.merchant_id = m.merchant_id
+                 JOIN merchant_category mc ON m.category_id = mc.category_id
+                 JOIN trip_member tm ON p.trip_id = tm.trip_id
+        WHERE p.payment_id = #{paymentId}
+          AND tm.user_id = #{userId}
     </select>
 </mapper>

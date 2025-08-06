@@ -11,13 +11,14 @@ import org.scoula.paymentlist.domain.PaymentListVO;
 @AllArgsConstructor
 @Builder
 public class PaymentListDTO {
+    private int paymentId;
     private int merchantId;
     private String merchantName;
 
     private int categoryId;
     private String categoryName;
 
-    private String userId;
+    private int userId;
     private String nickname;
 
     private String payAt;
@@ -33,6 +34,7 @@ public class PaymentListDTO {
             return null;
         }
         return PaymentListDTO.builder()
+                .paymentId(vo.getPaymentId())
                 .merchantId(vo.getMerchantId())
                 .merchantName(vo.getMerchantName())
                 .categoryId(vo.getCategoryId())
@@ -51,6 +53,7 @@ public class PaymentListDTO {
      */
     public PaymentListVO toVo() {
         return PaymentListVO.builder()
+                .paymentId(this.paymentId)
                 .merchantId(this.merchantId)
                 .merchantName(this.merchantName)
                 .categoryId(this.categoryId)

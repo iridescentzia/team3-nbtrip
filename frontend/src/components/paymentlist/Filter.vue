@@ -344,8 +344,7 @@ onMounted(async () => {
   border-top-right-radius: 20px;
   z-index: 20;
   height: 25vh; /* viewport height: 18% */
-   max-height: 30vh; /* 최대 높이 제한 */
-  
+   max-height: 30vh; /* 최대 높이 제한 */  
 }
 
 .modal-title{
