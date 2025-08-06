@@ -16,6 +16,9 @@ public interface ParticipantMapper {
     // 결제 참여자 여러 명 등록(배치 처리)
     int insertParticipants(@Param("participants") List<ParticipantVO> participants);
 
+    // 결제 참여자 분배 금액 수정
+    int updateAmount(@Param("paymentId") int paymentId, @Param("userId") int userId, @Param("splitAmount") int splitAmount);
+
     // 결제 참여자 삭제 (paymentId 기준)
     int deleteParticipant(@Param("paymentId") int paymentId, @Param("userId") int userId);
 }

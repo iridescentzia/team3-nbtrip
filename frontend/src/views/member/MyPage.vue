@@ -94,12 +94,10 @@ onMounted(async () => {
           <div class="icon-button"><CircleUserRound size="28" /></div>
           <span>회원 정보</span>
         </div>
-        <!--      <div class="icon-wrapper" @click="goTo('/trips?status=ready')">-->
         <div class="icon-wrapper" @click="goTo('/mypage/ready-trip')">
           <div class="icon-button"><Briefcase size="28" /></div>
           <span>예정된 여행</span>
         </div>
-        <!--      <div class="icon-wrapper" @click="goTo('/trips?status=closed')">-->
         <div class="icon-wrapper" @click="goTo('/mypage/closed-trip')">
           <div class="icon-button"><BriefcaseConveyorBelt size="28" /></div>
           <span>지난 여행</span>

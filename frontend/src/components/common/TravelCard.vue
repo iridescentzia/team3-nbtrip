@@ -28,8 +28,8 @@ function selectTab(tab) {
 // 아이콘 클릭 시 차트 페이지로 이동
 function goToChart() {
   router.push({
-    name: 'chart',
-    params: { tripId: 1 },
+    name: 'report',
+    params: { tripId },
   });
 }
 </script>
@@ -84,7 +84,6 @@ function goToChart() {
 
   background: white;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-
 }
 
 .card-header {
@@ -113,11 +112,11 @@ function goToChart() {
   font-size: 24px;
   font-weight: 1000;
   margin: 0;
-  margin-right:5px;
+  margin-right: 5px;
 }
 
 .trip-date {
-  color: #6D6D6D;
+  color: #6d6d6d;
   font-size: 15px;
   opacity: 0.8;
 }
@@ -172,6 +171,6 @@ function goToChart() {
 }
 
 .tab-item.active {
-  color: #FDB100;
+  color: #fdb100;
 }
 </style>

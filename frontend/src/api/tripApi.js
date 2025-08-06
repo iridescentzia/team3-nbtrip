@@ -17,7 +17,7 @@ export default {
         console.log('보내는 데이터:', params);
         await api.post(`${BASE_URL}/`, params);
     },
-    async getDisabledDates(tripId){
+    async getDisabledDates(){
         const { data } = await api.get(`${BASE_URL}/`);
         console.log("data:" + JSON.stringify(data));
 
@@ -94,6 +94,9 @@ export default {
     },
     async updateTrip(param){
         await api.put(`${BASE_URL}/${param.tripId}/update`, param);
+    },
+    async closeTrip(tripId){
+        await api.put(`${BASE_URL}/${tripId}/status`);
     }
 
 }
