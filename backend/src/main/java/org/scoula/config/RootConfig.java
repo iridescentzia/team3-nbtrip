@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.*;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -17,6 +18,7 @@ import javax.sql.DataSource;
 
 @Configuration
 @PropertySource({"classpath:/application.properties"})
+@PropertySource(value = "classpath:application-ai.properties", ignoreResourceNotFound = true) //ai api key 설정 파일 스캔
 @ComponentScan(basePackages = {"org.scoula"}, // security 관련 Component 스캔},
         excludeFilters = {
         @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = Controller.class)
@@ -68,5 +70,11 @@ public class RootConfig {
     public DataSourceTransactionManager transactionManager() {
         DataSourceTransactionManager manager = new DataSourceTransactionManager(dataSource());
         return manager;
+    }
+
+    //스캔했던 프로퍼티 값 읽기
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertyConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
     }
 }
