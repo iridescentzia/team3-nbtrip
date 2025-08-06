@@ -187,7 +187,21 @@ export const useSettlementStore = defineStore('settlement', () => {
         }
 
         try {
-            const settlementIdsToSend = mySettlementData.value.toSend.map(tx => tx.settlementId)
+            // ✅ PENDING 상태인 정산만 필터링
+            const pendingToSend = mySettlementData.value.toSend.filter(
+                tx => tx.status === 'PENDING'
+            )
+
+            if (pendingToSend.length === 0) {
+                return {
+                    success: true,
+                    successCount: 0,
+                    failedCount: 0,
+                    message: '송금할 내역이 없습니다.'
+                }
+            }
+
+            const settlementIdsToSend = pendingToSend.map(tx => tx.settlementId)
             const response = await transferMoney({ settlementIds: settlementIdsToSend })
             return response.data
         } catch (err) {
