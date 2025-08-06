@@ -45,4 +45,4 @@ bin/
 /backend/src/main/webapp/resources/
 
 # OpenAI API key
-/backend/src/main/resources/application-ai.properties
+/backend/src/main/resources/application.properties
