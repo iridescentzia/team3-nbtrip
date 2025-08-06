@@ -53,6 +53,14 @@ export const requestPermissionAndGetToken = async (registration) => {
 // Foreground 메시지 수신 리스너
 onMessage(messaging, (payload) => {
   console.log("푸시 알림 수신:", payload);
+
+  // 알림 직접 표시
+  if (Notification.permission === 'granted' && payload.notification) {
+    const { title, body } = payload.notification;
+    new Notification(title, {
+      body, 
+    });
+  }
 });
 
 export default app;
