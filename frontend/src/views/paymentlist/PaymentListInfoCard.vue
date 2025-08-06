@@ -27,6 +27,7 @@ defineProps({
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   margin-bottom: 12px;
   max-width: 343px;
+  cursor:pointer;
 }
 .left .title {
   font-weight: 1000;

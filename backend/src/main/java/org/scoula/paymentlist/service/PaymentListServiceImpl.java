@@ -16,11 +16,19 @@ public class PaymentListServiceImpl implements PaymentListService {
     private final PaymentListMapper mapper;
 
     @Override
-    public List<PaymentListDTO> getPaymentList(Integer tripId) {
-        return mapper.selectPaymentList(tripId)
+    public List<PaymentListDTO> getPaymentList(Integer tripId, Integer userId) {
+        return mapper.selectPaymentList(tripId, userId)
                 .stream()
                 .map(PaymentListDTO::of)
                 .toList();
     }
 
+    @Override
+    public PaymentListDTO getPaymentListByPaymentId(Integer paymentId, Integer userId) {
+        return mapper.selectPaymentById(paymentId, userId)
+                .stream()
+                .findFirst()
+                .map(PaymentListDTO::of)
+                .orElse(null);
+    }
 }

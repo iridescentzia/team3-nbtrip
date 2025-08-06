@@ -13,13 +13,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class PaymentListVO {
+    private int paymentId;
     private int merchantId;
     private String merchantName;
 
     private int categoryId;
     private String categoryName;
 
-    private String userId;
+    private int userId;
     private String nickname;
 
     private String payAt;

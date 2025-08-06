@@ -6,6 +6,8 @@ import org.scoula.paymentlist.dto.PaymentListDTO;
 import java.util.List;
 
 public interface PaymentListService {
-    List<PaymentListDTO> getPaymentList(Integer tripId);
+    List<PaymentListDTO> getPaymentList(Integer tripId, Integer userId);
+    PaymentListDTO getPaymentListByPaymentId(Integer paymentId, Integer userId);
+
 }
 

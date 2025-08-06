@@ -17,6 +17,12 @@ export const useTripStore = defineStore('trip', () => {
     trips.value = Array.isArray(data) ? data : [];
   };
 
+  const parseKSTDate = (dateStr) => {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    // Date.UTC → 한국 시간 00:00으로 세팅
+     return new Date(year, month - 1, day, 0, 0, 0);; // UTC+9 대응
+  };
+
   // 현재 진행 중인 여행
   const currentTrip = computed(() => {
     const now = new Date();
@@ -29,8 +35,8 @@ export const useTripStore = defineStore('trip', () => {
       if (!trip.startDate || !trip.endDate) return false;
 
       // 문자열 → Date 객체로 파싱
-      const start = new Date(trip.startDate);
-      const end = new Date(trip.endDate);
+      const start = parseKSTDate(trip.startDate);
+      const end = parseKSTDate(trip.endDate);
 
       return (
         trip.tripStatus === 'ACTIVE' &&

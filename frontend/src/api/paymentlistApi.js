@@ -6,4 +6,9 @@ export default {
     console.log("payment data: ", data);
     return data;
   },
+    async getPaymentListById(paymentId) {
+    const { data } = await api.get(`/paymentlist/payment/${paymentId}`);
+    console.log("payment data: ", data);
+    return data;
+  },
 };
