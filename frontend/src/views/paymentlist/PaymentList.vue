@@ -1,5 +1,5 @@
 <template>
-    <Header title="진행 중인 여행" />
+    <Header title="진행 중인 여행" @back="router.back"/>
     <div class="content-container">
       <!-- 현재 userId = 1인 여행만 보임 (TripController) -->
       <TravelCard
