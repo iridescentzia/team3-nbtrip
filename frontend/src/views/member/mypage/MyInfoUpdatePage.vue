@@ -213,15 +213,9 @@ const submitUpdate = async () => {
           }}</span>
       </div>
 
-      <!-- 이름 -->
+      <!-- 이름(수정 불가) -->
       <label class="label">이름</label>
-      <input v-model="name" type="text" class="input-box" />
-      <div class="check">
-        <span v-if="nameMessage" :class="isNameValid ? 'success' : 'error'">
-          {{ nameMessage }}
-        </span>
-      </div>
-
+      <input v-model="name" type="text" class="input-box readonly-input" readonly />
 
       <!-- 전화번호 -->
       <label class="label">전화번호</label>
@@ -305,6 +299,13 @@ const submitUpdate = async () => {
   padding: 0 12px;
   margin-top: 4px;
   box-sizing: border-box;
+}
+
+.readonly-input {
+  background: #f5f5f5 !important;
+  color: #666;
+  cursor: not-allowed;
+  border-color: #d1d5db;
 }
 
 .nickname-wrapper {

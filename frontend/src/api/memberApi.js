@@ -116,43 +116,16 @@ export const updateMyInfo = async (memberData) => {
             email: memberData.email
         };
 
-        // 수정사항: 비밀번호 처리 전후 로깅
-        console.log('전송 전 memberData.password:', memberData.password);
-        console.log('비밀번호 길이:', memberData.password?.length);
-        console.log('비밀번호 trim 후:', memberData.password?.trim());
-
         if (memberData.password && memberData.password.trim() !== '') {
             requestData.password = memberData.password;
-            console.log('✅ 비밀번호가 requestData에 포함됨');
+            console.log('비밀번호가 requestData에 포함됨');
         } else {
-            console.log('❌ 비밀번호가 requestData에 포함되지 않음');
+            console.log('비밀번호가 requestData에 포함되지 않음');
         }
-
-        // 수정사항: 실제 전송되는 데이터의 전체 구조 확인
-        console.log('🚀 실제 서버로 전송되는 데이터:');
-        console.log('- 키 목록:', Object.keys(requestData));
-        console.log('- password 필드 존재:', 'password' in requestData);
-        console.log('- 전체 구조:', JSON.stringify(requestData, (key, value) => {
-            if (key === 'password') return '***';
-            return value;
-        }));
-
         const response = await apiClient.put('/mypage', requestData);
-
-        // 수정사항: 서버 응답 상세 로깅
-        console.log('📥 서버 응답:');
-        console.log('- 상태 코드:', response.status);
-        console.log('- 응답 데이터:', response.data);
-
         return response.data;
     } catch (error) {
-        // 수정사항: 에러 상세 로깅
-        console.error('🚨 API 에러 상세:');
-        console.error('- 에러 메시지:', error.message);
-        console.error('- 응답 상태:', error.response?.status);
-        console.error('- 응답 데이터:', error.response?.data);
-        console.error('- 요청 설정:', error.config);
-
+        console.error('API 에러:', error.message);
         throw handleApiError(error, '회원정보 수정');
     }
 };
