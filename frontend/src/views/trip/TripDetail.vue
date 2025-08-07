@@ -20,6 +20,7 @@
           :budget="tripStore.currentTrip.budget"
           :onTerminate="handleTripTerminate"
           :isOwner="isOwner"
+          :isClosed="isClosed"
       >
       </Summary>
 
@@ -43,19 +44,28 @@
       <TripEdit ref="updateTrip" />
     </div>
   </div>
-  <!-- 고정 버튼 -->
+
+  <!--  TODO : 앞 두 버튼에 올바른 라우팅 적용하기  -->
+
   <button
-      v-if="activeTab === '그룹 지출 내역' || activeTab === '선결제 내역'"
+      v-if=" !isClosed && activeTab === '그룹 지출 내역'"
       class="floating-button"
       @click="goToRegister">
-    + 결제 추가
+    + 기타 결제
   </button>
-  <!-- 고정 버튼 -->
+
   <button
-      v-else
+      v-if=" !isClosed && activeTab === '선결제 내역'"
+      class="floating-button"
+      @click="goToRegister">
+    + 선결제 추가
+  </button>
+
+  <button
+      v-if=" !isClosed && activeTab === '그룹 관리'"
       class="floating-button"
       @click="callChildUpdate">
-      저장하기
+    저장하기
   </button>
 </template>
 
@@ -82,6 +92,7 @@ const activeTab = ref('그룹 지출 내역');
 const updateTrip = ref(null);
 const isOwner = ref(false);
 const title = ref('');
+const isClosed = ref(false);
 
 const callChildUpdate = async () => {
   if(updateTrip.value){
@@ -166,6 +177,7 @@ function onCategoryFiltered(categoryIds){
   selectedCategories.value = categoryIds
 }
 
+
 // PaymentList.vue의 handleTripTerminate 함수 수정
 const handleTripTerminate = async () => {
   try {
@@ -243,6 +255,9 @@ onMounted(async () => {
     tripStore.currentTrip.tripStatus === 'ACTIVE' ? title.value = '진행 중인 여행' :
         tripStore.currentTrip.tripStatus === 'READY' ? title.value = '예정된 여행' : title.value = '종료된 여행'
   }
+  if(tripStore.currentTrip.tripStatus === 'CLOSED'){
+    isClosed.value = true;
+  }
 });
 
 </script>
@@ -308,4 +323,5 @@ onMounted(async () => {
 .floating-button:active {
   transform: translateX(-50%) scale(0.95);
 }
+
 </style>
