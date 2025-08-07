@@ -1,5 +1,5 @@
 <template>
-  <Header title="여행 리포트" :backAction="() => router.back()" />
+  <Header title="여행 리포트" />
   <div class="travel-report-page">
     <!-- 헤더 -->
     <div class="report-info-box">
@@ -60,7 +60,7 @@ import {
 } from 'chart.js';
 import { useRoute, useRouter } from 'vue-router';
 import chartApi from '@/api/chartApi';
-import Header from '@/components/layout/Header.vue';
+import Header from '@/components/layout/Header3.vue';
 import AIReport from './AiReport.vue';
 import { FileChartColumn } from 'lucide-vue-next';
 
@@ -179,7 +179,7 @@ onMounted(async () => {
 
 <style scoped>
 .report-info-box {
-  background: #fff;
+  background: #f9fafb;
 }
 .travel-report-page {
   width: 100%;

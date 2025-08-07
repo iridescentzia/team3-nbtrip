@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import Header from '../../components/layout/Header2.vue';
+import Header from '../../components/layout/Header3.vue';
 import { useSettlementStore } from '@/stores/settlementStore';
 import { useRoute, useRouter } from 'vue-router';
 import { SquareCheckBig } from 'lucide-vue-next';
@@ -164,11 +164,10 @@ const confirmTransfer = async () => {
                     <span class="font-semibold text-sm text-theme-text">
                       {{ tx.senderNickname || '알 수 없음' }}
                     </span>
-                    <!-- 상태가 COMPLETED일 때만 체크 아이콘 표시 -->
-                    <SquareCheckBig
-                      v-if="tx.status === 'COMPLETED'"
-                      class="status-icon"
-                    />
+                    <div v-if="tx.status === 'COMPLETED'" class="status-badge completed">
+                      <SquareCheckBig class="status-icon" />
+                      <span class="status-text">받음</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -204,11 +203,10 @@ const confirmTransfer = async () => {
                     <span class="font-semibold text-sm">
                       {{ tx.receiverNickname || '알 수 없음' }}
                     </span>
-                    <!-- 상태가 COMPLETED일 때만 체크 아이콘 표시 -->
-                    <SquareCheckBig
-                      v-if="tx.status === 'COMPLETED'"
-                      class="status-icon"
-                    />
+                    <div v-if="tx.status === 'COMPLETED'" class="status-badge completed">
+                      <SquareCheckBig class="status-icon" />
+                      <span class="status-text">보냄</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -381,10 +379,30 @@ const confirmTransfer = async () => {
   font-size: 1.125rem;
 }
 
+/* ✅ 상태 배지 - 아이콘 + 텍스트 (초록 계열) */
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem; /* 아이콘과 텍스트 사이 간격 */
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.status-badge.completed {
+  background-color: #dcfce7; /* 연한 초록 배경 */
+  color: #16a34a; /* 진한 초록 텍스트 */
+}
+
 .status-icon {
-  width: 16px;
-  height: 16px;
-  color: #9ca3af; /* 회색 톤 */
+  width: 12px; /* 아이콘 크기 */
+  height: 12px;
+  color: #16a34a; /* 초록색 아이콘 */
+}
+
+.status-text {
+  font-size: 0.75rem; /* 12px */
+  font-weight: 600;
 }
 
 .empty-message {
