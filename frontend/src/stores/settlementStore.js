@@ -26,9 +26,13 @@ export const useSettlementStore = defineStore('settlement', () => {
         return mySettlementData.value.toReceive.reduce((sum, tx) => sum + tx.amount, 0)
     })
 
+    // settlementStore.js - totalSendAmount 수정
     const totalSendAmount = computed(() => {
         if (!mySettlementData.value?.toSend) return 0
-        return mySettlementData.value.toSend.reduce((sum, tx) => sum + tx.amount, 0)
+        // ✅ PENDING 상태인 정산만 계산
+        return mySettlementData.value.toSend
+            .filter(tx => tx.status === 'PENDING')
+            .reduce((sum, tx) => sum + tx.amount, 0)
     })
 
     const netBalance = computed(() => {
