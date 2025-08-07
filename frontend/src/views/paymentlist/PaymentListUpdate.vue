@@ -515,6 +515,7 @@ input[type="number"]::-webkit-outer-spin-button {
   margin-left: 8px;
   font-size: 16px;
   color: #4A4A4A;
+  cursor:pointer;
 
 }
 .save-button {
@@ -527,6 +528,7 @@ input[type="number"]::-webkit-outer-spin-button {
   margin-left: 8px;
   font-size: 16px;
   color: #4A4A4A;
+  cursor:pointer;
 }
 
 /* 스크롤바 */

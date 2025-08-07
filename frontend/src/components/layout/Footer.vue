@@ -84,38 +84,4 @@ const handlerTabClick = (item) => {
   padding: 4px;
 }
 
-/* 개별 탭 아이템 스타일 */
-.footer-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  text-align: center;
-  gap: 4px;
-  font-size: 12px;
-  color: #8d8d8d;
-  font-weight: 400;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-/* 탭 내부 아이콘 영역 */
-.footer-item .icon {
-  width: 24px;
-  height: 24px;
-  color: #8d8d8d;
-  display: block;
-}
-
-/* 활성화된 탭 스타일 */
-.footer-item.active {
-  color: #fddf99;
-  font-weight: 700;
-}
-
-/* 활성화된 탭 아이콘 스타일 */
-.footer-item.active .icon {
-  color: #fddf99;
-}
 </style>

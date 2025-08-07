@@ -11,7 +11,7 @@ import org.springframework.web.servlet.config.annotation.*;
 import java.util.List;
 
 @EnableWebMvc
-@ComponentScan(basePackages = {"org.scoula"})
+@ComponentScan(basePackages = {"org.scoula.controller", "org.scoula.exception"})
 public class ServletConfig implements WebMvcConfigurer {
     // CORS 설정
     @Override

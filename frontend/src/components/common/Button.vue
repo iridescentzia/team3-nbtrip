@@ -5,7 +5,6 @@ defineProps({
     type: String,
     default: '버튼',
   },
-
   // 버튼 비활성화 여부(기본값 : 활성화 상태)
   disabled: {
     type: Boolean,
@@ -24,9 +23,7 @@ const emits = defineEmits(['click']);
 </script>
 
 <template>
-  <button class="bottom-button" :disabled="disabled" @click="$emit('click')">
-    {{ label }}
-  </button>
+
 </template>
 
 <style scoped>
