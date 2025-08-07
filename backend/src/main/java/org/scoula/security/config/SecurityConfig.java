@@ -157,6 +157,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         // 기본 인증 방식 비활성화
         http
+                .cors().and()
                 .httpBasic().disable()  // HTTP Basic 인증 비활성화
                 .csrf().disable()  // CSRF 보호 비활성화 (JWT 사용으로 불필요)
                 .formLogin().disable()  // 폼 로그인 비활성화

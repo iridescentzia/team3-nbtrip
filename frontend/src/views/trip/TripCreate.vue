@@ -1,6 +1,6 @@
 <script setup>
 import tripApi from "@/api/tripApi.js";
-import {ref} from 'vue';
+import {onMounted, ref} from 'vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import { useTravelCreateStore } from "@/stores/tripStore.js"
@@ -8,7 +8,7 @@ import Button from "@/components/common/Button.vue";
 import {useRouter} from "vue-router";
 import Header from "@/components/layout/Header.vue";
 const router=useRouter();
-const rawDate = ref({});
+const rawDate = ref(null);
 const disableDates = ref();
 const store = useTravelCreateStore();
 const load = async () => {
@@ -18,7 +18,7 @@ const load = async () => {
     console.error('비활성화 날짜 불러오기 실패:', e);
   }
 }
-load();
+
 const toNextPage = () => {
   console.log('입력한 이름:', store.tripName);
   router.push('/trip/invite');
@@ -26,10 +26,16 @@ const toNextPage = () => {
 
 const handleDate = (modelData) => {
   rawDate.value = modelData;
-  store.startDate = new Date(modelData[0]);
-  store.endDate = new Date(modelData[1]);
-  console.log(rawDate.value);
+  // modelData가 이제 ['2025-08-08', '2025-08-09'] 같은 문자열 배열입니다.
+  // new Date()를 사용하지 않고 그대로 저장합니다.
+  store.startDate = modelData[0];
+  store.endDate = modelData[1];
+  console.log('저장된 날짜:', store.startDate, store.endDate);
 }
+
+onMounted(()=>{
+  load();
+})
 
 </script>
 
@@ -50,6 +56,7 @@ const handleDate = (modelData) => {
       <VueDatePicker
           inline auto-apply
           v-model="rawDate"
+          model-type="yyyy-MM-dd"
           :range="{ noDisabledRange: true }"
           :enable-time-picker="false"
           :disabled-dates="disableDates"

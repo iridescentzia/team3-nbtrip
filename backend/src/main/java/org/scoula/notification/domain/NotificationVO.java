@@ -29,5 +29,5 @@ public class NotificationVO {
     private String fromUserNickname; // 알람 발생 유저 닉네임
     private String memberStatus; // 그룹 참여 상태
     private String paymentType; // PREPAID, QR, OTHER
-    private String actionType;  // CREATE, UPDATE
+    private String actionType;  // CREATE, UPDATE, send
 }

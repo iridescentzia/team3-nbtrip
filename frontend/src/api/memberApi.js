@@ -53,8 +53,19 @@ export const checkNicknameDuplicate = async (nickname) => {
         const response = await apiClient.post('/users/check-nickname', {
             nickname
         });
-        return response.data;
+        return {
+            success: true,
+            available: true,
+            message: response.data.message || '사용 가능한 닉네임입니다.'
+        };
     } catch (error) {
+        if (error.response?.status === 409) {
+            return {
+                success: true,
+                available: false,
+                message: error.response.data.message || '이미 사용 중인 닉네임입니다.'
+            };
+        }
         throw handleApiError(error, '닉네임 중복 확인');
     }
 };
@@ -106,21 +117,30 @@ export const verifyPassword = async (password) => {
 };
 
 // 회원정보 수정
+// 회원정보 수정 함수 - 상세 디버깅 추가
 export const updateMyInfo = async (memberData) => {
     try {
-        const response = await apiClient.put('/mypage', {
+        const requestData = {
             nickname: memberData.nickname,
             name: memberData.name,
             phoneNumber: memberData.phoneNumber,
-            email: memberData.email,
-            password: memberData.password,
-            passwordConfirm : memberData.passwordConfirm
-        });
+            email: memberData.email
+        };
+
+        if (memberData.password && memberData.password.trim() !== '') {
+            requestData.password = memberData.password;
+            console.log('비밀번호가 requestData에 포함됨');
+        } else {
+            console.log('비밀번호가 requestData에 포함되지 않음');
+        }
+        const response = await apiClient.put('/mypage', requestData);
         return response.data;
     } catch (error) {
+        console.error('API 에러:', error.message);
         throw handleApiError(error, '회원정보 수정');
     }
 };
+
 
 // ====== 유틸리티 함수 ======
 // API 에러 처리 함수

@@ -14,25 +14,31 @@ export const useTravelCreateStore = defineStore('travelCreate', () => {
 });
 
 export const usePaymentListStore = defineStore('paymentList', () => {
-    const trip = ref(null);
+    const currentTrip = ref("");
     const currentTripMembers = ref([]); // 현재 여행 멤버 목록
     const merchantCategories = ref([]);
 
-    const fetchTripDetail = async (tripId) => {
-        trip.value = await tripApi.getTripDetail(tripId);
+    // 현재 tripApi는 userId = 1인 trip만 불러옴
+    // 여행 목록 불러오기
+    const fetchTrip = async (tripId) => {
+        currentTrip.value = await tripApi.getTripDetail(tripId);
     };
 
+    const parseKSTDate = (dateStr) => {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        // Date.UTC → 한국 시간 00:00으로 세팅
+        return new Date(year, month - 1, day, 0, 0, 0);; // UTC+9 대응
+    };
 
     // 여행 상세 정보에서 member.userId 목록을 받아오고
     // getUserInfo()로 닉네임 붙이기
     const fetchCurrentTripMemberNicknames = async () => {
-        if (!trip.value) return;
+        if (!currentTrip.value) return;
 
         try{
             // 진행 중 여행 상세 정보 조회
-            const detail = await tripApi.getTripDetail(trip.value.tripId)
+            const detail = currentTrip.value;
             const members = Array.isArray(detail.members) ? detail.members : []
-            console.log("in store: "+members)
 
             // 각 userId에 대한 닉네임 조회
             const nicknamePromises = members.map(async (member) =>{
@@ -55,7 +61,7 @@ export const usePaymentListStore = defineStore('paymentList', () => {
         }
     }
 
-// 카테고리 목록 불러오기
+    // 카테고리 목록 불러오기
     const fetchMerchantCategories = async () => {
         try{
             const data = await merchantApi.getAllMerchantCategories()
@@ -68,8 +74,8 @@ export const usePaymentListStore = defineStore('paymentList', () => {
     }
 
     return {
-        trip,
-        fetchTripDetail,
+        fetchTrip,
+        currentTrip,
         currentTripMembers,
         fetchCurrentTripMemberNicknames,
         fetchMerchantCategories,

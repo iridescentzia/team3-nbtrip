@@ -77,12 +77,6 @@ const loadAccountInfo = async () => {
   }
 }
 
-// 은행명 조회 헬퍼 함수 (표시용)
-const getBankName = (code) => {
-  const bank = bankList.value.find(b => b.bankCode === code)
-  return bank?.bankName || ''
-}
-
 // 저장 버튼 클릭
 const saveAccount = async () => {
   if (!bankCode.value || !accountNumber.value) {
@@ -99,17 +93,20 @@ const saveAccount = async () => {
       return
     }
 
+    // 은행명 조회 헬퍼 함수 (표시용)
+    const bank = bankList.value.find(b => b.bankCode === bankCode.value)
+    const bankNameValue = bank?.bankName || ''
+
     const accountUpdateDTO = {
       bankCode: bankCode.value,
       accountNumber: accountNumber.value,
-      accountAlias: null // 별명은 null로 설정
+      bankName: bankNameValue
     }
 
     await accountApi.updateAccount(userId.value, accountUpdateDTO)
     console.log('계좌 정보 업데이트 성공')
-
-    successMessage.value = '계좌 정보가 저장되었습니다.'
-    errorMessage.value = ''
+    alert('계좌 정보가 저장되었습니다.')
+    router.push('/mypage')
   } catch (err) {
     console.error('계좌 정보 업데이트 실패:', err)
     errorMessage.value = err.message || '저장에 실패했습니다.'
@@ -138,10 +135,12 @@ const saveAccount = async () => {
           placeholder="계좌 번호 입력"
       />
 
-      <Button label="저장하기" @click="saveAccount" />
+      <div class="message-box">
+        <div v-if="successMessage" class="success-message">{{ successMessage }}</div>
+        <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+      </div>
 
-      <div v-if="successMessage" class="success-message">{{ successMessage }}</div>
-      <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+      <Button label="저장하기" @click="saveAccount" />
     </div>
   </div>
 </template>
@@ -159,7 +158,7 @@ const saveAccount = async () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-top: calc(56px + 24px); /* Header 높이만큼 여백 */
+  padding-top: calc(56px + 24px);
   padding-left: 24px;
   padding-right: 24px;
 }
@@ -178,6 +177,12 @@ const saveAccount = async () => {
   padding: 0 16px;
   font-size: 16px;
   background-color: white;
+}
+
+.message-box {
+  margin-top: 16px;  /* 입력란과 간격 */
+  margin-bottom: 16px;  /* 버튼과 간격 */
+  text-align: center;
 }
 
 .success-message {

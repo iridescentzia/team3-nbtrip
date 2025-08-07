@@ -134,7 +134,7 @@
         LEFT JOIN users u ON n.from_user_id = u.user_id
         LEFT JOIN trip t ON n.trip_id = t.trip_id
         LEFT JOIN trip_member tm ON n.trip_id = tm.trip_id AND tm.user_id = n.from_user_id
-        WHERE n.notification_type IN ('INVITE', 'GROUP_EVENT')   <!-- JOINED/LEFT 없음 -->
+        WHERE n.notification_type IN ('INVITE')
         AND n.user_id = #{userId}
         ORDER BY n.send_at DESC
     </select>
