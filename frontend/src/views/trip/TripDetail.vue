@@ -1,5 +1,5 @@
 <template>
-  <Header title="진행 중인 여행" @back="router.back"/>
+  <Header :title="title" @back="router.back"/>
   <div class="content-container">
     <!-- 현재 userId = 1인 여행만 보임 (TripController) -->
     <TravelCard
@@ -81,6 +81,7 @@ const tripStore = usePaymentListStore();
 const activeTab = ref('그룹 지출 내역');
 const updateTrip = ref(null);
 const isOwner = ref(false);
+const title = ref('');
 
 const callChildUpdate = async () => {
   if(updateTrip.value){
@@ -239,6 +240,8 @@ onMounted(async () => {
   if (tripStore.currentTrip) {
     await tripStore.fetchCurrentTripMemberNicknames()
     await checkIsOwner();
+    tripStore.currentTrip.tripStatus === 'ACTIVE' ? title.value = '진행 중인 여행' :
+        tripStore.currentTrip.tripStatus === 'READY' ? title.value = '예정된 여행' : title.value = '종료된 여행'
   }
 });
 
