@@ -86,28 +86,43 @@ const handleRequestSettlement = async () => {
         <h2 class="total-amount">
           총 {{ groupSettlementData.totalAmount?.toLocaleString() || 0 }}원 사용
         </h2>
+
+        <!-- 🆕 드롭다운을 총 금액 아래로 이동 -->
+        <div class="member-dropdown-wrapper">
+          <div class="custom-dropdown">
+            <select v-model="selectedMember" class="member-select-hidden">
+              <option
+                  v-for="member in groupSettlementData.members"
+                  :key="member"
+                  :value="member"
+              >
+                {{ member }}
+              </option>
+            </select>
+            <div class="custom-dropdown-display">
+              <div class="member-name">{{ selectedMember || '멤버 선택' }}</div>
+              <div class="dropdown-arrow">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M4 6L8 10L12 6" stroke="#B0ADAD" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <span class="nim-text">님이</span>
+        </div>
       </div>
 
       <!-- 받을 돈 카드 -->
       <div class="settlement-card">
         <div class="card-header">
-          <select v-model="selectedMember" class="member-select">
-            <option
-              v-for="member in groupSettlementData.members"
-              :key="member"
-              :value="member"
-            >
-              {{ member }}
-            </option>
-          </select>
-          <span class="card-title">님이 받을 돈</span>
+          <span class="card-title">받을 돈</span>
         </div>
         <div class="transaction-list">
           <div v-if="toReceiveList.length > 0">
             <div
-              v-for="(tx, index) in toReceiveList"
-              :key="index"
-              class="transaction-item"
+                v-for="(tx, index) in toReceiveList"
+                :key="index"
+                class="transaction-item"
             >
               <div class="member-info">
                 <div class="avatar bg-theme-secondary">
@@ -116,7 +131,7 @@ const handleRequestSettlement = async () => {
                 <span>{{ tx.senderNickname || '알 수 없음' }}</span>
               </div>
               <span class="amount"
-                >{{ tx.amount?.toLocaleString() || 0 }}원</span
+              >{{ tx.amount?.toLocaleString() || 0 }}원</span
               >
             </div>
           </div>
@@ -127,23 +142,14 @@ const handleRequestSettlement = async () => {
       <!-- 보낼 돈 카드 -->
       <div class="settlement-card">
         <div class="card-header">
-          <select v-model="selectedMember" class="member-select">
-            <option
-              v-for="member in groupSettlementData.members"
-              :key="member"
-              :value="member"
-            >
-              {{ member }}
-            </option>
-          </select>
-          <span class="card-title">님이 보낼 돈</span>
+          <span class="card-title">보낼 돈</span>
         </div>
         <div class="transaction-list">
           <div v-if="toSendList.length > 0">
             <div
-              v-for="(tx, index) in toSendList"
-              :key="index"
-              class="transaction-item"
+                v-for="(tx, index) in toSendList"
+                :key="index"
+                class="transaction-item"
             >
               <div class="member-info">
                 <div class="avatar bg-theme-primary">
@@ -152,7 +158,7 @@ const handleRequestSettlement = async () => {
                 <span>{{ tx.receiverNickname || '알 수 없음' }}</span>
               </div>
               <span class="amount"
-                >{{ tx.amount?.toLocaleString() || 0 }}원</span
+              >{{ tx.amount?.toLocaleString() || 0 }}원</span
               >
             </div>
           </div>
@@ -177,7 +183,7 @@ const handleRequestSettlement = async () => {
   background-color: var(--theme-bg);
   display: flex;
   flex-direction: column;
-  position: relative; /* Header의 absolute 포지션 기준점 */
+  position: relative;
 }
 
 /* 메인 콘텐츠 */
@@ -211,6 +217,77 @@ const handleRequestSettlement = async () => {
   font-weight: 800;
   color: var(--theme-text);
   margin-top: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+/* 🆕 커스텀 드롭다운 스타일 */
+.member-dropdown-wrapper {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.custom-dropdown {
+  position: relative;
+  width: 105px;
+}
+
+.nim-text {
+  color: var(--theme-text);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 27px; /* 드롭다운 높이와 동일하게 맞춤 */
+  margin-left: 30px;
+}
+
+.member-select-hidden {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.custom-dropdown-display {
+  width: 105px;
+  height: 27px; /* 높이를 27px로 설정 */
+  padding: 5.5px 12px 5.5px 16px; /* 상하 패딩 5.5px */
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #D9D9D9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  position: relative;
+}
+
+.member-name {
+  flex: 1;
+  text-align: center;
+  color: black;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-arrow {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 정산 카드 */
@@ -221,31 +298,17 @@ const handleRequestSettlement = async () => {
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   margin-bottom: 1rem;
 }
+
 .card-header {
   display: flex;
   align-items: center;
   margin-bottom: 1rem;
 }
-.member-select {
-  font-weight: 700;
-  font-size: 1.125rem;
-  color: var(--theme-text);
-  border: none;
-  background: transparent;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  padding-right: 1.5rem;
-  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>');
-  background-repeat: no-repeat;
-  background-position: right 0.25rem center;
-  background-size: 1.25rem;
-  cursor: pointer;
-}
+
 .card-title {
-  font-weight: 600;
-  color: var(--theme-text-light);
-  margin-left: 0.25rem;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--theme-text);
 }
 
 /* 거래 내역 리스트 */
@@ -320,3 +383,4 @@ const handleRequestSettlement = async () => {
   background-color: var(--theme-secondary);
 }
 </style>
+
