@@ -5,9 +5,10 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { useTripStore } from '@/stores/trip';
 import paymentApi from '@/api/paymentApi';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const router = useRouter();
+const route = useRoute();
 const tripStore = useTripStore();
 const date = ref(new Date());
 
@@ -26,14 +27,23 @@ const splitAmounts = ref({});
 
 // 1. 컴포넌트가 마운트될 때 실행될 로직
 onMounted(async () => {
-  await tripStore.fetchTrips();
-  if (tripStore.currentTrip) {
-    await tripStore.fetchCurrentTripMemberNicknames();
-    await tripStore.fetchMerchantCategories();
+  // 1. 라우트 파라미터에서 tripId를 가져옴
+  const tripId = route.params.tripId;
 
-    if (tripStore.currentTripMembers.length > 0) {
-      form.value.payerUserId = tripStore.currentTripMembers[0].userId;
-      initializeParticipants();
+  if (tripId) {
+    // tripStore의 기존 fetchTrip 함수를 호출하여 현재 여행 정보를 설정합니다.
+    await tripStore.fetchTrip(tripId);
+
+    // 현재 여행 데이터가 설정된 것을 확인하고
+    // 나머지 데이터를 불러옵니다.
+    if (tripStore.currentTrip) {
+      await tripStore.fetchCurrentTripMemberNicknames();
+      await tripStore.fetchMerchantCategories();
+
+      if (tripStore.currentTripMembers.length > 0) {
+        form.value.payerUserId = tripStore.currentTripMembers[0].userId;
+        initializeParticipants();
+      }
     }
   }
 });
