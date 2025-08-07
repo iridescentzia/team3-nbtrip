@@ -17,6 +17,8 @@
           v-if="tripStore.currentTrip"
           :amount="totalAmount"
           :budget="tripStore.currentTrip.budget"
+          :onTerminate="handleTripTerminate"
+          :isOwner="isOwner"
       >
       </Summary>
 
@@ -59,17 +61,30 @@ import { useRouter, useRoute } from 'vue-router';
 import Summary from '@/components/common/Summary.vue';
 import PaymentListInfo from "@/views/paymentlist/PaymentListInfo.vue";
 import TripEdit from "@/views/trip/TripEdit.vue";
+import tripApi from "@/api/tripApi.js";
+import {requestSettlement, getSettlementSummary} from "@/api/settlementApi.js";
 
 
 const router = useRouter();
 const route = useRoute();
 const tripStore = usePaymentListStore();
 const activeTab = ref('그룹 지출 내역');
+const isOwner = ref(false);
+
+// 그룹장 여부 확인 함수
+const checkIsOwner = async () => {
+  try {
+    const tripId = route.params.tripId;
+    isOwner.value = await tripApi.isOwner(parseInt(tripId));
+  } catch (error) {
+    console.error('그룹장 여부 확인 실패:', error);
+    isOwner.value = false;
+  }
+};
 
 const goToRegister = () => {
   router.push('/paymentlist/register2');
 };
-
 
 const formatDate = (dateInput) => {
   let date;
@@ -128,11 +143,81 @@ const handleSaveSuccess = (updatedTrip) => {
   console.log("부모에서 이벤트 감지됨:", updatedTrip);
   tripStore.fetchTrip(route.params.tripId);
 };
+
+// PaymentList.vue의 handleTripTerminate 함수 수정
+const handleTripTerminate = async () => {
+  try {
+    const tripId = route.params.tripId;
+
+    // 정산 필요 여부 확인
+    const needsSettlement = await checkIfSettlementNeeded();
+
+    // 1. 여행 상태를 CLOSED로 변경 (항상 실행)
+    await tripApi.closeTrip(parseInt(tripId));
+
+    if (needsSettlement) {
+      // 2-A. 정산이 필요한 경우: 정산 요청 생성 후 정산 페이지로 이동
+      await requestSettlement({ tripId: parseInt(tripId) });
+      router.push(`/settlement/${tripId}`);
+    } else {
+      // 2-B. 정산이 불필요한 경우: 홈으로 이동
+      alert('여행이 종료되었습니다. 모든 멤버의 결제 금액이 같아 정산이 필요하지 않습니다.');
+      router.push('/'); // 또는 '/trips' 등 적절한 페이지
+    }
+
+  } catch (error) {
+    console.error('여행 종료 중 오류 발생:', error);
+    alert(error.message || '여행 종료 중 오류가 발생했습니다.');
+  }
+};
+
+// 정산 필요 여부 확인 함수
+const checkIfSettlementNeeded = async () => {
+  try {
+    // 1. 멤버 수 확인
+    const memberCount = tripStore.currentTripMembers?.length || 0;
+
+    // 1인 여행인 경우 정산 불필요
+    if (memberCount <= 1) {
+      console.log('1인 여행 - 정산 불필요');
+      return false;
+    }
+
+    // 2. 멤버별 결제 금액이 모두 같은지 확인
+    // 정산 요약 API를 호출해서 멤버별 결제 내역 확인
+    const summaryResponse = await getSettlementSummary(route.params.tripId);
+    const memberPayments = summaryResponse.data.memberPayments || [];
+
+    if (memberPayments.length === 0) {
+      console.log('결제 내역이 없음 - 정산 불필요');
+      return false;
+    }
+
+    // 모든 멤버의 결제 금액이 같은지 확인
+    const firstAmount = memberPayments[0]?.amount || 0;
+    const allAmountsSame = memberPayments.every(member => member.amount === firstAmount);
+
+    if (allAmountsSame) {
+      console.log('모든 멤버 결제 금액 동일 - 정산 불필요');
+      return false;
+    }
+
+    console.log('정산 필요');
+    return true;
+
+  } catch (error) {
+    console.error('정산 필요 여부 확인 실패:', error);
+    // 에러 발생 시 안전하게 정산이 필요하다고 가정
+    return true;
+  }
+};
+
 onMounted(async () => {
   await tripStore.fetchTrip(route.params.tripId);
   console.log("currenttrip: ",tripStore.currentTrip)
   if (tripStore.currentTrip) {
     await tripStore.fetchCurrentTripMemberNicknames()
+    await checkIsOwner();
   }
 })
 </script>

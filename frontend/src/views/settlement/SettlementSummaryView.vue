@@ -48,23 +48,8 @@ onMounted(async () => {
 });
 
 const goToNextStep = async () => {
-  if (!confirm('정산을 생성하시겠습니까?')) return;
-
-  try {
-    // 정산 생성 + n빵 계산 실행
-    const response = await requestSettlement({ tripId });
-
-    if (response.data.success) {
-      alert('정산이 성공적으로 생성되었습니다!');
-      // 다음 페이지로 이동
-      router.push(`/settlement/${tripId}/request`);
-    } else {
-      alert(response.data.message);
-    }
-  } catch (err) {
-    console.error('정산 생성 실패:', err);
-    alert('정산 생성에 실패했습니다.');
-  }
+  // API 호출 없이 바로 다음 페이지로 이동
+  router.push(`/settlement/${tripId}/request`);
 };
 </script>
 

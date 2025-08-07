@@ -119,6 +119,7 @@ const confirmTransfer = async () => {
     router.push(`/settlement/${tripId}/failure`);
   }
 };
+
 </script>
 
 <template>
