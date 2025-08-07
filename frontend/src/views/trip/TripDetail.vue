@@ -3,12 +3,15 @@
   <div class="content-container">
     <!-- 현재 userId = 1인 여행만 보임 (TripController) -->
     <TravelCard
-        v-if="tripStore.currentTrip"
-        :trip-name="tripStore.currentTrip.tripName"
-        :start-date="formatDate(tripStore.currentTrip.startDate)"
-        :end-date="formatDate(tripStore.currentTrip.endDate)"
-        v-model:activeTab="activeTab"
-        showEdit
+
+      v-if="tripStore.currentTrip"
+      :trip-name="tripStore.currentTrip.tripName"
+      :start-date="formatDate(tripStore.currentTrip.startDate)"
+      :end-date="formatDate(tripStore.currentTrip.endDate)"
+      v-model:activeTab="activeTab"
+      :trip-id="tripStore.currentTrip.tripId"
+      :trip-status="tripStore.currentTrip.tripStatus"
+      showEdit
     />
     <div v-if="activeTab === '그룹 지출 내역' || activeTab === '선결제 내역'">
       <Summary
