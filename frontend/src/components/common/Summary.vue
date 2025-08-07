@@ -2,7 +2,14 @@
   <div class="summary-card">
     <div class="summary-header">
       <span class="label">총 사용 금액</span>
-      <button class="terminate" small @click="props.onTerminate">여행 종료하기</button>
+      <button
+          v-if="isOwner"
+          class="terminate"
+          small
+          @click="openTerminateModal"
+      >
+        여행 종료하기
+      </button>
     </div>
     <div class="amount-row">
       <div class="amount">{{formattedAmount}}</div>
@@ -10,13 +17,13 @@
         <!-- info 아이콘 -->
         <Info class="info-icon" @click="toggleInfo"/>
         <!-- 예산 사용 정보 메시지 팝업 -->
-        <div 
-          v-if="showInfo" 
-          class="info-popup"
-          v-html="budgetMessage"
-        >          
+        <div
+            v-if="showInfo"
+            class="info-popup"
+            v-html="budgetMessage"
+        >
         </div>
-      </div>      
+      </div>
     </div>
 
     <div class="progress-bar">
@@ -25,6 +32,32 @@
           :class="{over: isOverBudget}"
           :style="{width: progressPercentage + '%'}"
       ></div>
+    </div>
+  </div>
+
+  <!-- 여행 종료 모달 -->
+  <div
+      v-if="showTerminateModal"
+      class="modal-overlay"
+      @click="cancelTerminate"
+  >
+    <div class="terminate-modal" @click.stop>
+      <!-- 아이콘 -->
+      <div class="modal-icon"></div>
+
+      <!-- 메인 메시지 -->
+      <h3 class="modal-title">정말 여행이 끝났나요?</h3>
+
+      <!-- 설명 텍스트 -->
+      <p class="modal-description">
+        정산 요청하러 바로 넘어갈게요!
+      </p>
+
+      <!-- 버튼들 -->
+      <div class="modal-buttons">
+        <button @click="cancelTerminate" class="modal-cancel-btn">취소</button>
+        <button @click="confirmTerminate" class="modal-confirm-btn">정산 요청하기</button>
+      </div>
     </div>
   </div>
 </template>
@@ -46,6 +79,10 @@ const props = defineProps({
   onTerminate: {
     type: Function,
     required: false
+  },
+  isOwner: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -53,6 +90,27 @@ const props = defineProps({
 const showInfo = ref(false)
 const toggleInfo = () => {
   showInfo.value = !showInfo.value
+}
+
+// 상태: 여행 종료 모달
+const showTerminateModal = ref(false)
+
+// 여행 종료 모달 열기
+const openTerminateModal = () => {
+  showTerminateModal.value = true
+}
+
+// 여행 종료 모달 취소
+const cancelTerminate = () => {
+  showTerminateModal.value = false
+}
+
+// 여행 종료 확인
+const confirmTerminate = () => {
+  showTerminateModal.value = false
+  if (props.onTerminate) {
+    props.onTerminate()
+  }
 }
 
 // 총 금액 포맷팅 (ex. 350,000원)
@@ -124,7 +182,6 @@ const budgetMessage = computed(()=>{
   }
 })
 
-
 </script>
 
 <style scoped>
@@ -186,7 +243,7 @@ const budgetMessage = computed(()=>{
   width:18px;
   /* padding-bottom:5px; */
   cursor: pointer;
-  transform: translateY(3px); /* 3px 아래로 */  
+  transform: translateY(3px); /* 3px 아래로 */
 }
 
 .info-popup {
@@ -197,8 +254,8 @@ const budgetMessage = computed(()=>{
   background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 8px;
-  padding: 12px 16px; 
-  font-size: 14px;     
+  padding: 12px 16px;
+  font-size: 14px;
   line-height: 1.6;    /*  줄 간격 여유 있게 */
   min-width: 170px;    /*  최소 너비 확보 */
   max-width: 240px;    /*  너무 길지 않게 제한 */
@@ -229,5 +286,151 @@ const budgetMessage = computed(()=>{
 
 .progress.over {
   background-color: #ff6666; /* 빨간색 */
+}
+
+/* 모달 스타일 (DetailView와 동일) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  z-index: 1100;
+  animation: fadeIn 0.3s ease-out;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.terminate-modal {
+  width: 100%;
+  max-width: 325px;
+  height: auto;
+  min-height: 230px;
+  background: white;
+  border-radius: 1.5rem;
+  box-shadow: 0px -4px 32px rgba(0, 0, 0, 0.24);
+  padding: 28px 40px 36px 40px;
+  position: relative;
+  animation: slideUpFromBottom 0.3s ease-out;
+}
+
+.modal-icon {
+  width: 40px;
+  height: 40px;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+}
+
+.modal-title {
+  text-align: center;
+  color: #1f2937;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  margin: 0 0 16px 0;
+}
+
+.modal-description {
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  margin: 0 0 28px 0;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.modal-cancel-btn,
+.modal-confirm-btn {
+  flex: 1;
+  height: 48px;
+  background: rgba(255, 209, 102, 0.65);
+  border-radius: 12px;
+  border: none;
+  color: #374151;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-cancel-btn:hover,
+.modal-confirm-btn:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+.modal-cancel-btn:active,
+.modal-confirm-btn:active {
+  transform: translateY(0);
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUpFromBottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 반응형 대응 */
+@media (max-width: 480px) {
+  .terminate-modal {
+    padding: 24px 20px 32px 20px;
+    margin: 0 auto;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+  }
+
+  .modal-buttons {
+    gap: 8px;
+    max-width: none;
+  }
+
+  .modal-cancel-btn,
+  .modal-confirm-btn {
+    height: 44px;
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 768px) {
+  .terminate-modal {
+    max-width: 325px;
+    margin: 0 auto;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+  }
 }
 </style>

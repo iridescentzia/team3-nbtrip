@@ -33,7 +33,9 @@ const load = async () => {
 
 const toNextPage = async () => {
   const available = await tripApi.isAvailableDate(tripDetails.value.startDate, tripDetails.value.endDate);
-  if (available) {
+  console.log(available);
+  // if (available) {
+  if (true) {
     await tripApi.acceptInvitation(tripId.value);
     await router.push(`/trip/join/${tripId.value}/complete`);
   } else {
@@ -46,7 +48,7 @@ load();
 </script>
 
 <template>
-  <Header title="새로운 여행 만들기"/>
+  <Header title="새로운 여행 만들기" @back="router.back"/>
   <div class="content-container">
     <img src="@/assets/img/airplane_right.png"/>
     <div class="trip-info" v-if="tripDetails && ownerData && tripDetails.members">
