@@ -338,29 +338,38 @@ async function submitPayment() {
 }
 
 .checkbox-group input[type='checkbox'] {
-  appearance: none; /* 기본(네이티브) 모양을 제거 */
-  box-sizing: border-box;
-  background-clip: content-box;
-  width: 16px;
-  height: 16px;
-  border: 1px solid gray;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ffd166;
+  border-radius: 4px;
+  background-color: white;
   cursor: pointer;
+  position: relative;
   margin-right: 8px;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
+/* 체크된 상태 */
 .checkbox-group input[type='checkbox']:checked {
-  border-color: #ffd166;
   background-color: #ffd166;
 }
 
-.checkbox-group label {
-  margin-top: 6px;
-  font-size: 14px;
-  color: #333333;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
+/* 체크 표시 중앙 정렬 */
+.checkbox-group input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -50%) rotate(45deg);
+  display: block;
 }
 
 .amount-error {
