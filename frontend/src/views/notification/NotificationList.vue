@@ -295,6 +295,3 @@ const getMessage = (n) => {
   color: gray;
 }
 </style>
-
-
-
