@@ -67,6 +67,8 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     // 그룹 참여/탈퇴 알림 생성 (joined, left)
+    // 실제 notification_type은 ENUM에 맞춰 'INVITE'로 저장하며
+    // JOINED / LEFT 구분은 member_status 기반으로 프론트에서 처리
     @Override
     public void createGroupEventNotification(Integer fromUserId, Integer tripId, String type) {
         List<Integer> memberIds = mapper.findUserIdsByTripId(tripId);
@@ -75,12 +77,12 @@ public class NotificationServiceImpl implements NotificationService {
                     .userId(userId)
                     .fromUserId(fromUserId)
                     .tripId(tripId)
-                    .notificationType(type) // JOINED or LEFT
+                    .notificationType(type)
                     .build();
             mapper.createNotification(vo);
         }
-
     }
+
     // 알림 생성 및 fcm 푸시 전송
     @Override
     public void createNotification(NotificationDTO dto) {
@@ -93,9 +95,14 @@ public class NotificationServiceImpl implements NotificationService {
                 dto.setActionType("CREATE"); // 기본값 생성
             }
             // 한글 메시지용 actionKor 세팅
-            String actionKor = dto.getActionType().equalsIgnoreCase("UPDATE") ? "수정" : "등록";
+            String actionKor = switch (dto.getActionType().toUpperCase()) {
+                case "UPDATE" -> "수정";
+                case "DELETE" -> "삭제";
+                default -> "등록";
+            };
 
-            // DB insert (여행 멤버 모두에게)
+
+                // DB insert (여행 멤버 모두에게)
             mapper.createTransactionNotificationForAll(dto.toVO());
 
             // 푸시 전송
@@ -154,6 +161,35 @@ public class NotificationServiceImpl implements NotificationService {
                         );
                     } catch (Exception e) {
                         log.error("COMPLETED 푸시 실패: userId={}, tripId={}", userId, dto.getTripId(), e);
+                    }
+                }
+            }
+            return;
+        }
+
+        // 송금 완료 알림 (SEND)
+        if (type.equals("SEND")) {
+            // DB에 저장할 notificationType은 ENUM 값인 'SETTLEMENT'로 고정
+            dto.setNotificationType("SETTLEMENT");   // ENUM 값 (DB용)
+            dto.setActionType("SEND");               // 프론트 표시용
+            // 1. 알림 insert (여행 멤버 전체, 본인 포함)
+            mapper.createSendNotificationForAll(dto.toVO());
+
+            // 2. 푸시 전송 (여행 멤버 전체, 본인 포함)
+            List<Integer> memberIds = mapper.findUserIdsByTripId(dto.getTripId());
+
+            for (Integer userId : memberIds) {
+                String fcmToken = mapper.findFcmTokenByUserId(userId);
+
+                if (fcmToken != null && !fcmToken.isBlank()) {
+                    try {
+                        fcmService.sendPushNotification(
+                                fcmToken,
+                                "송금 완료 알림",
+                                dto.getFromUserNickname() + "님이 송금을 완료했습니다."
+                        );
+                    } catch (Exception e) {
+                        log.error("SEND 푸시 실패: userId={}, tripId={}", userId, dto.getTripId(), e);
                     }
                 }
             }

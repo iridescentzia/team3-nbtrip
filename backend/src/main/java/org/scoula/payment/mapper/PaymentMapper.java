@@ -19,4 +19,7 @@ public interface PaymentMapper {
 
     // 선결제/기타 결제 상세 수정
     int updateManualPayment(PaymentVO paymentVO);
+
+    // 결제 내역 삭제
+    int deletePaymentByPaymentId(@Param("paymentId") int paymentId);
 }

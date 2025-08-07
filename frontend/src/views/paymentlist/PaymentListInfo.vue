@@ -59,9 +59,9 @@ const filteredPayments = computed(() => {
 
   // 탭
    if (props.activeTab === '그룹 지출 내역') {
-    result = result.filter(p => p.paymentType === 'QR');
+    result = result.filter(p => p.paymentType === 'QR' || p.paymentType === 'OTHER');
   } else if (props.activeTab === '선결제 내역') {
-    result = result.filter(p => p.paymentType === 'PREPAID' || p.paymentType === 'OTHER');
+    result = result.filter(p => p.paymentType === 'PREPAID');
   }
 
   // 날짜 필터
@@ -87,7 +87,6 @@ const filteredPayments = computed(() => {
     });
 
   }
-
 
   // 결제 참여자 필터
   if (props.selectedParticipants.length > 0) {

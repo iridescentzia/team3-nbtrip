@@ -36,5 +36,10 @@ export default {
     const { data } = await api.get(`${BASE_URL}/${paymentId}/participants`);
     return data; // [{ participantId, paymentId, userId, splitAmount }, ...]
   },
+  
+  // 결제 내역 삭제
+  async deletePayment(paymentId){
+    return api.delete(`${BASE_URL}/${paymentId}`)
+  }
 
 };
