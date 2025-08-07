@@ -129,16 +129,16 @@ import { ref, onMounted } from 'vue';
 import Header from '@/components/layout/Header.vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
-import { useTripStore } from '@/stores/trip';
+import {usePaymentListStore} from "@/stores/tripStore.js";
 import paymentApi from '@/api/paymentApi';
 import { useRoute, useRouter } from 'vue-router';
 // import { useToast } from 'vue-toastification';
 
 const router = useRouter();
-
+const route = useRoute();
 
 // const toast = useToast();
-const tripStore = useTripStore();
+const tripStore = usePaymentListStore();
 const date = ref(new Date());
 
 
@@ -224,7 +224,7 @@ const formatDateTime = (date) => {
 
 // 마운트 시 카테고리 목록 불러오기
 onMounted(async () => {
-  await tripStore.fetchTrips();
+  //await tripStore.fetchTrip(route.params.tripId);
   await tripStore.fetchCurrentTripMemberNicknames(); // 이거 꼭 호출해야 닉네임 목록 들어옴
   await tripStore.fetchMerchantCategories();
 });
