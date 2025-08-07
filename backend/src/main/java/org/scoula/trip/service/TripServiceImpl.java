@@ -15,8 +15,10 @@ import org.scoula.trip.mapper.TripMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -76,6 +78,9 @@ public class TripServiceImpl implements TripService {
     @Override
     public TripDTO createTrip(TripCreateDTO tripCreateDTO) {
         TripVO tripVO = TripCreateDTO.toVO(tripCreateDTO);
+        if(Objects.equals(tripCreateDTO.getStartDate(), LocalDate.now())){
+            tripVO.setTripStatus(TripStatus.ACTIVE);
+        }
         mapper.createTrip(tripVO);
         inviteMember(tripVO.getTripId(),tripVO.getOwnerId(),TripMemberStatus.JOINED);
         for (MemberSearchResponseDTO memberSearchResponseDTO : tripCreateDTO.getMembers()) {

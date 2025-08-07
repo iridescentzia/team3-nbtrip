@@ -10,8 +10,6 @@
         v-model:activeTab="activeTab"
         showEdit
     />
-
-
     <div v-if="activeTab === '그룹 지출 내역' || activeTab === '선결제 내역'">
       <Summary
           v-if="tripStore.currentTrip"
@@ -36,14 +34,23 @@
           @init-total="onInitTotal"
       />
     </div>
-    <TripEdit
-        v-else
-        @saveSuccess="handleSaveSuccess"
-    />
+    <div v-else>
+      <TripEdit ref="updateTrip" />
+    </div>
   </div>
   <!-- 고정 버튼 -->
-  <button class="floating-add-button" @click="goToRegister">
+  <button
+      v-if="activeTab === '그룹 지출 내역' || activeTab === '선결제 내역'"
+      class="floating-button"
+      @click="goToRegister">
     + 결제 추가
+  </button>
+  <!-- 고정 버튼 -->
+  <button
+      v-else
+      class="floating-button"
+      @click="callChildUpdate">
+      저장하기
   </button>
 </template>
 
@@ -65,6 +72,16 @@ const router = useRouter();
 const route = useRoute();
 const tripStore = usePaymentListStore();
 const activeTab = ref('그룹 지출 내역');
+const updateTrip = ref(null);
+
+const callChildUpdate = async () => {
+  if(updateTrip.value){
+    await updateTrip.value.handleUpdate();
+    await tripStore.fetchTrip(route.params.tripId);
+    activeTab.value = '그룹 지출 내역'
+  }
+}
+
 
 const goToRegister = () => {
   router.push('/paymentlist/register2');
@@ -124,10 +141,6 @@ function onCategoryFiltered(categoryIds){
   console.log('[PaymentList.vue] 선택된 카테고리: ', categoryIds)
   selectedCategories.value = categoryIds
 }
-const handleSaveSuccess = (updatedTrip) => {
-  console.log("부모에서 이벤트 감지됨:", updatedTrip);
-  tripStore.fetchTrip(route.params.tripId);
-};
 onMounted(async () => {
   await tripStore.fetchTrip(route.params.tripId);
   console.log("currenttrip: ",tripStore.currentTrip)
@@ -169,10 +182,10 @@ onMounted(async () => {
   background-color: #888;
 }
 
-.floating-add-button {
+.floating-button {
   position: sticky;
   bottom: 80px;
-  left: 77%;
+  left: 85%;
   transform: translateX(-50%); /* 가운데 정렬 */
   width: 120px;
   max-width: 384px;
@@ -191,11 +204,11 @@ onMounted(async () => {
   font-family: 'IBM Plex Sans KR', sans-serif;
 }
 
-.floating-add-button:hover {
+.floating-button:hover {
   background-color: #FFD166;
 }
 
-.floating-add-button:active {
+.floating-button:active {
   transform: translateX(-50%) scale(0.95);
 }
 </style>

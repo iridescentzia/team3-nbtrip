@@ -40,7 +40,7 @@ onMounted(()=>{
 </script>
 
 <template>
-  <Header title="새로운 여행 만들기"/>
+  <Header title="새로운 여행 만들기" @back="router.back"/>
   <div class="content-container">
     <label for="trip_name" class="label-text">어떤 여행인가요?</label><br>
     <input
@@ -57,6 +57,7 @@ onMounted(()=>{
           inline auto-apply
           v-model="rawDate"
           model-type="yyyy-MM-dd"
+          :min-date="new Date()"
           :range="{ noDisabledRange: true }"
           :enable-time-picker="false"
           :disabled-dates="disableDates"
@@ -129,6 +130,21 @@ onMounted(()=>{
   left: 50%;
   transform: translateX(-50%);
 }
+
+.datepicker-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+:deep(.dp__main){
+  width: 100% !important;
+}
+
+:deep(.dp__calendar) {
+  width: 100% !important;
+}
+
 </style>
 <!--scoped에선 datepicker에 대한 커스터마이징이 먹히지 않아서 관련 내용 style에 정의-->
 <style>
