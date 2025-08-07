@@ -97,6 +97,9 @@ export default {
     },
     async closeTrip(tripId){
         await api.put(`${BASE_URL}/${tripId}/status`);
-    }
-
+    },
+    async isOwner(tripId) {
+        const { data } = await api.get(`${BASE_URL}/${tripId}/isOwner`);
+        return data;
+    },
 }
