@@ -163,4 +163,23 @@ public class PaymentController {
         List<ParticipantVO> participants = paymentService.getParticipantsByPaymentId(paymentId);
         return ResponseEntity.ok(participants);
     }
+
+    // 결제 내역 삭제
+    @DeleteMapping("/{paymentId}")
+    public ResponseEntity<String> deletePayment(
+            @PathVariable int paymentId,
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        try {
+            Integer userId = customUser.getUserId();
+            paymentService.deletePayment(paymentId, userId);
+            return ResponseEntity.ok("결제 삭제 완료");
+        } catch (RuntimeException e) {
+            log.error("결제 삭제 실패: {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("결제 삭제 실패: " + e.getMessage());
+        }
+    }
+
 }

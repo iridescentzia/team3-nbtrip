@@ -227,4 +227,9 @@
         WHERE user_id = #{userId}
     </select>
 
+    <!--  알림 삭제  -->
+    <delete id="deleteByPaymentId">
+        DELETE FROM notification
+        WHERE payment_id = #{paymentId}
+    </delete>
 </mapper>

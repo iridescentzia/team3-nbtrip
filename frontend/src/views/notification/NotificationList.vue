@@ -21,11 +21,15 @@ const goToPage = (n) => {
 
   switch (n.notificationType) {
     case 'TRANSACTION':
-      // 결제 상세 페이지로 이동
-      if (n.paymentId) {
-        router.push(`/paymentlist/${n.tripId}`);
+      if(n.actionType === 'DELETE'){
+        return `${user}님이 '${place}' 결제를 삭제했습니다.`;
       }
-      break;
+
+      const isUpdate = n.actionType === 'UPDATE';
+      return isUpdate
+        ? `${user}님이 '${place}'결제 내역을 수정했습니다.`
+        : `${user}님이 '${place}'에서 \n${formatAmount(n.amount)}원을 결제했습니다.`; 
+
     case 'SETTLEMENT':
     case 'COMPLETED':
     case 'REMINDER':

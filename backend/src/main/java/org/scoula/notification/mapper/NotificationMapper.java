@@ -47,4 +47,7 @@ public interface NotificationMapper {
     // FCM 토큰을 user_id 기준으로 조회
     String findFcmTokenByUserId(@Param("userId") Integer userId);
 
+    // 알림 삭제
+    int deleteByPaymentId(@Param("paymentId") int paymentId);
+
 }

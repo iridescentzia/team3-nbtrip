@@ -93,7 +93,11 @@ public class NotificationServiceImpl implements NotificationService {
                 dto.setActionType("CREATE"); // 기본값 생성
             }
             // 한글 메시지용 actionKor 세팅
-            String actionKor = dto.getActionType().equalsIgnoreCase("UPDATE") ? "수정" : "등록";
+            String actionKor = switch (dto.getActionType().toUpperCase()) {
+                case "UPDATE" -> "수정";
+                case "DELETE" -> "삭제";
+                default -> "등록";
+            };
 
             // DB insert (여행 멤버 모두에게)
             mapper.createTransactionNotificationForAll(dto.toVO());

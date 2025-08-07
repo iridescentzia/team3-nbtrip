@@ -18,4 +18,6 @@ public interface PaymentService {
 
     List<ParticipantVO> getParticipantsByPaymentId(int paymentId);
 
+    // 결제 내역 삭제
+    void deletePayment(int paymentId, int userId);
 }

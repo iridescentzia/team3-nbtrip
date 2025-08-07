@@ -39,4 +39,10 @@
         DELETE FROM payment_participant
         WHERE payment_id = #{paymentId} AND user_id = #{userId}
     </delete>
+
+    <!--  특정 결제의 모든 참여자 삭제  -->
+    <delete id="deleteParticipantsByPaymentId">
+        DELETE FROM payment_participant
+        WHERE payment_id = #{paymentId}
+    </delete>
 </mapper>

@@ -34,4 +34,9 @@
             memo = #{memo}
         WHERE payment_id = #{paymentId}
     </update>
+
+    <delete id="deletePaymentByPaymentId">
+        DELETE FROM payment
+        WHERE payment_id = #{paymentId}
+    </delete>
 </mapper>
