@@ -11,7 +11,8 @@ export const useNotificationStore = defineStore('notification', {
     // 토큰 기반 알림 조회
     async getNotifications(category = 'ALL') {
       try {
-        const { data } = await fetchNotifications(category);
+        const { data } = await fetchNotifications();
+        console.log('🔍 data:', data);
 
         if (category === 'ALL'){
           this.notifications = data;
@@ -19,10 +20,10 @@ export const useNotificationStore = defineStore('notification', {
           this.notifications = data.filter(n =>
             ['SETTLEMENT', 'REMINDER', 'COMPLETED'].includes(n.notificationType)
           );
-        } else if(category === 'GROUP_EVENT'){
-          this.notifications = data.filter(n =>
-            ['INVITE', 'GROUP_EVENT'].includes(n.notificationType)
-          );
+        } else if (category === 'INVITE') {
+          this.notifications = data.filter(n => 
+            n.notificationType === 'INVITE' &&
+            ['JOINED', 'LEFT', null].includes(n.memberStatus));
         }else{
           this.notifications = data.filter(n => n.notificationType === category);
         }

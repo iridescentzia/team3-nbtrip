@@ -9,34 +9,79 @@ const router = useRouter()
 
 // 사용자 정보 상태
 const nickname = ref('');
+const originalNickname = ref('');
 const name = ref('');
 const phoneNumber = ref('');
+const maskedPhoneNumber = ref('');
 const email = ref('');
 const password = ref('');
 const passwordConfirm = ref('');
+
+// 비밀번호 변경 여부 추적 상태
+const isPasswordChanged = ref(false);
 
 // 닉네임 중복 확인 상태
 const isNicknameChecked = ref(false);
 const nicknameValid = ref(false);
 const nicknameMessage = ref('');
+const nicknameMessageType = ref('');
+const isCheckingNickname = ref(false);
 
 // 닉네임 중복 확인(POST /api/users/check-nickname)
 const checkNickname = async () => {
-  if (!nickname.value.trim()) {
-    alert('닉네임을 입력해주세요.');
+  if (!nickname.value || nickname.value.trim().length === 0) {
+    nicknameMessage.value = '닉네임을 입력해주세요.';
+    nicknameMessageType.value = 'error';
+    isNicknameChecked.value = false;
     return;
   }
+
   try {
-    const res = await checkNicknameDuplicate(nickname.value);
-    nicknameValid.value = true;
-    nicknameMessage.value = res.message || '사용 가능한 닉네임입니다.';
-    isNicknameChecked.value = true;
-  } catch (err) {
-    nicknameValid.value = false;
+    isCheckingNickname.value = true;
+    const result = await checkNicknameDuplicate(nickname.value.trim());
+
+    if (result.available) {
+      nicknameMessage.value = result.message || '사용 가능한 닉네임입니다.';
+      isNicknameChecked.value = true;
+      nicknameValid.value = true;
+      nicknameMessageType.value = 'success';
+    } else {
+      nicknameMessage.value = result.message || '이미 사용 중인 닉네임입니다.';
+      isNicknameChecked.value = false;
+      nicknameValid.value = false;
+      nicknameMessageType.value = 'error';
+    }
+  } catch (error) {
+    nicknameMessage.value = '닉네임 확인 중 오류가 발생했습니다.';
     isNicknameChecked.value = false;
-    nicknameMessage.value = err.message || '이미 사용 중인 닉네임입니다.';
+    nicknameValid.value = false;
+    nicknameMessageType.value = 'error';
+    console.error('닉네임 중복 확인 실패:', error);
+  } finally {
+    isCheckingNickname.value = false;
   }
 };
+
+// 닉네임 변경 시 중복 확인 상태 초기화
+watch(nickname, (newVal) => {
+  if (newVal !== originalNickname.value) {
+    isNicknameChecked.value = false;
+    nicknameValid.value = false;
+    nicknameMessage.value = '';
+    nicknameMessageType.value = '';
+  } else {
+    // 원래 닉네임으로 돌아간 경우
+    isNicknameChecked.value = true;
+    nicknameValid.value = true;
+    nicknameMessage.value = '';
+    nicknameMessageType.value = '';
+  }
+});
+
+// 비밀번호 변경 여부 추적
+watch([password, passwordConfirm], () => {
+  isPasswordChanged.value = password.value.length > 0 || passwordConfirm.value.length > 0;
+});
 
 // 이름 유효성 검사
 const isNameValid = computed(() => name.value.length >= 2);
@@ -59,9 +104,13 @@ watch(email, () => {
 const passwordMessage = ref('');
 const isPasswordValid = computed(() => /^(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{9,}$/.test(password.value));
 watch(password, () => {
-  passwordMessage.value = isPasswordValid.value
-      ? '사용 가능한 비밀번호입니다.'
-      : '영문, 숫자, 특수문자를 포함해 9자 이상이어야 합니다.';
+  if (password.value) {
+    passwordMessage.value = isPasswordValid.value
+        ? '사용 가능한 비밀번호입니다.'
+        : '영문, 숫자, 특수문자를 포함해 9자 이상이어야 합니다.';
+  } else {
+    passwordMessage.value = '';
+  }
 });
 
 // 비밀번호 일치 여부
@@ -87,13 +136,14 @@ onMounted(async () => {
   try {
     const res = await getMyInfo()
     if (res.success) {
-      nickname.value = res.data.nickname
-      name.value = res.data.name
-      phoneNumber.value = res.data.phoneNumber
-      email.value = res.data.email
-      phoneNumber.value = res.data.phoneNumber
-      password.value = res.data.password
-      passwordConfirm.value = res.data.passwordConfirm
+      nickname.value = res.data.nickname;
+      originalNickname.value = res.data.nickname;
+      name.value = res.data.name;
+      maskedPhoneNumber.value = res.data.maskedPhoneNumber;
+      phoneNumber.value = res.data.phoneNumber;
+      email.value = res.data.email;
+      password.value = '';
+      passwordConfirm.value = '';
     }
   } catch (err) {
     alert('회원 정보 조회 실패')
@@ -106,42 +156,66 @@ const submitUpdate = async () => {
       !nickname.value ||
       !name.value ||
       !phoneNumber.value ||
-      !email.value ||
-      !password.value ||
-      !passwordConfirm.value
+      !email.value
   ) {
     alert('모든 항목을 입력해주세요.');
     return;
   }
-  if (!isNicknameChecked.value || !nicknameValid.value) {
-    alert('닉네임 중복 확인을 해주세요.');
-    return;
+
+// 닉네임을 수정했을 경우에만 중복 확인 요구
+  if (nickname.value !== originalNickname.value) {
+    if (!isNicknameChecked.value || !nicknameValid.value) {
+      alert('닉네임 중복 확인을 해주세요.');
+      return;
+    }
   }
-  if (!isPasswordMatch.value || !isPasswordValid.value) {
-    alert('비밀번호를 다시 확인해주세요.');
-    return;
+
+  // 비밀번호 변경 시에만 비밀번호 검증
+  if (isPasswordChanged.value) {
+    if (!password.value || !passwordConfirm.value) {
+      alert('비밀번호와 비밀번호 확인을 모두 입력해주세요.');
+      return;
+    }
+    if (!isPasswordMatch.value || !isPasswordValid.value) {
+      alert('비밀번호를 다시 확인해주세요.');
+      return;
+    }
   }
+
   if (!isPhoneValid.value) {
     alert('전화번호 형식을 확인해주세요.');
     return;
   }
-  try {
-    const res = await updateMyInfo({
-      nickname: nickname.value,
-      name: name.value,
-      phoneNumber: phoneNumber.value,
-      email: email.value,
-      password: password.value,
-      passwordConfirm: passwordConfirm.value
-    })
-    if (res.success) {
-      alert('회원 정보가 수정되었습니다.')
-      router.push('/mypage')  // 수정 완료 후 마이페이지로 이동
+    try {
+      const updateData = {
+        nickname: nickname.value,
+        name: name.value,
+        phoneNumber: phoneNumber.value,
+        email: email.value
+      };
+
+      const isChangingPassword = isPasswordChanged.value && password.value.trim();
+
+      if (isChangingPassword) {
+        updateData.password = password.value;
+      }
+
+      const res = await updateMyInfo(updateData);
+
+      if (res.success) {
+        if (isChangingPassword) {
+          alert('비밀번호가 변경되었습니다.');
+        } else {
+          alert('회원 정보가 수정되었습니다.');
+        }
+        router.push('/mypage');
+      }
+    } catch (err) {
+      console.error('회원정보 수정 오류:', err);
+      alert(err.message || '회원 정보 수정 실패');
     }
-  } catch (err) {
-    alert(err.message || '회원 정보 수정 실패')
-  }
-};
+  };
+
 </script>
 
 <template>
@@ -161,19 +235,14 @@ const submitUpdate = async () => {
           }}</span>
       </div>
 
-      <!-- 이름 -->
+      <!-- 이름(수정 불가) -->
       <label class="label">이름</label>
-      <input v-model="name" type="text" class="input-box" />
-      <div class="check">
-        <span v-if="nameMessage" :class="isNameValid ? 'success' : 'error'">
-          {{ nameMessage }}
-        </span>
-      </div>
-
+      <input v-model="name" type="text" class="input-box readonly-input" readonly />
 
       <!-- 전화번호 -->
       <label class="label">전화번호</label>
-      <input v-model="phoneNumber" type="text" class="input-box" />
+      <!-- 전화번호 없을 경우에만 마스킹된 번호 placeholder에서 보여주기 -->
+      <input v-model="phoneNumber" type="text" class="input-box" :placeholder="phoneNumber ? '' : maskedPhoneNumber"/>
       <div class="check">
         <span v-if="phoneMessage" :class="isPhoneValid ? 'success' : 'error'">
           {{ phoneMessage }}
@@ -192,6 +261,11 @@ const submitUpdate = async () => {
       <!-- 비밀번호 -->
       <label class="label">비밀번호</label>
       <input v-model="password" type="password" class="input-box" />
+      <div class="check">
+        <span v-if="passwordMessage" :class="isPasswordValid ? 'success' : 'error'">
+          {{ passwordMessage }}
+        </span>
+      </div>
       <p class="password-rules">
         • 비밀번호는 영문 소문자, 숫자를 포함해 최소 9자리 이상이어야 합니다.<br />
         • 3자 이상의 연속되는 글자, 숫자는 사용이 불가능합니다.
@@ -247,6 +321,13 @@ const submitUpdate = async () => {
   padding: 0 12px;
   margin-top: 4px;
   box-sizing: border-box;
+}
+
+.readonly-input {
+  background: #f5f5f5 !important;
+  color: #666;
+  cursor: not-allowed;
+  border-color: #d1d5db;
 }
 
 .nickname-wrapper {

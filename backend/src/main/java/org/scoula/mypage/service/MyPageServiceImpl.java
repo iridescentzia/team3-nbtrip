@@ -1,5 +1,6 @@
 package org.scoula.mypage.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.scoula.mypage.dto.MyPageDTO;
 import org.scoula.mypage.dto.PasswordChangeRequestDTO;
 import org.scoula.mypage.dto.UserUpdateRequestDTO;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Service
 @Transactional
 public class MyPageServiceImpl implements MyPageService {
@@ -47,6 +49,12 @@ public class MyPageServiceImpl implements MyPageService {
             throw new IllegalArgumentException("업데이트할 정보가 없습니다.");
         }
 
+        // 비밀번호 변경 요청 여부
+        boolean isPasswordChangeRequested = requestDTO.getPassword() != null && !requestDTO.getPassword().trim().isEmpty();
+        if (isPasswordChangeRequested) {
+            log.info("비밀번호 변경이 함께 요청됨 - userId: {}", userId);
+        }
+
         // 이메일 중복 검사
         if (requestDTO.getEmail() != null && !requestDTO.getEmail().trim().isEmpty()) {
             Map<String, Object> emailParams = new HashMap<>();
@@ -71,6 +79,18 @@ public class MyPageServiceImpl implements MyPageService {
             }
         }
 
+        // 비밀번호 유효성 검사(비밀번호 제공 시)
+        if (isPasswordChangeRequested) {
+            String password = requestDTO.getPassword();
+            if (password.length() < 9) {
+                throw new Exception("비밀번호는 최소 9자 이상이어야 합니다.");
+            }
+            if (!password.matches("^(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{9,}$")) {
+                throw new Exception("비밀번호는 영문 소문자, 숫자, 특수문자를 포함해 9자 이상이어야 합니다.");
+            }
+            log.info("비밀번호 유효성 검사 통과 - userId: {}", userId);
+        }
+
         // DTO 변환 및 업데이트
         MyPageDTO updateDTO = MyPageDTO.builder()
                 .userId(userId)
@@ -81,9 +101,39 @@ public class MyPageServiceImpl implements MyPageService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
+        // 기본 정보 업데이트
         int updateCount = myPageMapper.updateUserInfo(updateDTO);
-        return updateCount > 0;
+        if (updateCount <= 0) {
+            log.error("기본 정보 업데이트 실패 - userId: {}", userId);
+            return false;
+        }
+        log.info("기본 정보 업데이트 성공 - userId: {}", userId);
+
+        // 비밀번호 변경 처리 (별도 처리)
+        if (isPasswordChangeRequested) {
+            try {
+                String encodedPassword = passwordEncoder.encode(requestDTO.getPassword());
+                Map<String, Object> passwordParams = new HashMap<>();
+                passwordParams.put("userId", userId);
+                passwordParams.put("password", encodedPassword);
+                passwordParams.put("updatedAt", LocalDateTime.now());
+
+                int passwordUpdateCount = myPageMapper.updateUserPassword(passwordParams);
+                if (passwordUpdateCount > 0) {
+                    log.info("비밀번호 업데이트 성공 - userId: {}", userId);
+                } else {
+                    log.error("비밀번호 업데이트 실패 - userId: {}", userId);
+                    throw new Exception("비밀번호 업데이트에 실패했습니다.");
+                }
+            } catch (Exception e) {
+                log.error("비밀번호 암호화 또는 업데이트 중 오류 - userId: {}, error: {}", userId, e.getMessage());
+                throw new Exception("비밀번호 변경 중 오류가 발생했습니다: " + e.getMessage());
+            }
+        }
+
+        return true;
     }
+
 
     // 현재 비밀번호 확인(암호화된 비밀번호-평문 비밀번호)
     @Override

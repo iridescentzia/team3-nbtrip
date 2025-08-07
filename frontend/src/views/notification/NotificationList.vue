@@ -31,10 +31,13 @@ const goToPage = (n) => {
         : `${user}님이 '${place}'에서 \n${formatAmount(n.amount)}원을 결제했습니다.`; 
 
     case 'SETTLEMENT':
+      router.push(`/settlement/${n.tripId}/detail`);
+      break;
     case 'COMPLETED':
+      router.push(`/settlement/${n.tripId}/completed`);
+      break;
     case 'REMINDER':
-      // 정산 요청 페이지
-      router.push(`/settlement/${n.tripId}`);
+      router.push(`/settlement/${n.tripId}/detail`);
       break;
     case 'INVITE':
       if (!n.memberStatus) {
@@ -42,11 +45,6 @@ const goToPage = (n) => {
       } else {
         router.push(`/trip/${n.tripId}`)
       }
-      break;
-
-    case 'GROUP_EVENT':
-      // 그룹 상세 페이지
-      router.push(`/trip/${n.tripId}`);
       break;
     default:
       alert('지원하지 않는 알림 유형입니다.');
@@ -57,7 +55,7 @@ const tabs = [
   { label: '전체', value: 'ALL' },
   { label: '결제', value: 'TRANSACTION' },
   { label: '정산', value: 'SETTLEMENT' },
-  { label: '그룹', value: 'GROUP_EVENT' }
+  { label: '그룹', value: 'INVITE' }
 ];
 
 const toggleDropdown = () => {
@@ -83,9 +81,9 @@ const formatAmount = (value) => {
 
 onMounted(() => {
   notificationStore.getNotifications()
-  .then(() => {
-      console.log('notifications:', notifications.value);
-    })
+      .then(() => {
+        console.log('notifications:', notifications.value);
+      })
 });
 
 const getMessage = (n) => {
@@ -93,32 +91,38 @@ const getMessage = (n) => {
   const place = n.merchantName || '알 수 없는 장소';
 
   switch (n.notificationType) {
+
     case 'TRANSACTION':
+      if(n.actionType === 'DELETE'){
+        return `${user}님이 '${place}' 결제를 삭제했습니다.`;
+      }
+
       const isUpdate = n.actionType === 'UPDATE';
       return isUpdate
-        ? `${user}님이 '${place}'결제 내역을 수정했습니다.`
-        : `${user}님이 '${place}'에서 \n${formatAmount(n.amount)}원을 결제했습니다.`; 
+          ? `${user}님이 '${place}'결제 내역을 수정했습니다.`
+          : `${user}님이 '${place}'에서 \n${formatAmount(n.amount)}원을 결제했습니다.`;
 
     case 'SETTLEMENT':
-      return `${user}님이 정산 요청을 보냈습니다.\n정산을 확인하시겠습니까?`;
+      if (n.actionType === 'SEND'){
+        return `${user}님이 모든 송금을 완료했습니다.`;
+      }else{
+        return `${user}님이 정산 요청을 보냈습니다.\n정산을 확인하시겠습니까?`;
+      }
 
     case 'INVITE':
-        return `${user}님이 "${n.tripName}" 그룹에 초대하셨습니다.\n여행에 참여하시겠습니까?`;
-    
-    case 'GROUP_EVENT':
-      if (n.memberStatus === 'JOINED') {
+      if(n.memberStatus === 'JOINED'){
         return `${user}님이 "${n.tripName}" 그룹에 참여했어요.`;
       } else if (n.memberStatus === 'LEFT') {
         return `${user}님이 "${n.tripName}" 그룹에서 나갔어요.`;
       } else {
-        return `${user}님이 그룹 관련 활동을 했습니다.`;
+        return `${user}님이 "${n.tripName}" 그룹에 초대하셨습니다.\n여행에 참여하시겠습니까?`;
       }
 
     case 'REMINDER':
       return `${user}님이 정산 알림을 보냈습니다.`;
 
     case 'COMPLETED':
-      return `${user}님이 정산을 완료했습니다.`;
+      return `"${n.tripName}"그룹의 정산이 완료되었습니다. \n여행 리포트가 생성되었어요 확인해 보세요.`;
 
     default:
       return `${user}님이 새로운 알림을 보냈습니다.`;
@@ -131,7 +135,7 @@ const getMessage = (n) => {
   <div class="notification-content">
     <div class="header-section">
       <Header title="알림" :backAction="goBack"/>
-      
+
       <div class="dropdown-wrapper">
         <button class="dropdown-toggle" @click="toggleDropdown">
           {{ selectedLabel }}
@@ -139,7 +143,7 @@ const getMessage = (n) => {
         </button>
         <ul v-if="showDropdown" class="dropdown-list">
           <li v-for="tab in tabs" :key="tab.value" @click="selectCategory(tab)">
-           {{ tab.label }}
+            {{ tab.label }}
           </li>
         </ul>
       </div>
@@ -166,9 +170,9 @@ const getMessage = (n) => {
       </main>
     </div>
   </div>
-  
-      
-   
+
+
+
 </template>
 
 <style scoped>
@@ -231,8 +235,8 @@ const getMessage = (n) => {
 .dropdown-divider {
   width: 100%;
   height: 1px;
-  background-color: #babec4; 
-  margin-top: -60px; 
+  background-color: #babec4;
+  margin-top: -60px;
 }
 
 .icon{
@@ -252,7 +256,7 @@ const getMessage = (n) => {
   padding: 14px 14px;
   margin-right: 1%;
   margin-left: 1%;
-  
+
   border-bottom: 1px solid #e5e7eb; /* 리스트 느낌 */
   display: flex;
   justify-content: space-between;
@@ -296,4 +300,3 @@ const getMessage = (n) => {
   color: gray;
 }
 </style>
-

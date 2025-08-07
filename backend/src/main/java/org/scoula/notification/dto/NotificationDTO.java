@@ -57,7 +57,9 @@ public class NotificationDTO {
                 .fromUserId(fromUserId)
                 .tripId(tripId)
                 .paymentId(paymentId)
-                .notificationType(notificationType)
+                .notificationType(
+                        "SEND".equalsIgnoreCase(notificationType) ? "SETTLEMENT" : notificationType
+                )
                 .isRead(isRead)
                 .memberStatus(memberStatus)
                 // .sendAt(java.sql.Timestamp.valueOf(sendAt))

@@ -3,7 +3,7 @@
     <div class="content-container">
       <!-- 현재 userId = 1인 여행만 보임 (TripController) -->
       <TravelCard
-        v-if="tripStore.currentTrip"
+          v-if="tripStore.currentTrip"
         :trip-name="tripStore.currentTrip.tripName"
         :start-date="formatDate(tripStore.currentTrip.startDate)"
         :end-date="formatDate(tripStore.currentTrip.endDate)"
@@ -11,7 +11,6 @@
         showEdit
       />
 
-      <div v-else>현재 진행 중인 여행이 없습니다.</div>     
 
       <Summary
         v-if="tripStore.currentTrip"
@@ -50,13 +49,15 @@ import TravelCard from '@/components/common/TravelCard.vue';
 import Filter from '@/components/paymentlist/Filter.vue';
 import PaymentListInfo from './PaymentListInfo.vue';
 
-import { onMounted, ref } from 'vue';
-import { useTripStore } from '@/stores/trip.js';
-import { useRouter } from 'vue-router';
+import {onMounted, ref} from 'vue';
+import {usePaymentListStore} from "@/stores/tripStore.js";
+import { useRouter, useRoute } from 'vue-router';
 import Summary from '@/components/common/Summary.vue';
 
+
 const router = useRouter();
-const tripStore = useTripStore();
+const route = useRoute();
+const tripStore = usePaymentListStore();
 const activeTab = ref('그룹 지출 내역');
 
 const goToRegister = () => {
@@ -117,9 +118,8 @@ function onCategoryFiltered(categoryIds){
   console.log('[PaymentList.vue] 선택된 카테고리: ', categoryIds)
   selectedCategories.value = categoryIds
 }
-
 onMounted(async () => {
-  await tripStore.fetchTrips()
+  await tripStore.fetchTrip(route.params.tripId);
   console.log("currenttrip: ",tripStore.currentTrip)
   if (tripStore.currentTrip) {
     await tripStore.fetchCurrentTripMemberNicknames()

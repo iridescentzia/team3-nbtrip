@@ -37,4 +37,11 @@ public class MemberUpdateDTO {
 
     // 업데이트 일시
     private LocalDateTime createdAt;
+
+    // 비밀번호
+    @Size(min = 9, max = 100, message = "비밀번호는 9자 이상이어야 합니다.")
+    private String password;
+
+    private String confirmPassword;
+    private LocalDateTime updatedAt;
 }

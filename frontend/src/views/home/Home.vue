@@ -44,6 +44,7 @@ onMounted(async () => {
 
     // 여행 목록
     const tripRes = await tripApi.fetchTrips();
+    console.log('받은 trip 목록:', tripRes);
     if (Array.isArray(tripRes)) {
       ongoingTrips.value = tripRes.filter(
         (trip) => trip.tripStatus === 'ACTIVE'
