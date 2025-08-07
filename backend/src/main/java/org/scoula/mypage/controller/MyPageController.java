@@ -63,6 +63,10 @@ public class MyPageController {
             Integer userId = customUser.getUserId();
             log.info("회원정보 수정 요청: email={}, userId={}", userEmail, userId);
 
+            if (updateRequest.getPassword() != null && !updateRequest.getPassword().trim().isEmpty()) {
+                log.info("비밀번호 변경도 함께 요청됨");
+            }
+
             boolean result = myPageService.updateUserInfo(userId, updateRequest);
             if (!result) {
                 return ResponseEntity.badRequest().body(ApiResponse.error("회원정보 수정 실패"));
@@ -74,6 +78,7 @@ public class MyPageController {
             return ResponseEntity.badRequest().body(ApiResponse.error("회원정보 수정 중 오류 발생"));
         }
     }
+
 
     // 비밀번호 변경(PUT /api/mypage)
     @PutMapping("/password")

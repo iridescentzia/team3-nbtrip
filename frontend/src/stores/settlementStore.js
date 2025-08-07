@@ -26,9 +26,13 @@ export const useSettlementStore = defineStore('settlement', () => {
         return mySettlementData.value.toReceive.reduce((sum, tx) => sum + tx.amount, 0)
     })
 
+    // settlementStore.js - totalSendAmount 수정
     const totalSendAmount = computed(() => {
         if (!mySettlementData.value?.toSend) return 0
-        return mySettlementData.value.toSend.reduce((sum, tx) => sum + tx.amount, 0)
+        // ✅ PENDING 상태인 정산만 계산
+        return mySettlementData.value.toSend
+            .filter(tx => tx.status === 'PENDING')
+            .reduce((sum, tx) => sum + tx.amount, 0)
     })
 
     const netBalance = computed(() => {
@@ -187,7 +191,21 @@ export const useSettlementStore = defineStore('settlement', () => {
         }
 
         try {
-            const settlementIdsToSend = mySettlementData.value.toSend.map(tx => tx.settlementId)
+            // ✅ PENDING 상태인 정산만 필터링
+            const pendingToSend = mySettlementData.value.toSend.filter(
+                tx => tx.status === 'PENDING'
+            )
+
+            if (pendingToSend.length === 0) {
+                return {
+                    success: true,
+                    successCount: 0,
+                    failedCount: 0,
+                    message: '송금할 내역이 없습니다.'
+                }
+            }
+
+            const settlementIdsToSend = pendingToSend.map(tx => tx.settlementId)
             const response = await transferMoney({ settlementIds: settlementIdsToSend })
             return response.data
         } catch (err) {

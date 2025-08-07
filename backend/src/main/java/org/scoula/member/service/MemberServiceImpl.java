@@ -172,8 +172,10 @@ public class MemberServiceImpl implements MemberService {
             responseDTO.setEmail(memberVO.getEmail());
             responseDTO.setNickname(memberVO.getNickname());
             responseDTO.setName(memberVO.getName());
+            responseDTO.setPhoneNumber(memberVO.getPhoneNumber());
             responseDTO.setMaskedPhoneNumber(maskPhoneNumber(memberVO.getPhoneNumber()));
             responseDTO.setCreatedAt(memberVO.getCreatedAt());
+            responseDTO.setUpdatedAt(memberVO.getUpdatedAt());
             return responseDTO;
         } catch (UserNotFoundException e) {
             throw e;
@@ -215,7 +217,14 @@ public class MemberServiceImpl implements MemberService {
             memberMapper.updateMember(memberVO);
             log.info("회원 정보 수정 완료 - 회원 ID : {}", userId);
 
-            // 6. 수정된 정보 응답 DTO 생성
+            // 6. password 업데이트 추가
+            if (StringUtils.hasText(updateDTO.getPassword())) {
+                String encodedPassword = passwordEncoder.encode(updateDTO.getPassword());
+                memberMapper.updatePassword(userId, encodedPassword, LocalDateTime.now());
+                MemberVO afterUpdate = memberMapper.findById(userId);
+            }
+
+            // 7. 수정된 정보 응답 DTO 생성
             MemberResponseDTO responseDTO = new MemberResponseDTO();
             responseDTO.setUserId(memberVO.getUserId());
             responseDTO.setEmail(memberVO.getEmail());

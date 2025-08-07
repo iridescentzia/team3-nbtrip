@@ -1,247 +1,201 @@
-<script setup>
-import Header from "@/components/layout/Header.vue";
-import TravelCard2 from "@/components/common/TravelCard2.vue";
-import TripPaymentList from "@/views/trip/TripPaymentList.vue";
-import tripApi from "@/api/tripApi.js";
-import memberApi from "@/api/memberApi.js";
-import {ref} from "vue";
-import {useRoute} from "vue-router";
-import VueDatePicker from '@vuepic/vue-datepicker';
-
-const tripDetail = ref({
-  tripName: '',
-  startDate: '',
-  endDate: '',
-  amount: 0,
-});
-const tripStatus = ref('');
-const headerTitle = ref('');
-const route = useRoute();
-const disableDates = ref([]);
-const date = ref({});
-const members = ref([]);
-const newTitle = ref("");
-
-const load = async () => {
-  const data = await tripApi.getTripDetail(route.params.tripId);
-  if (!data) return;
-  tripDetail.value = {
-    amount: 0,
-    ...data
-  };
-  try {
-    disableDates.value = await tripApi.getDisabledDates(Number(route.params.tripId));
-  } catch (e) {
-    console.error('비활성화 날짜 불러오기 실패:', e);
-  }
-  tripStatus.value = data.tripStatus;
-
-  headerTitle.value =
-      data.tripStatus === 'READY'
-          ? '예정된 여행 상세'
-          : data.tripStatus === 'ACTIVE'
-              ? '진행 중인 여행'
-              : '지난 여행 상세';
-
-
-  // MemberResponseDTO 정보 + 현재 회원상태 적용
-  members.value = await Promise.all(
-      data.members.map(async (member) => {
-        const userInfo = await memberApi.getUserInfo(member.userId);
-        return {
-          ...userInfo,
-          memberId: member.memberId,
-          tripId: member.tripId,
-          status: member.memberStatus
-        };
-      })
-  );
-
-
-  console.log(data.members);
-  console.log(members.value);
-};
-
-const formatDate = (date) => {
-  if (!date) return null;
-  return date.toISOString().split('T')[0];  // yyyy-MM-dd
-};
-
-const handleUpdate = async () => {
-  // VueDatePicker에서 start/end 날짜 추출
-  const [startDate, endDate] = date.value && Array.isArray(date.value)
-      ? date.value.map(formatDate)
-      : [tripDetail.value.startDate, tripDetail.value.endDate];
-
-  // 멤버 상태 배열
-  const updatedMembers = members.value.map(m => ({
-    memberId: m.memberId,
-    tripId: m.tripId,
-    userId: m.userId,
-    memberStatus: m.status
-  }));
-
-  const params = {
-    tripId: tripDetail.value.tripId,
-    tripName: newTitle.value,
-    tripStatus: tripDetail.value.tripStatus,
-    startDate: startDate,
-    endDate: endDate,
-    members: updatedMembers
-  };
-  console.log(params);
-
-  try {
-    await tripApi.updateTrip(params);
-    alert("여행 정보가 성공적으로 업데이트되었습니다.");
-    await load();
-  } catch (error) {
-    console.error("업데이트 실패:", error);
-    alert("업데이트 중 오류가 발생했습니다.");
-  }
-};
-
-load();
-</script>
-
 <template>
-  <Header :title="headerTitle" />
+  <Header title="진행 중인 여행" @back="router.back"/>
   <div class="content-container">
-    <TravelCard2
-      :tripName="tripDetail.tripName"
-      :startDate="tripDetail.startDate"
-      :endDate="tripDetail.endDate"
-      :tripStatus="tripStatus"
-      v-slot="{ activeTab }"
-    >
-      <div v-if="activeTab === '그룹 지출 내역'">
-        <trip-payment-list/>
-      </div>
-      <div v-else-if="activeTab === '선결제 내역'">
+    <!-- 현재 userId = 1인 여행만 보임 (TripController) -->
+    <TravelCard
+        v-if="tripStore.currentTrip"
+        :trip-name="tripStore.currentTrip.tripName"
+        :start-date="formatDate(tripStore.currentTrip.startDate)"
+        :end-date="formatDate(tripStore.currentTrip.endDate)"
+        v-model:activeTab="activeTab"
+        showEdit
+    />
 
-      </div>
-      <div v-else>
-        <label for="editName">여행 이름 수정</label><br>
-        <input
-            type="text"
-            name="editName"
-            id="editName"
-            class="input-box"
-            v-model="newTitle"
-        >
-        날짜 변경하기
-        <VueDatePicker
-            v-model="date"
-            :range="{ noDisabledRange: true }"
-            :enable-time-picker="false"
-            :disabled-dates="disableDates"
-            locale="ko"
-            cancelText="취소"
-            selectText="선택"
-        />
-        <p>멤버 목록</p>
-        <!-- 멤버 목록 추가 -->
-        <div class="member-list">
-          <div class="member-list-item" v-for="member in members" :key="member.userId">
-            <div class="avatar-and-name">
-              <div class="avatar avatar-lg">{{member.name.charAt(0)}}</div>
-              {{ member.name }}
-            </div>
-            <select
-                class="status_selector"
-                :value="member.status"
-                :disabled="member.status === 'INVITED'"
-                v-model="member.status"
-            >
-              <option v-if="member.status === 'INVITED'" value="INVITED">Invited</option>
-              <option value="JOINED">Joined</option>
-              <option value="LEFT">Left</option>
-            </select>
-          </div>
-        </div>
-        <button class="floating-pill-button" @click="handleUpdate">저장</button>
-      </div>
-    </TravelCard2>
+
+    <div v-if="activeTab === '그룹 지출 내역' || activeTab === '선결제 내역'">
+      <Summary
+          v-if="tripStore.currentTrip"
+          :amount="totalAmount"
+          :budget="tripStore.currentTrip.budget"
+      >
+      </Summary>
+
+      <Filter
+          v-if="tripStore.currentTrip"
+          :start-date="formatDate(tripStore.currentTrip.startDate)"
+          :members="tripStore.currentTripMembers"
+          @date-filtered="onDateFiltered"
+          @participant-filtered="onParticipantFiltered"
+          @category-filtered="onCategoryFiltered"
+      />
+      <PaymentListInfo
+          :date-range="selectedDateRange"
+          :selected-participants="selectedParticipants"
+          :selected-categories="selectedCategories"
+          :active-tab="activeTab"
+          @init-total="onInitTotal"
+      />
+    </div>
+    <TripEdit
+        v-else
+        @saveSuccess="handleSaveSuccess"
+    />
   </div>
+  <!-- 고정 버튼 -->
+  <button class="floating-add-button" @click="goToRegister">
+    + 결제 추가
+  </button>
 </template>
 
+<script setup>
+import Header from '@/components/layout/Header.vue';
+import TravelCard from '@/components/common/TravelCard.vue';
+import Filter from '@/components/paymentlist/Filter.vue';
+
+
+import {onMounted, ref} from 'vue';
+import {usePaymentListStore} from "@/stores/tripStore.js";
+import { useRouter, useRoute } from 'vue-router';
+import Summary from '@/components/common/Summary.vue';
+import PaymentListInfo from "@/views/paymentlist/PaymentListInfo.vue";
+import TripEdit from "@/views/trip/TripEdit.vue";
+
+
+const router = useRouter();
+const route = useRoute();
+const tripStore = usePaymentListStore();
+const activeTab = ref('그룹 지출 내역');
+
+const goToRegister = () => {
+  router.push('/paymentlist/register2');
+};
+
+
+const formatDate = (dateInput) => {
+  let date;
+
+  if (Array.isArray(dateInput) && dateInput.length === 3) {
+    const [year, month, day] = dateInput;
+    date = new Date(year, month - 1, day);
+  } else if (typeof dateInput === 'string') {
+    date = new Date(dateInput);
+  } else {
+    return '날짜 오류';
+  }
+
+  return date
+      .toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        timeZone: 'Asia/Seoul',
+      })
+      .replace(/\.\s/g, '.')
+      .replace(/\.$/, '');
+};
+
+
+// Filter.vue에서 emit된 ref
+const selectedDateRange = ref({ start: '', end: '' })
+const selectedParticipants = ref([]); // 선택된 참여자 userId 배열
+const selectedCategories = ref([])
+
+const tripMembers = ref([]);
+const totalAmount = ref(0)
+
+// Filter.vue로부터 'date-filtered' 이벤트 전달받는 핸들러
+function onDateFiltered(range) {
+  console.log('[PaymentList.vue] 받은 날짜 범위:', range)
+  // 부모 컴포넌트가 선택된 날짜 값을 보관
+  selectedDateRange.value = range
+}
+
+// PaymentListInfo에서 전체 총액을 보내줄 때만 저장
+function onInitTotal(amount){
+  totalAmount.value = amount
+}
+
+function onParticipantFiltered(userIds){
+  console.log('[Paymentlist.vue] 선택된 결제 참여자: ', userIds);
+  selectedParticipants.value = userIds;
+}
+
+function onCategoryFiltered(categoryIds){
+  console.log('[PaymentList.vue] 선택된 카테고리: ', categoryIds)
+  selectedCategories.value = categoryIds
+}
+const handleSaveSuccess = (updatedTrip) => {
+  console.log("부모에서 이벤트 감지됨:", updatedTrip);
+  tripStore.fetchTrip(route.params.tripId);
+};
+onMounted(async () => {
+  await tripStore.fetchTrip(route.params.tripId);
+  console.log("currenttrip: ",tripStore.currentTrip)
+  if (tripStore.currentTrip) {
+    await tripStore.fetchCurrentTripMemberNicknames()
+  }
+})
+</script>
+
 <style scoped>
-/* 메인 콘텐츠 */
 .content-container {
   flex-grow: 1;
+  padding: 1.25rem;
   overflow-y: auto;
-  padding: calc(56px) 1.25rem 1.25rem;
+  padding-top: 56px;
+  position: relative;
+  max-width: 384px;
+  /* margin: 0 auto; */
 }
 
-.member-list-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 5px 0;
+/* 스크롤바 */
+.content-container::-webkit-scrollbar {
+  width: 8px;
 }
 
-.input-box {
-  width: 100%;
-  padding-left: 10px;
-  padding-right: 50px;
-  height: 40px;
-  box-sizing: border-box;
-  border-radius: 5px;
-  border: 1px solid var(--theme-text-light);
-  margin-bottom: 10px;
+.content-container::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 50px;
 }
 
-.avatar{
-  border-radius: 50%;
-  background: var(--theme-primary);
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.content-container::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 50px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
-.avatar-lg{
-  height : 35px;
-  width : 35px;
-  font-size : 14px;
-  margin-right: 10px;
+.content-container::-webkit-scrollbar-thumb:hover {
+  background-color: #888;
 }
 
-.avatar-and-name {
-  display: flex;
-  align-items: center;
-}
+.floating-add-button {
+  position: sticky;
+  bottom: 80px;
+  left: 77%;
+  transform: translateX(-50%); /* 가운데 정렬 */
+  width: 120px;
+  max-width: 384px;
 
-.status_selector{
-  height: 35px;
-  padding: 5px 10px;
-  font-size: 14px;
-  border-color:  var(--theme-text-light);
-  border-radius: 5px;
-  color: var(--theme-text-light);
-}
-
-div{
-  color: var(--theme-text);
-}
-
-.floating-pill-button {
-  position: absolute;
-  bottom: 20px;      /* 화면 하단에서 20px 띄우기 */
-  right: 20px;       /* 화면 우측에서 20px 띄우기 */
-  background-color: var(--theme-primary);
-  color: white;
-  border: none;
-  border-radius: 50px;  /* 알약 모양 */
-  padding: 12px 24px;   /* 위아래 12px, 좌우 24px */
+  background-color: rgb(255, 217, 130);
+  color: #4A4A4A;
+  font-weight: bold;
   font-size: 16px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  padding: 14px 0;
+  border: none;
+  border-radius: 9999px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  transition: background-color 0.3s ease;
   z-index: 1000;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  font-family: 'IBM Plex Sans KR', sans-serif;
 }
 
-.floating-pill-button:hover {
-  background-color: var(--theme-primary-dark); /* 호버 시 조금 진한 색으로 변경 */
+.floating-add-button:hover {
+  background-color: #FFD166;
+}
+
+.floating-add-button:active {
+  transform: translateX(-50%) scale(0.95);
 }
 </style>

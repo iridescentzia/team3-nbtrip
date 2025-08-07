@@ -19,8 +19,14 @@ const goBack = () => {
 
 // 완료 버튼 클릭 시 실행되는 비밀번호 검증 함수
 const handleVerifyPassword = async () => {
+  errorMessage.value = '';
+  const trimmedPassword = password.value.trim();
+  if (!password.value || password.value.trim().length === 0) {
+    errorMessage.value = '비밀번호를 입력해주세요.';
+    return;
+  }
   try {
-    const response = await verifyPassword(password.value)
+    const response = await verifyPassword(trimmedPassword);
 
     // 비밀번호 검증 성공 시 /mypage/updateInfo 페이지로 이동
     if (response.success) {
@@ -51,10 +57,10 @@ const handleVerifyPassword = async () => {
       <!-- 비밀번호 입력 필드 -->
       <input
           type="password"
-          v-model="password"
+          v-model.trim="password"
           placeholder="비밀번호 입력"
           class="password-input"
-          @keyup.enter="verifyPassword"
+          @keyup.enter.prevent="handleVerifyPassword"
       />
 
       <!-- 에러 메시지 출력 -->
