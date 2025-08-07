@@ -77,12 +77,6 @@ const loadAccountInfo = async () => {
   }
 }
 
-// 은행명 조회 헬퍼 함수 (표시용)
-const getBankName = (code) => {
-  const bank = bankList.value.find(b => b.bankCode === code)
-  return bank?.bankName || ''
-}
-
 // 저장 버튼 클릭
 const saveAccount = async () => {
   if (!bankCode.value || !accountNumber.value) {
@@ -99,10 +93,14 @@ const saveAccount = async () => {
       return
     }
 
+    // 은행명 조회 헬퍼 함수 (표시용)
+    const bank = bankList.value.find(b => b.bankCode === bankCode.value)
+    const bankNameValue = bank?.bankName || ''
+
     const accountUpdateDTO = {
       bankCode: bankCode.value,
       accountNumber: accountNumber.value,
-      accountAlias: null // 별명은 null로 설정
+      bankName: bankNameValue
     }
 
     await accountApi.updateAccount(userId.value, accountUpdateDTO)
