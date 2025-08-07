@@ -3,7 +3,7 @@ import tripApi from "@/api/tripApi.js";
 import {ref} from 'vue';
 import {useRouter, useRoute} from "vue-router";
 import Button from "@/components/common/Button.vue";
-import Header from "@/components/layout/Header.vue";
+import Header2 from "@/components/layout/Header2.vue";
 const router=useRouter();
 const tripId = ref();
 const tripDetails = ref({});
@@ -28,7 +28,7 @@ load();
 </script>
 
 <template>
-  <Header title="그룹 참여"/>
+  <Header2 title="그룹 참여"/>
   <div class="content-container">
     <img src="@/assets/img/smiling_cat.png"/>
     <div class="trip-info" v-if="tripDetails">
