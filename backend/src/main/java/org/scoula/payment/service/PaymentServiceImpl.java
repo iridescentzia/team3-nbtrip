@@ -9,6 +9,7 @@ import org.scoula.merchant.domain.MerchantVO;
 import org.scoula.merchant.mapper.MerchantMapper;
 import org.scoula.merchant.service.MerchantService;
 import org.scoula.notification.dto.NotificationDTO;
+import org.scoula.notification.mapper.NotificationMapper;
 import org.scoula.notification.service.NotificationService;
 import org.scoula.payment.domain.ParticipantVO;
 import org.scoula.payment.domain.PaymentType;
@@ -37,6 +38,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final MerchantMapper merchantMapper;
     private final MemberMapper memberMapper;
     private final NotificationService notificationService;
+    private final NotificationMapper notificationMapper;
 
     /* QR 결제 처리 */
     @Override
@@ -384,5 +386,66 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public List<ParticipantVO> getParticipantsByPaymentId(int paymentId) {
         return participantMapper.findByPaymentId(paymentId);
+    }
+
+    // 특정 결제에 참여한 모든 참여자 삭제
+    @Override
+    @Transactional
+    public void deletePayment(int paymentId, int userId) {
+
+        // 결제 존재 여부 확인
+        PaymentVO payment = paymentMapper.selectPaymentById(paymentId);
+        if (payment == null) {
+            throw new RuntimeException("결제 내역이 존재하지 않습니다.");
+        }
+
+        // 기존 알림 삭제
+        try {
+            int deletedNoti = notificationMapper.deleteByPaymentId(paymentId);
+            log.info("삭제된 알림 수: {}", deletedNoti);
+        } catch (Exception e) {
+            log.error("결제 관련 알림 삭제 실패: {}", e.getMessage());
+            throw new RuntimeException("결제 관련 알림 삭제 중 오류가 발생했습니다.", e);
+        }
+
+        // 결제에 포함된 모든 참여자 삭제
+        try {
+            int deletedParticipants = participantMapper.deleteParticipantsByPaymentId(paymentId);
+            log.info("삭제된 참여자 수: {}", deletedParticipants);
+        } catch (Exception e) {
+            log.error("결제 참여자 삭제 실패: {}", e.getMessage());
+            throw new RuntimeException("결제 참여자 삭제 중 오류가 발생했습니다.", e);
+        }
+
+
+
+        // 결제 삭제 알림 생성
+//        MemberVO member = memberMapper.findById(userId);
+//        String fromUserNickname = member != null ? member.getNickname() : "알 수 없음";
+//
+//        MerchantVO merchant = merchantMapper.getMerchant(payment.getMerchantId());
+//        String merchantName = merchant != null ? merchant.getMerchantName() : "알 수 없음";
+//
+//        NotificationDTO notificationDTO = NotificationDTO.builder()
+//                .userId(userId)
+//                .fromUserId(userId)
+//                .tripId(payment.getTripId())
+//                .paymentId(paymentId)
+//                .notificationType("TRANSACTION")
+//                .actionType("DELETE")
+//                .fromUserNickname(fromUserNickname)
+//                .merchantName(merchantName)
+//                .build();
+//
+//        notificationService.createNotification(notificationDTO);
+
+        // 결제 내역 삭제
+        int deleted = paymentMapper.deletePaymentByPaymentId(paymentId);
+        if (deleted == 0) {
+            throw new RuntimeException("결제 삭제 실패");
+        }
+
+
+        log.info("결제 [{}] 삭제 완료", paymentId);
     }
 }

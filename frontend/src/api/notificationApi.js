@@ -6,9 +6,8 @@ import api from '@/api';
 //   return api.get(`/notifications/${userId}${categoryQuery}`);
 // };
 
-export const fetchNotifications = (category) => {
-  const categoryQuery = category && category !== 'ALL' ? `?category=${category}` : '';
-  return api.get(`/notifications${categoryQuery}`);
+export const fetchNotifications = () => {
+  return api.get(`/notifications`);
 };
 
 // 알림 읽음 처리

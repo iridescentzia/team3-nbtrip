@@ -30,6 +30,8 @@ public interface NotificationMapper {
     // 해당 trip의 정산 요청자 조회
     Integer findSettlementRequester(@Param("tripId") Integer tripId);
 
+
+
     // 단일 알림 생성
     int createNotification(NotificationVO vo);
     //trip 맴버 전체에게 completed 알림
@@ -40,11 +42,17 @@ public interface NotificationMapper {
     void createSettlementNotificationForAll(NotificationVO vo);
     // trip 멤버 전체에게 결제 알림
     void createTransactionNotificationForAll(NotificationVO vo);
+    // 'SEND' 송금 완료 시 여행 멤버 전체(본인 포함)에게 알림 전송
+    void createSendNotificationForAll(NotificationVO vo);
+
 
     // 알림 읽음 처리
     int readNotification(@Param("notificationId") Integer notificationId);
 
     // FCM 토큰을 user_id 기준으로 조회
     String findFcmTokenByUserId(@Param("userId") Integer userId);
+
+    // 알림 삭제
+    int deleteByPaymentId(@Param("paymentId") int paymentId);
 
 }

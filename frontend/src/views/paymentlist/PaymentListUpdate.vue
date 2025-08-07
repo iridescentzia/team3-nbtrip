@@ -22,6 +22,7 @@ const form = ref({
   memo: ''
 });
 const selectedMembers = ref([]);
+const isDeleteModalVisible = ref(false);
 
 // 선택 여부 확인
 const isSelected = (userId) => {
@@ -133,10 +134,9 @@ const handleSave = async () => {
   };
 
   console.log("payload", payload);
-  console.log("<< 참여자 userId 타입 체크 >>");
-  selectedMembers.value.forEach(p =>
-    console.log("userId:", p.userId, "typeof:", typeof p.userId)
-  );
+  console.log("payerUserId", form.value.payerUserId);
+  console.log("participants", selectedMembers.value);
+  
 
   try {
     if (paymentType.value === 'OTHER') {
@@ -150,11 +150,27 @@ const handleSave = async () => {
     }
 
     console.log('결제 내역 수정 완료!');
+    alert('결제 내역이 수정되었습니다.')
     router.go(-1)
   } catch (e) {
     console.error('수정 실패:', e.response?.data || e);
+     alert('결제 내역 수정에 실패했습니다.')
   }
 };
+
+// 결제 내역 삭제
+const handleDelete = async () => {
+  try {
+    await paymentApi.deletePayment(paymentId)
+    alert('결제 내역이 삭제되었습니다.')
+    router.go(-1)
+  }catch (error) {
+    console.error('결제 내역 삭제 실패: ', error)
+    alert('결제 삭제에 실패했습니다.')
+  }
+
+
+}
 </script>
 
 <template>
@@ -283,9 +299,24 @@ const handleSave = async () => {
 
   <!-- 하단 저장 버튼 -->
   <footer class="footer">
-    <button class="delete-button">삭제</button>
+    <button class="delete-button" @click="isDeleteModalVisible = true">삭제</button>
     <button class="save-button" @click="handleSave">저장</button>    
   </footer>
+  
+  <Transition name="slide-up">
+    <div v-if="isDeleteModalVisible" class="modal">
+      <div style="margin-bottom: 16px; text-align: center">
+        <p style="font-size: 16px; font-weight: bold;">결제 내역을 삭제하시겠어요?</p>
+        <p style="font-size: 14px; color: gray;">삭제된 결제는 복구할 수 없어요.</p>
+      </div>
+
+      <div style="display: flex; justify-content: space-between;">
+        <button class="delete-button" @click="isDeleteModalVisible = false">취소</button>
+        <button class="save-button" @click="handleDelete">삭제</button>
+      </div>
+    </div>
+  </Transition>
+
 </template>
 
 <style scoped>
@@ -518,5 +549,43 @@ input[type="number"]::-webkit-outer-spin-button {
 .content-container::-webkit-scrollbar-thumb:hover {
   background-color: #888;
 }
+
+.modal {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 352px;
+  background-color: #ffffff;
+  border-radius: 16px 16px 0 0;
+  padding: 16px 16px 24px 16px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  animation: modalUp 0.25s ease;
+}
+
+@keyframes modalUp {
+  from {
+    bottom: -300px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0;
+    opacity: 1;
+  }
+}
+
+/* transition 이름은 "slide-up" */
+.slide-up-enter-active, .slide-up-leave-active {
+  transition: all 0.5s ease;
+}
+.slide-up-enter-from, .slide-up-leave-to {
+  transform: translateY(100%);
+  opacity: 0;
+}
+.slide-up-enter-to, .slide-up-leave-from {
+  transform: translateY(0%);
+  opacity: 1;
+}
+
 </style>
 
