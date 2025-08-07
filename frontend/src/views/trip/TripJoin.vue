@@ -33,7 +33,9 @@ const load = async () => {
 
 const toNextPage = async () => {
   const available = await tripApi.isAvailableDate(tripDetails.value.startDate, tripDetails.value.endDate);
-  if (available) {
+  console.log(available);
+  // if (available) {
+  if (true) {
     await tripApi.acceptInvitation(tripId.value);
     await router.push(`/trip/join/${tripId.value}/complete`);
   } else {

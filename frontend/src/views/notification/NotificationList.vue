@@ -36,11 +36,12 @@ const goToPage = (n) => {
       router.push(`/settlement/${n.tripId}/detail`);
       break;
     case 'INVITE':
-      if (!n.memberStatus) {
-        router.push(`/trip/join/${n.tripId}`)
-      } else {
-        router.push(`/trip/${n.tripId}`)
-      }
+      router.push(`/trip/join/${n.tripId}`)
+      // if (!n.memberStatus) {
+      //   router.push(`/trip/join/${n.tripId}`)
+      // } else {
+      //   router.push(`/trip/${n.tripId}`)
+      // }
       break;
 
     case 'GROUP_EVENT':
