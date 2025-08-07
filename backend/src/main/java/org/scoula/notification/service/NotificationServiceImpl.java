@@ -82,6 +82,7 @@ public class NotificationServiceImpl implements NotificationService {
             mapper.createNotification(vo);
         }
     }
+
     // 알림 생성 및 fcm 푸시 전송
     @Override
     public void createNotification(NotificationDTO dto) {
