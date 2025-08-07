@@ -8,6 +8,8 @@
       :start-date="formatDate(tripStore.currentTrip.startDate)"
       :end-date="formatDate(tripStore.currentTrip.endDate)"
       v-model:activeTab="activeTab"
+      :trip-id="tripStore.currentTrip.tripId"
+      :trip-status="tripStore.currentTrip.tripStatus"
       showEdit
     />
 

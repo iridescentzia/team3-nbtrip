@@ -1,13 +1,16 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { FileChartColumn, Trash2 } from 'lucide-vue-next';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import apiClient from '@/api/index.js';
 
 const props = defineProps({
+  tripId: Number,
   tripName: String,
   startDate: String,
   endDate: String,
-  activeTab: String 
+  activeTab: String,
+  tripStatus: String,
 });
 
 const emit = defineEmits(['update:activeTab']);
@@ -25,12 +28,26 @@ function selectTab(tab) {
   emit('update:activeTab', tab);
 }
 
+const router = useRouter();
+const route = useRoute();
+
 // 아이콘 클릭 시 차트 페이지로 이동
-function goToChart() {
-  router.push({
-    name: 'report',
-    params: { tripId },
-  });
+async function goToChart() {
+  try {
+    const tripId = route.params.tripId;
+    const res = await apiClient.get(`/report/${tripId}/is-member`);
+    const isMember = res.data;
+    console.log(isMember);
+
+    if (isMember) {
+      router.push({ name: 'report', params: { tripId } });
+    } else {
+      alert('현재 여행에 포함된 회원이 아닙니다');
+    }
+  } catch (error) {
+    console.error('멤버 확인 중 오류 발생:', error);
+    alert('서버 오류가 발생했습니다. 다시 시도해주세요.');
+  }
 }
 </script>
 
@@ -42,7 +59,10 @@ function goToChart() {
       <div class="title-date">
         <div class="title-row">
           <div class="trip-name">{{ props.tripName }}</div>
-          <FileChartColumn class="icon" @click="goToChart" />
+          <div v-if="props.tripStatus === 'CLOSED'" class="icon-wrapper">
+            <FileChartColumn class="icon" @click="goToChart" />
+            <span class="red-dot"></span>
+          </div>
         </div>
         <div class="trip-date">{{ formattedDate }}</div>
       </div>
@@ -172,5 +192,31 @@ function goToChart() {
 
 .tab-item.active {
   color: #fdb100;
+}
+
+.icon-wrapper {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+/* 빨간 알림 점 */
+.red-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 7px;
+  height: 7px;
+  background-color: #ff6b6b; /* 연한 빨간색 */
+  border-radius: 50%;
+  border: 2px solid white; /* 외곽 경계 */
 }
 </style>
