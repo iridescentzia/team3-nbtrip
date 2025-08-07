@@ -53,8 +53,19 @@ export const checkNicknameDuplicate = async (nickname) => {
         const response = await apiClient.post('/users/check-nickname', {
             nickname
         });
-        return response.data;
+        return {
+            success: true,
+            available: true,
+            message: response.data.message || '사용 가능한 닉네임입니다.'
+        };
     } catch (error) {
+        if (error.response?.status === 409) {
+            return {
+                success: true,
+                available: false,
+                message: error.response.data.message || '이미 사용 중인 닉네임입니다.'
+            };
+        }
         throw handleApiError(error, '닉네임 중복 확인');
     }
 };

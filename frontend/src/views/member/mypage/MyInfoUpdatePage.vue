@@ -24,35 +24,57 @@ const isPasswordChanged = ref(false);
 const isNicknameChecked = ref(false);
 const nicknameValid = ref(false);
 const nicknameMessage = ref('');
+const nicknameMessageType = ref('');
+const isCheckingNickname = ref(false);
 
 // 닉네임 중복 확인(POST /api/users/check-nickname)
 const checkNickname = async () => {
-  if (!nickname.value.trim()) {
-    alert('닉네임을 입력해주세요.');
+  if (!nickname.value || nickname.value.trim().length === 0) {
+    nicknameMessage.value = '닉네임을 입력해주세요.';
+    nicknameMessageType.value = 'error';
+    isNicknameChecked.value = false;
     return;
   }
+
   try {
-    const res = await checkNicknameDuplicate(nickname.value);
-    nicknameValid.value = true;
-    nicknameMessage.value = res.message || '사용 가능한 닉네임입니다.';
-    isNicknameChecked.value = true;
-  } catch (err) {
-    nicknameValid.value = false;
+    isCheckingNickname.value = true;
+    const result = await checkNicknameDuplicate(nickname.value.trim());
+
+    if (result.available) {
+      nicknameMessage.value = result.message || '사용 가능한 닉네임입니다.';
+      isNicknameChecked.value = true;
+      nicknameValid.value = true;
+      nicknameMessageType.value = 'success';
+    } else {
+      nicknameMessage.value = result.message || '이미 사용 중인 닉네임입니다.';
+      isNicknameChecked.value = false;
+      nicknameValid.value = false;
+      nicknameMessageType.value = 'error';
+    }
+  } catch (error) {
+    nicknameMessage.value = '닉네임 확인 중 오류가 발생했습니다.';
     isNicknameChecked.value = false;
-    nicknameMessage.value = err.message || '이미 사용 중인 닉네임입니다.';
+    nicknameValid.value = false;
+    nicknameMessageType.value = 'error';
+    console.error('닉네임 중복 확인 실패:', error);
+  } finally {
+    isCheckingNickname.value = false;
   }
 };
 
 // 닉네임 변경 시 중복 확인 상태 초기화
-watch (nicknameValid, (newVal, oldVal) => {
+watch(nickname, (newVal) => {
   if (newVal !== originalNickname.value) {
     isNicknameChecked.value = false;
     nicknameValid.value = false;
     nicknameMessage.value = '';
+    nicknameMessageType.value = '';
   } else {
+    // 원래 닉네임으로 돌아간 경우
     isNicknameChecked.value = true;
     nicknameValid.value = true;
     nicknameMessage.value = '';
+    nicknameMessageType.value = '';
   }
 });
 
