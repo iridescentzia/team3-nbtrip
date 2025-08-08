@@ -182,15 +182,15 @@ const handleSave = async () => {
   const categoryName = selectedCategory
     ? selectedCategory.categoryName
     : '기타';
-  const merchantNameForOther = `${categoryName} 선결제/기타결제`;
+  const merchantNameForOther = `${categoryName} 기타결제`;
   // To-do: 이 부분은 실제 가맹점 목록을 가져오는 로직으로 대체해야 합니다.
   const mockMerchants = [
-    { merchantId: 1, merchantName: '식음료 선결제/기타결제' },
-    { merchantId: 2, merchantName: '교통 선결제/기타결제' },
-    { merchantId: 3, merchantName: '숙박 선결제/기타결제' },
-    { merchantId: 4, merchantName: '관광 선결제/기타결제' },
-    { merchantId: 5, merchantName: '쇼핑 선결제/기타결제' },
-    { merchantId: 6, merchantName: '기타 선결제/기타결제' },
+    { merchantId: 7, merchantName: '식음료 기타결제' },
+    { merchantId: 8, merchantName: '교통 기타결제' },
+    { merchantId: 9, merchantName: '숙박 기타결제' },
+    { merchantId: 10, merchantName: '관광 기타결제' },
+    { merchantId: 11, merchantName: '쇼핑 기타결제' },
+    { merchantId: 12, merchantName: '기타 기타결제' },
   ];
   const targetMerchant = mockMerchants.find(
     (m) => m.merchantName === merchantNameForOther

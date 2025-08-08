@@ -175,14 +175,14 @@ const handleSave = async () => {
     })
   );
 
-  // '기타 결제'용 merchantId를 찾는 로직
+  // '선결제'용 merchantId를 찾는 로직
   const selectedCategory = tripStore.merchantCategories.find(
     (c) => c.categoryId === Number(form.value.category)
   );
   const categoryName = selectedCategory
     ? selectedCategory.categoryName
     : '기타';
-  const merchantNameForOther = `${categoryName} 선결제`;
+  const merchantNameForPrepaid = `${categoryName} 선결제`;
   // To-do: 이 부분은 실제 가맹점 목록을 가져오는 로직으로 대체해야 합니다.
   const mockMerchants = [
     { merchantId: 1, merchantName: '식음료 선결제' },
@@ -193,7 +193,7 @@ const handleSave = async () => {
     { merchantId: 6, merchantName: '기타 선결제' },
   ];
   const targetMerchant = mockMerchants.find(
-    (m) => m.merchantName === merchantNameForOther
+    (m) => m.merchantName === merchantNameForPrepaid
   );
   const merchantId = targetMerchant ? targetMerchant.merchantId : null;
 
@@ -202,7 +202,7 @@ const handleSave = async () => {
     memo: form.value.content,
     amount: totalAmount,
     payAt: formatDateTime(date.value),
-    paymentType: 'OTHER',
+    paymentType: 'PREPAID',
     payerId: payerUserId,
     participants: participantsPayload,
     merchantId: merchantId,
