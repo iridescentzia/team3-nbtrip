@@ -152,13 +152,7 @@ const handleSave = async () => {
   const totalAmount = parseInt(String(form.value.amount).replace(/,/g, ''), 10);
   const payerUserId = Number(form.value.payerUserId);
 
-  if (
-    !tripId ||
-    !form.value.content ||
-    !totalAmount ||
-    !form.value.category ||
-    !payerUserId
-  ) {
+  if (!tripId || !totalAmount || !form.value.category || !payerUserId) {
     alert('모든 필수 항목을 입력해주세요.');
     return;
   }
@@ -199,7 +193,7 @@ const handleSave = async () => {
 
   const paymentDTO = {
     tripId: tripId,
-    memo: form.value.content,
+    memo: form.value.memo,
     amount: totalAmount,
     payAt: formatDateTime(date.value),
     paymentType: 'OTHER',
@@ -239,12 +233,23 @@ const formatDateTime = (date) => {
 <template>
   <Header title="결제 내역 추가" @back="router.back" />
   <main class="content-container">
-    <div class="form-section">
+    <!-- <div class="form-section">
       <label class="form-label">내용</label>
       <div class="input-box">
         <input
           class="input-text"
           v-model="form.content"
+          placeholder="지출 내용을 입력하세요"
+        />
+      </div>
+    </div> -->
+
+    <div class="form-section">
+      <label class="form-label">내용</label>
+      <div class="textarea-box">
+        <input
+          class="input-text"
+          v-model="form.memo"
           placeholder="지출 내용을 입력하세요"
         />
       </div>
@@ -349,18 +354,6 @@ const formatDateTime = (date) => {
               : `${Math.abs(remainingAmount).toLocaleString()}원 초과`
           }}
         </div>
-      </div>
-    </div>
-
-    <div class="form-section">
-      <label class="form-label">메모</label>
-      <div class="textarea-box">
-        <textarea
-          v-model="form.memo"
-          class="input-text"
-          placeholder="상세 내용을 입력하세요..."
-          rows="4"
-        ></textarea>
       </div>
     </div>
   </main>
