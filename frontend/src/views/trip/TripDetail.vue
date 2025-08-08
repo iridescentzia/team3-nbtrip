@@ -1,5 +1,5 @@
 <template>
-  <Header title="진행 중인 여행" @back="router.back"/>
+  <Header :title="title" @back="router.back"/>
   <div class="content-container">
     <!-- 현재 userId = 1인 여행만 보임 (TripController) -->
     <TravelCard
@@ -18,6 +18,9 @@
           v-if="tripStore.currentTrip"
           :amount="totalAmount"
           :budget="tripStore.currentTrip.budget"
+          :onTerminate="handleTripTerminate"
+          :isOwner="isOwner"
+          :isClosed="isClosed"
       >
       </Summary>
 
@@ -41,19 +44,28 @@
       <TripEdit ref="updateTrip" />
     </div>
   </div>
-  <!-- 고정 버튼 -->
+
+  <!--  TODO : 앞 두 버튼에 올바른 라우팅 적용하기  -->
+
   <button
-      v-if="activeTab === '그룹 지출 내역' || activeTab === '선결제 내역'"
+      v-if=" !isClosed && activeTab === '그룹 지출 내역'"
       class="floating-button"
       @click="goToRegister">
-    + 결제 추가
+    + 기타 결제
   </button>
-  <!-- 고정 버튼 -->
+
   <button
-      v-else
+      v-if=" !isClosed && activeTab === '선결제 내역'"
+      class="floating-button"
+      @click="goToRegister">
+    + 선결제 추가
+  </button>
+
+  <button
+      v-if=" !isClosed && activeTab === '그룹 관리'"
       class="floating-button"
       @click="callChildUpdate">
-      저장하기
+    저장하기
   </button>
 </template>
 
@@ -69,6 +81,8 @@ import { useRouter, useRoute } from 'vue-router';
 import Summary from '@/components/common/Summary.vue';
 import PaymentListInfo from "@/views/paymentlist/PaymentListInfo.vue";
 import TripEdit from "@/views/trip/TripEdit.vue";
+import tripApi from "@/api/tripApi.js";
+import {requestSettlement, getSettlementSummary} from "@/api/settlementApi.js";
 
 
 const router = useRouter();
@@ -76,6 +90,9 @@ const route = useRoute();
 const tripStore = usePaymentListStore();
 const activeTab = ref('그룹 지출 내역');
 const updateTrip = ref(null);
+const isOwner = ref(false);
+const title = ref('');
+const isClosed = ref(false);
 
 const callChildUpdate = async () => {
   if(updateTrip.value){
@@ -85,9 +102,24 @@ const callChildUpdate = async () => {
   }
 }
 
+const checkIsOwner = async () => {
+  try {
+    const tripId = route.params.tripId;
+    isOwner.value = await tripApi.isOwner(parseInt(tripId));
+  } catch (error) {
+    console.error('그룹장 여부 확인 실패:', error);
+    isOwner.value = false;
+  }
+};
 
 const goToRegister = () => {
-  router.push('/paymentlist/register2');
+  const tripId = route.params.tripId;
+  router.push({
+    name: 'payment-register', // 라우터 이름 (예시)
+    params: {
+      tripId: tripId,
+    },
+  });
 };
 
 
@@ -144,13 +176,90 @@ function onCategoryFiltered(categoryIds){
   console.log('[PaymentList.vue] 선택된 카테고리: ', categoryIds)
   selectedCategories.value = categoryIds
 }
+
+
+// PaymentList.vue의 handleTripTerminate 함수 수정
+const handleTripTerminate = async () => {
+  try {
+    const tripId = route.params.tripId;
+
+    // 정산 필요 여부 확인
+    const needsSettlement = await checkIfSettlementNeeded();
+
+    // 1. 여행 상태를 CLOSED로 변경 (항상 실행)
+    await tripApi.closeTrip(parseInt(tripId));
+
+    if (needsSettlement) {
+      // 2-A. 정산이 필요한 경우: 정산 요청 생성 후 정산 페이지로 이동
+      await requestSettlement({ tripId: parseInt(tripId) });
+      router.push(`/settlement/${tripId}`);
+    } else {
+      // 2-B. 정산이 불필요한 경우: 홈으로 이동
+      alert('여행이 종료되었습니다. 모든 멤버의 결제 금액이 같아 정산이 필요하지 않습니다.');
+      router.push('/'); // 또는 '/trips' 등 적절한 페이지
+    }
+
+  } catch (error) {
+    console.error('여행 종료 중 오류 발생:', error);
+    alert(error.message || '여행 종료 중 오류가 발생했습니다.');
+  }
+};
+
+// 정산 필요 여부 확인 함수
+const checkIfSettlementNeeded = async () => {
+  try {
+    // 1. 멤버 수 확인
+    const memberCount = tripStore.currentTripMembers?.length || 0;
+
+    // 1인 여행인 경우 정산 불필요
+    if (memberCount <= 1) {
+      console.log('1인 여행 - 정산 불필요');
+      return false;
+    }
+
+    // 2. 멤버별 결제 금액이 모두 같은지 확인
+    // 정산 요약 API를 호출해서 멤버별 결제 내역 확인
+    const summaryResponse = await getSettlementSummary(route.params.tripId);
+    const memberPayments = summaryResponse.data.memberPayments || [];
+
+    if (memberPayments.length === 0) {
+      console.log('결제 내역이 없음 - 정산 불필요');
+      return false;
+    }
+
+    // 모든 멤버의 결제 금액이 같은지 확인
+    const firstAmount = memberPayments[0]?.amount || 0;
+    const allAmountsSame = memberPayments.every(member => member.amount === firstAmount);
+
+    if (allAmountsSame) {
+      console.log('모든 멤버 결제 금액 동일 - 정산 불필요');
+      return false;
+    }
+
+    console.log('정산 필요');
+    return true;
+
+  } catch (error) {
+    console.error('정산 필요 여부 확인 실패:', error);
+    // 에러 발생 시 안전하게 정산이 필요하다고 가정
+    return true;
+  }
+};
+
 onMounted(async () => {
   await tripStore.fetchTrip(route.params.tripId);
-  console.log("currenttrip: ",tripStore.currentTrip)
+  console.log('currenttrip: ', tripStore.currentTrip);
   if (tripStore.currentTrip) {
     await tripStore.fetchCurrentTripMemberNicknames()
+    await checkIsOwner();
+    tripStore.currentTrip.tripStatus === 'ACTIVE' ? title.value = '진행 중인 여행' :
+        tripStore.currentTrip.tripStatus === 'READY' ? title.value = '예정된 여행' : title.value = '종료된 여행'
   }
-})
+  if(tripStore.currentTrip.tripStatus === 'CLOSED'){
+    isClosed.value = true;
+  }
+});
+
 </script>
 
 <style scoped>
@@ -214,4 +323,5 @@ onMounted(async () => {
 .floating-button:active {
   transform: translateX(-50%) scale(0.95);
 }
+
 </style>
