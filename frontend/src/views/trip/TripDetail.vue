@@ -3,7 +3,6 @@
   <div class="content-container">
     <!-- 현재 userId = 1인 여행만 보임 (TripController) -->
     <TravelCard
-
       v-if="tripStore.currentTrip"
       :trip-name="tripStore.currentTrip.tripName"
       :start-date="formatDate(tripStore.currentTrip.startDate)"
@@ -11,6 +10,8 @@
       v-model:activeTab="activeTab"
       :trip-id="tripStore.currentTrip.tripId"
       :trip-status="tripStore.currentTrip.tripStatus"
+      :on-delete="handleDelete"
+      :is-owner="isOwner"
       showEdit
     />
     <div v-if="activeTab === '그룹 지출 내역' || activeTab === '선결제 내역'">
@@ -18,9 +19,9 @@
           v-if="tripStore.currentTrip"
           :amount="totalAmount"
           :budget="tripStore.currentTrip.budget"
-          :onTerminate="handleTripTerminate"
-          :isOwner="isOwner"
-          :isClosed="isClosed"
+          :on-terminate="handleTripTerminate"
+          :is-owner="isOwner"
+          :is-closed="isClosed"
       >
       </Summary>
 
@@ -204,6 +205,14 @@ const handleTripTerminate = async () => {
     alert(error.message || '여행 종료 중 오류가 발생했습니다.');
   }
 };
+
+const handleDelete = async () => {
+  const tripId = route.params.tripId;
+  await tripApi.deleteTrip(Number(tripId));
+  console.log("id: "+tripId+" 여행 삭제");
+  alert("여행이 삭제되었습니다.");
+  await router.replace(`/`);
+}
 
 // 정산 필요 여부 확인 함수
 const checkIfSettlementNeeded = async () => {

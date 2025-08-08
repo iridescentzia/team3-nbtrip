@@ -23,4 +23,5 @@ public interface TripService {
     boolean isOwner(int tripId, int userId);
     List<TripDTO> getTripsByStatus(int userId, TripStatus status);
     TripDTO updateTrip(TripUpdateDTO tripUpdateDTO);
+    int deleteTrip(int tripId);
 }

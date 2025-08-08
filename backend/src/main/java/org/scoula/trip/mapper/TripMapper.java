@@ -35,4 +35,5 @@ public interface TripMapper {
     // 본인이 참가한 상태별 여행 조회
     List<TripVO> getTripsByStatus(@Param("userId") int userId, @Param("status") String status);
     int updateTrip(TripVO tripVO);
+    int deleteTrip(int tripId);
 }

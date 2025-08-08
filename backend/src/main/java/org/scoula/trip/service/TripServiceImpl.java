@@ -4,10 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.scoula.member.dto.MemberSearchResponseDTO;
 import org.scoula.member.service.MemberService;
-import org.scoula.member.service.MemberServiceImpl;
 import org.scoula.notification.dto.NotificationDTO;
 import org.scoula.notification.service.NotificationService;
-import org.scoula.payment.service.PaymentService;
 import org.scoula.trip.domain.TripMemberStatus;
 import org.scoula.trip.domain.TripMemberVO;
 import org.scoula.trip.domain.TripStatus;
@@ -134,4 +132,8 @@ public class TripServiceImpl implements TripService {
         return get(tripUpdateDTO.getTripId());
     }
 
+    @Override
+    public int deleteTrip(int tripId) {
+        return mapper.deleteTrip(tripId);
+    }
 }
