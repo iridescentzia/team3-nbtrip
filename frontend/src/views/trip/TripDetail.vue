@@ -10,16 +10,18 @@
       v-model:activeTab="activeTab"
       :trip-id="tripStore.currentTrip.tripId"
       :trip-status="tripStore.currentTrip.tripStatus"
+      :on-delete="handleDelete"
+      :is-owner="isOwner"
       showEdit
     />
     <div v-if="activeTab === '그룹 지출 내역' || activeTab === '선결제 내역'">
       <Summary
-        v-if="tripStore.currentTrip"
-        :amount="totalAmount"
-        :budget="tripStore.currentTrip.budget"
-        :onTerminate="handleTripTerminate"
-        :isOwner="isOwner"
-        :isClosed="isClosed"
+          v-if="tripStore.currentTrip"
+          :amount="totalAmount"
+          :budget="tripStore.currentTrip.budget"
+          :on-terminate="handleTripTerminate"
+          :is-owner="isOwner"
+          :is-closed="isClosed"
       >
       </Summary>
 
@@ -216,6 +218,14 @@ const handleTripTerminate = async () => {
   }
 };
 
+const handleDelete = async () => {
+  const tripId = route.params.tripId;
+  await tripApi.deleteTrip(Number(tripId));
+  console.log("id: "+tripId+" 여행 삭제");
+  alert("여행이 삭제되었습니다.");
+  await router.replace(`/`);
+}
+
 // 정산 필요 여부 확인 함수
 const checkIfSettlementNeeded = async () => {
   try {
@@ -264,11 +274,8 @@ onMounted(async () => {
   if (tripStore.currentTrip) {
     await tripStore.fetchCurrentTripMemberNicknames();
     await checkIsOwner();
-    tripStore.currentTrip.tripStatus === 'ACTIVE'
-      ? (title.value = '진행 중인 여행')
-      : tripStore.currentTrip.tripStatus === 'READY'
-      ? (title.value = '예정된 여행')
-      : (title.value = '종료된 여행');
+    tripStore.currentTrip.tripStatus === 'ACTIVE' ? title.value = '진행 중인 여행' :
+        tripStore.currentTrip.tripStatus === 'READY' ? title.value = '예정된 여행' : title.value = '지난 여행'
   }
   if (tripStore.currentTrip.tripStatus === 'CLOSED') {
     isClosed.value = true;

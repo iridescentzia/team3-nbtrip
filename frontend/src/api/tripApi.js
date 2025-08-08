@@ -102,4 +102,7 @@ export default {
         const { data } = await api.get(`${BASE_URL}/${tripId}/isOwner`);
         return data;
     },
+    async deleteTrip(tripId) {
+        await api.delete(`${BASE_URL}/${tripId}/delete`);
+    }
 }
