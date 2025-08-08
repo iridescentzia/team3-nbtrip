@@ -473,20 +473,20 @@ const handleDelete = async () => {
       v-if="!isLoading && paymentType !== 'QR'">
       <Trash2 class="icon trash-icon" />
     </button>
-    
+
     <button class="save-button" @click="handleSave">저장</button>    
   </footer>
   
   <Transition name="slide-up">
     <div v-if="isDeleteModalVisible" class="modal">
       <div style="margin-bottom: 16px; text-align: center">
-        <p style="font-size: 16px; font-weight: bold;">결제 내역을 삭제하시겠어요?</p>
-        <p style="font-size: 14px; color: gray;">삭제된 결제는 복구할 수 없어요.</p>
+        <p style="font-size: 20px; font-weight: bold;">⚠️ 결제 내역을 삭제하시겠어요?</p>
+        <p style="font-size: 16px; color: gray; padding-bottom:25px;">삭제된 결제는 복구할 수 없어요.</p>
       </div>
 
       <div style="display: flex; justify-content: space-between;">
-        <button class="delete-button" @click="isDeleteModalVisible = false">취소</button>
-        <button class="save-button" @click="handleDelete">삭제</button>
+        <button class="cancle-button" @click="isDeleteModalVisible = false">취소</button>
+        <button class="ok-button" @click="handleDelete">삭제</button>
       </div>
     </div>
   </Transition>
@@ -549,11 +549,12 @@ const handleDelete = async () => {
   background: #fff;
   border: 2px solid #e2e8f0;
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 8px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
+   margin-left: auto; /* 오른쪽 정렬 */
 }
 
 .input-text,
@@ -609,18 +610,22 @@ input[type="number"]::-webkit-outer-spin-button {
   position: relative;
   flex-wrap: wrap;
   gap: 10px;
+  justify-content: space-between; /* 왼쪽/오른쪽 정렬 */
+  
 }
 
 .badge {
   background: rgba(255, 209, 102, 0.65);
   border-radius: 9999px;
   color: white;
-  font-weight: bold;
+  font-weight:600;
   width: 40px;
   height: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 20px;
+  
 }
 
 .name {
@@ -628,6 +633,9 @@ input[type="number"]::-webkit-outer-spin-button {
   font-weight: 600;
   color: #4a4a4a;
   min-width: 70px;
+  padding-left:3px;
+  font-size: 19px;
+  transform: translateY(-1px); /* 아래로 2px 이동 */  
 }
 
 .toggle-wrapper {
@@ -757,6 +765,21 @@ input[type="number"]::-webkit-outer-spin-button {
     bottom: 0;
     opacity: 1;
   }
+}
+
+.cancle-button,
+.ok-button {
+  background-color: #FFE499;
+  border-radius: 12px;
+  padding: 16px 24px;
+  font-weight: 1000;
+  border: none;
+  flex: 9;
+  margin-left: 8px;
+  font-size: 17px;
+  color: #4A4A4A;
+  cursor: pointer;
+
 }
 
 /* transition 이름은 "slide-up" */
