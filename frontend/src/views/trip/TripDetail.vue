@@ -262,7 +262,7 @@ onMounted(async () => {
     await tripStore.fetchCurrentTripMemberNicknames()
     await checkIsOwner();
     tripStore.currentTrip.tripStatus === 'ACTIVE' ? title.value = '진행 중인 여행' :
-        tripStore.currentTrip.tripStatus === 'READY' ? title.value = '예정된 여행' : title.value = '종료된 여행'
+        tripStore.currentTrip.tripStatus === 'READY' ? title.value = '예정된 여행' : title.value = '지난 여행'
   }
   if(tripStore.currentTrip.tripStatus === 'CLOSED'){
     isClosed.value = true;
