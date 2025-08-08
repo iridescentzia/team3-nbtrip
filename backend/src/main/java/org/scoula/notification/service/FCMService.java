@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 
 @Service
 public class FCMService {
@@ -40,20 +41,30 @@ public class FCMService {
     }
 
     // 2) 푸시알림 보내기
-    public void sendPushNotification(String targetToken, String title, String body) throws IOException {
+    public void sendPushNotification(String targetToken, String title, String body, Map<String, String> data) throws IOException {
         System.out.println("=== FCM Push Send Start ===");
         System.out.println("Target Token: " + targetToken);
         System.out.println("Title: " + title);
         System.out.println("Body: " + body);
+        System.out.println("Data: " + data);
 
         JsonObject message = new JsonObject();
         JsonObject notification = new JsonObject();
         notification.addProperty("title", title);
         notification.addProperty("body", body);
 
+        // data JSON 구성
+        JsonObject dataObj = new JsonObject();
+        if (data != null) {
+            for (Map.Entry<String, String> e : data.entrySet()) {
+                dataObj.addProperty(e.getKey(), e.getValue());
+            }
+        }
+
         JsonObject messageObj = new JsonObject();
         messageObj.add("notification", notification);
         messageObj.addProperty("token", targetToken); // 대상 디바이스 토큰
+        messageObj.add("data", dataObj); // 라우팅용 data
 
         message.add("message", messageObj);
 

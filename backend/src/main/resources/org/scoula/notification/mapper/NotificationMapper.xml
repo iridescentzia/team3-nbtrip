@@ -19,8 +19,15 @@
                p.payment_type AS paymentType,
                n.notification_type AS notificationType,
                CASE
-                   WHEN n.notification_type = 'TRANSACTION_CREATE' THEN 'CREATE'
-                   WHEN n.notification_type = 'TRANSACTION_UPDATE' THEN 'UPDATE'
+                WHEN n.notification_type = 'TRANSACTION' AND n.payment_id IS NOT NULL
+                    AND EXISTS (
+                        SELECT 1 FROM notification n2
+                        WHERE n2.payment_id = n.payment_id
+                        AND n2.user_id   = n.user_id
+                        AND n2.trip_id   = n.trip_id
+                        AND n2.notification_type = 'TRANSACTION'
+                        AND n2.notification_id &lt; n.notification_id
+                    ) THEN 'UPDATE'
                    WHEN n.notification_type = 'TRANSACTION' THEN 'CREATE'
                    WHEN n.notification_type = 'SETTLEMENT' AND s.settlement_status = 'COMPLETED' THEN 'SEND'
                    ELSE NULL
@@ -64,8 +71,15 @@
                p.payment_type AS paymentType,
                n.notification_type AS notificationType,
                case
-                   WHEN n.notification_type = 'TRANSACTION_CREATE' THEN 'CREATE'
-                   WHEN n.notification_type = 'TRANSACTION_UPDATE' THEN 'UPDATE'
+                    WHEN n.notification_type = 'TRANSACTION' AND n.payment_id IS NOT NULL
+                        AND EXISTS (
+                            SELECT 1 FROM notification n2
+                            WHERE n2.payment_id = n.payment_id
+                                AND n2.user_id   = n.user_id
+                                AND n2.trip_id   = n.trip_id
+                                AND n2.notification_type = 'TRANSACTION'
+                                AND n2.notification_id &lt; n.notification_id
+                        ) THEN 'UPDATE'
                    WHEN n.notification_type = 'TRANSACTION' THEN 'CREATE'
                    ELSE NULL
                    END AS actionType,
