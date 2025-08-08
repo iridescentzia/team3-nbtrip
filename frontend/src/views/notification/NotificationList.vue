@@ -40,11 +40,12 @@ const goToPage = (n) => {
       router.push(`/settlement/${n.tripId}/detail`);
       break;
     case 'INVITE':
-      if (!n.memberStatus) {
-        router.push(`/trip/join/${n.tripId}`)
-      } else {
-        router.push(`/trip/${n.tripId}`)
-      }
+      router.push(`/trip/join/${n.tripId}`)
+      // if (!n.memberStatus) {
+      //   router.push(`/trip/join/${n.tripId}`)
+      // } else {
+      //   router.push(`/trip/${n.tripId}`)
+      // }
       break;
     default:
       alert('지원하지 않는 알림 유형입니다.');

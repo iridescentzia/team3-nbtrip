@@ -102,22 +102,26 @@ const dateOptions = {
   maintainAspectRatio: false,
   plugins: {
     legend: { position: 'top' },
+    tooltip: {
+      callbacks: {
+        label: function (context) {
+          return `총 지출: ${context.parsed.y.toLocaleString()}원`;
+        },
+      },
+    },
   },
   scales: {
     y: {
       beginAtZero: true,
       ticks: {
-        // ✅ 눈금을 1씩 증가하도록 설정
-        stepSize: 1,
-        // ✅ 소수점 없이 정수만 표시
+        stepSize: 100000, // 필요 시 조정 (10만 단위로 눈금)
         callback: function (value) {
-          return Number.isInteger(value) ? value : null;
+          return value.toLocaleString() + '원';
         },
       },
     },
   },
 };
-
 // 탭 전환 함수
 function switchTab(tab) {
   activeTab.value = tab;
@@ -158,16 +162,12 @@ onMounted(async () => {
       labels: resp.lineData.map((d) => d.date),
       datasets: [
         {
-          label: '건수',
-          data: resp.lineData.map((d) => d.count),
-          fill: false,
-          tension: 0.4,
-        },
-        {
           label: '총 지출',
-          data: resp.lineData.map((d) => d.totalAmount),
+          data: resp.lineData.map((d) => d.total_amount), // ✅ 여기에 주의: camelCase 아님!
           fill: false,
           tension: 0.4,
+          borderColor: '#93c5fd',
+          backgroundColor: '#93c5fd',
         },
       ],
     };

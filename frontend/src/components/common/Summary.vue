@@ -3,7 +3,7 @@
     <div class="summary-header">
       <span class="label">총 사용 금액</span>
       <button
-          v-if="isOwner"
+          v-if="isOwner && !isClosed"
           class="terminate"
           small
           @click="openTerminateModal"
@@ -81,6 +81,10 @@ const props = defineProps({
     required: false
   },
   isOwner: {
+    type: Boolean,
+    default: false
+  },
+  isClosed: {
     type: Boolean,
     default: false
   }

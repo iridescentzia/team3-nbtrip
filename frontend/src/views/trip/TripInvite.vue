@@ -101,7 +101,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <Header title="멤버 초대하기"/>
+  <Header title="멤버 초대하기" @back="router.back"/>
   <div class="content-container">
     <div class="info-box">
       <p class="trip_title">{{store.tripName}}</p>

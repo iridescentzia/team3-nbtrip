@@ -1,17 +1,18 @@
 <template>
-  <Header title="진행 중인 여행" @back="router.back" />
+  <Header :title="title" @back="router.back"/>
   <div class="content-container">
     <!-- 현재 userId = 1인 여행만 보임 (TripController) -->
     <TravelCard
+
       v-if="tripStore.currentTrip"
       :trip-name="tripStore.currentTrip.tripName"
       :start-date="formatDate(tripStore.currentTrip.startDate)"
       :end-date="formatDate(tripStore.currentTrip.endDate)"
       v-model:activeTab="activeTab"
+      :trip-id="tripStore.currentTrip.tripId"
+      :trip-status="tripStore.currentTrip.tripStatus"
       showEdit
     />
-
-
     <div v-if="activeTab === '그룹 지출 내역' || activeTab === '선결제 내역'">
       <Summary
           v-if="tripStore.currentTrip"
@@ -19,29 +20,53 @@
           :budget="tripStore.currentTrip.budget"
           :onTerminate="handleTripTerminate"
           :isOwner="isOwner"
+          :isClosed="isClosed"
       >
       </Summary>
 
       <Filter
-        v-if="tripStore.currentTrip"
-        :start-date="formatDate(tripStore.currentTrip.startDate)"
-        :members="tripStore.currentTripMembers"
-        @date-filtered="onDateFiltered"
-        @participant-filtered="onParticipantFiltered"
-        @category-filtered="onCategoryFiltered"
+          v-if="tripStore.currentTrip"
+          :start-date="formatDate(tripStore.currentTrip.startDate)"
+          :members="tripStore.currentTripMembers"
+          @date-filtered="onDateFiltered"
+          @participant-filtered="onParticipantFiltered"
+          @category-filtered="onCategoryFiltered"
       />
       <PaymentListInfo
-        :date-range="selectedDateRange"
-        :selected-participants="selectedParticipants"
-        :selected-categories="selectedCategories"
-        :active-tab="activeTab"
-        @init-total="onInitTotal"
+          :date-range="selectedDateRange"
+          :selected-participants="selectedParticipants"
+          :selected-categories="selectedCategories"
+          :active-tab="activeTab"
+          @init-total="onInitTotal"
       />
     </div>
-    <TripEdit v-else @saveSuccess="handleSaveSuccess" />
+    <div v-else>
+      <TripEdit ref="updateTrip" />
+    </div>
   </div>
-  <!-- 고정 버튼 -->
-  <button class="floating-add-button" @click="goToRegister">+ 결제 추가</button>
+
+  <!--  TODO : 앞 두 버튼에 올바른 라우팅 적용하기  -->
+
+  <button
+      v-if=" !isClosed && activeTab === '그룹 지출 내역'"
+      class="floating-button"
+      @click="goToRegister">
+    + 기타 결제
+  </button>
+
+  <button
+      v-if=" !isClosed && activeTab === '선결제 내역'"
+      class="floating-button"
+      @click="goToRegister">
+    + 선결제 추가
+  </button>
+
+  <button
+      v-if=" !isClosed && activeTab === '그룹 관리'"
+      class="floating-button"
+      @click="callChildUpdate">
+    저장하기
+  </button>
 </template>
 
 <script setup>
@@ -49,8 +74,9 @@ import Header from '@/components/layout/Header.vue';
 import TravelCard from '@/components/common/TravelCard.vue';
 import Filter from '@/components/paymentlist/Filter.vue';
 
-import { onMounted, ref } from 'vue';
-import { usePaymentListStore } from '@/stores/tripStore.js';
+
+import {onMounted, ref} from 'vue';
+import {usePaymentListStore} from "@/stores/tripStore.js";
 import { useRouter, useRoute } from 'vue-router';
 import Summary from '@/components/common/Summary.vue';
 import PaymentListInfo from "@/views/paymentlist/PaymentListInfo.vue";
@@ -63,9 +89,19 @@ const router = useRouter();
 const route = useRoute();
 const tripStore = usePaymentListStore();
 const activeTab = ref('그룹 지출 내역');
+const updateTrip = ref(null);
 const isOwner = ref(false);
+const title = ref('');
+const isClosed = ref(false);
 
-// 그룹장 여부 확인 함수
+const callChildUpdate = async () => {
+  if(updateTrip.value){
+    await updateTrip.value.handleUpdate();
+    await tripStore.fetchTrip(route.params.tripId);
+    activeTab.value = '그룹 지출 내역'
+  }
+}
+
 const checkIsOwner = async () => {
   try {
     const tripId = route.params.tripId;
@@ -86,6 +122,7 @@ const goToRegister = () => {
   });
 };
 
+
 const formatDate = (dateInput) => {
   let date;
 
@@ -99,49 +136,47 @@ const formatDate = (dateInput) => {
   }
 
   return date
-    .toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      timeZone: 'Asia/Seoul',
-    })
-    .replace(/\.\s/g, '.')
-    .replace(/\.$/, '');
+      .toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        timeZone: 'Asia/Seoul',
+      })
+      .replace(/\.\s/g, '.')
+      .replace(/\.$/, '');
 };
 
+
 // Filter.vue에서 emit된 ref
-const selectedDateRange = ref({ start: '', end: '' });
+const selectedDateRange = ref({ start: '', end: '' })
 const selectedParticipants = ref([]); // 선택된 참여자 userId 배열
-const selectedCategories = ref([]);
+const selectedCategories = ref([])
 
 const tripMembers = ref([]);
-const totalAmount = ref(0);
+const totalAmount = ref(0)
 
 // Filter.vue로부터 'date-filtered' 이벤트 전달받는 핸들러
 function onDateFiltered(range) {
-  console.log('[PaymentList.vue] 받은 날짜 범위:', range);
+  console.log('[PaymentList.vue] 받은 날짜 범위:', range)
   // 부모 컴포넌트가 선택된 날짜 값을 보관
-  selectedDateRange.value = range;
+  selectedDateRange.value = range
 }
 
 // PaymentListInfo에서 전체 총액을 보내줄 때만 저장
-function onInitTotal(amount) {
-  totalAmount.value = amount;
+function onInitTotal(amount){
+  totalAmount.value = amount
 }
 
-function onParticipantFiltered(userIds) {
+function onParticipantFiltered(userIds){
   console.log('[Paymentlist.vue] 선택된 결제 참여자: ', userIds);
   selectedParticipants.value = userIds;
 }
 
-function onCategoryFiltered(categoryIds) {
-  console.log('[PaymentList.vue] 선택된 카테고리: ', categoryIds);
-  selectedCategories.value = categoryIds;
+function onCategoryFiltered(categoryIds){
+  console.log('[PaymentList.vue] 선택된 카테고리: ', categoryIds)
+  selectedCategories.value = categoryIds
 }
-const handleSaveSuccess = (updatedTrip) => {
-  console.log('부모에서 이벤트 감지됨:', updatedTrip);
-  tripStore.fetchTrip(route.params.tripId);
-};
+
 
 // PaymentList.vue의 handleTripTerminate 함수 수정
 const handleTripTerminate = async () => {
@@ -217,8 +252,14 @@ onMounted(async () => {
   if (tripStore.currentTrip) {
     await tripStore.fetchCurrentTripMemberNicknames()
     await checkIsOwner();
+    tripStore.currentTrip.tripStatus === 'ACTIVE' ? title.value = '진행 중인 여행' :
+        tripStore.currentTrip.tripStatus === 'READY' ? title.value = '예정된 여행' : title.value = '종료된 여행'
+  }
+  if(tripStore.currentTrip.tripStatus === 'CLOSED'){
+    isClosed.value = true;
   }
 });
+
 </script>
 
 <style scoped>
@@ -253,16 +294,16 @@ onMounted(async () => {
   background-color: #888;
 }
 
-.floating-add-button {
+.floating-button {
   position: sticky;
   bottom: 80px;
-  left: 77%;
+  left: 85%;
   transform: translateX(-50%); /* 가운데 정렬 */
   width: 120px;
   max-width: 384px;
 
   background-color: rgb(255, 217, 130);
-  color: #4a4a4a;
+  color: #4A4A4A;
   font-weight: bold;
   font-size: 16px;
   padding: 14px 0;
@@ -275,11 +316,12 @@ onMounted(async () => {
   font-family: 'IBM Plex Sans KR', sans-serif;
 }
 
-.floating-add-button:hover {
-  background-color: #ffd166;
+.floating-button:hover {
+  background-color: #FFD166;
 }
 
-.floating-add-button:active {
+.floating-button:active {
   transform: translateX(-50%) scale(0.95);
 }
+
 </style>
