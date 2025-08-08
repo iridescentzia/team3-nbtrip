@@ -206,6 +206,7 @@ const handleTripTerminate = async () => {
   }
 };
 
+//삭제 버튼 클릭 처리하는 함수
 const handleDelete = async () => {
   const tripId = route.params.tripId;
   await tripApi.deleteTrip(Number(tripId));
