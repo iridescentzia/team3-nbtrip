@@ -57,18 +57,11 @@ public class PaymentController {
     public ResponseEntity<String> registerPrepaidPayment(@RequestBody PaymentDTO paymentDTO, @AuthenticationPrincipal CustomUser customUser) {
         Integer userId = customUser.getUserId();
         try {
-            List<TripDTO> trips = tripService.getJoinedTrips(userId);
-            TripDTO currentTrip = new TripDTO();
-            for(TripDTO trip : trips) {
-                if ((trip.getStartDate().isBefore(LocalDate.now()) || trip.getStartDate().isEqual(LocalDate.now())) &&
-                        (trip.getEndDate().isAfter(LocalDate.now()) || trip.getEndDate().isEqual(LocalDate.now())) &&
-                        trip.getTripStatus() == TripStatus.ACTIVE) {
-                    currentTrip = trip;
-                }
-            }
-            int tripId = currentTrip.getTripId();
+            int tripId = paymentDTO.getTripId();
+
             paymentDTO.setPaymentType(org.scoula.payment.domain.PaymentType.PREPAID);
             paymentService.registerManualPayment(paymentDTO, userId, tripId);
+
             return ResponseEntity.ok("선결제 등록 완료");
         } catch(RuntimeException e) {
             log.error("선결제 등록 실패: {}", e.getMessage());
