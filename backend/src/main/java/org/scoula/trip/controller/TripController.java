@@ -116,6 +116,14 @@ public class TripController {
         tripUpdateDTO.setTripId(tripId); // URL값 우선
         return ResponseEntity.ok().body(service.updateTrip(tripUpdateDTO));
     }
+    @DeleteMapping("/{tripId}/delete")
+    public ResponseEntity<Integer> deleteTrip(@AuthenticationPrincipal CustomUser customUser, @PathVariable int tripId){
+        if(service.isOwner(tripId, customUser.getUserId())){
+            return ResponseEntity.ok().body(service.deleteTrip(tripId));
+        }
+        else
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);
+    }
 
     @PostMapping("")
     public ResponseEntity<TripDTO> createTrip(@AuthenticationPrincipal CustomUser customUser, @RequestBody TripCreateDTO tripCreateDTO) {

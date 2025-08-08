@@ -96,6 +96,11 @@
           AND t.trip_status = #{status}
     </select>
 
+    <delete id="deleteTrip">
+        DELETE FROM trip
+        WHERE trip_id = #{tripId}
+    </delete>
+
     <resultMap id="tripMap" type="org.scoula.trip.domain.TripVO">
         <id property="tripId" column="trip_id" />
         <result property="ownerId" column="owner_id" />
