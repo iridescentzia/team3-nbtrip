@@ -18,7 +18,6 @@ const date = ref({});
 const members = ref([]);
 const newTitle = ref("");
 const store = usePaymentListStore();
-const emit = defineEmits(["saveSuccess"]);
 
 const formatDate = (date) => {
   if (!date) return null;
@@ -31,6 +30,7 @@ const formatDate = (date) => {
 
 const handleUpdate = async () => {
   // VueDatePicker에서 start/end 날짜 추출
+  console.log("exposed clicked");
   const [startDate, endDate] = date.value && Array.isArray(date.value)
       ? date.value.map(formatDate)
       : [tripDetail.value.startDate, tripDetail.value.endDate];
@@ -57,7 +57,6 @@ const handleUpdate = async () => {
   try {
     await tripApi.updateTrip(params);
     alert("여행 정보가 성공적으로 업데이트되었습니다.");
-    emit("saveSuccess");
   } catch (error) {
     console.error("업데이트 실패:", error);
     alert("업데이트 중 오류가 발생했습니다.");
@@ -78,6 +77,7 @@ const load = async () => {
   } catch (e) {
     console.error('비활성화 날짜 불러오기 실패:', e);
   }
+  newTitle.value = data.tripName;
   tripStatus.value = data.tripStatus;
 
   // MemberResponseDTO 정보 + 현재 회원상태 적용
@@ -93,9 +93,13 @@ const load = async () => {
       })
   );
 
-  console.log(data.members);
-  console.log(members.value);
+  date.value = [store.currentTrip.startDate, store.currentTrip.endDate];
+
 };
+
+defineExpose({
+  handleUpdate
+});
 
 onMounted(async ()=>{
   await load();
@@ -118,6 +122,7 @@ onMounted(async ()=>{
       :range="{ noDisabledRange: true }"
       :enable-time-picker="false"
       :disabled-dates="disableDates"
+      :min-date="new Date()"
       locale="ko"
       cancelText="취소"
       selectText="선택"
@@ -142,7 +147,6 @@ onMounted(async ()=>{
       </select>
     </div>
   </div>
-  <button class="floating-pill-button" @click="handleUpdate">저장</button>
 </template>
 
 <style scoped>
@@ -194,7 +198,11 @@ onMounted(async ()=>{
   color: var(--theme-text-light);
 }
 
-div{
-  color: var(--theme-text);
+</style>
+
+<!--scoped에선 datepicker에 대한 커스터마이징이 먹히지 않아서 관련 내용 style에 정의-->
+<style>
+.dp__theme_light {
+  --dp-primary-color: var(--theme-primary);
 }
 </style>

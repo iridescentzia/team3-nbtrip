@@ -45,7 +45,7 @@ export default {
     },
     async isAvailableDate(startDate, endDate) {
         const response = await api.get(`${BASE_URL}/`);
-        const data = response.data;
+        const data = response.data.filter(item => item.tripStatus !== 'INVITED');
 
         console.log("data:", data);
 

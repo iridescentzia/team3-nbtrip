@@ -20,9 +20,10 @@ export const usePaymentListStore = defineStore('paymentList', () => {
 
     // 현재 tripApi는 userId = 1인 trip만 불러옴
     // 여행 목록 불러오기
-    const fetchTrip = async (tripId) => {
-        currentTrip.value = await tripApi.getTripDetail(tripId);
-    };
+    async function fetchTrip(tripId) {
+        const data = await tripApi.getTripDetail(tripId);
+        currentTrip.value = { ...data }; // 새 객체로 할당 => Vue가 리액티브 감지
+    }
 
     const parseKSTDate = (dateStr) => {
         const [year, month, day] = dateStr.split('-').map(Number);
