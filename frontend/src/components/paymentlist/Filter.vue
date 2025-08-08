@@ -95,8 +95,8 @@
     class="overlay"
     @click.self="closeParticipantModal"
   >
-    <transition name="slide-up" appear>
-      <div class="bottom-modal">
+    <Transition name="slide-up" appear>
+      <div class="modal">
         <h3 class="modal-title">결제 참여자</h3>
         <div class="member-list">
           <label
@@ -114,12 +114,12 @@
         </div>
         <Button @click="applyParticipantFilter" label="조회하기"></Button>
       </div>
-    </transition>
+    </Transition>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, Transition } from 'vue';
 import { ChevronDown, RotateCcw } from 'lucide-vue-next';
 import {usePaymentListStore} from "@/stores/tripStore.js";
 import Button from '@/components/common/Button.vue';
@@ -345,6 +345,30 @@ onMounted(async () => {
   z-index: 20;
   height: 25vh; /* viewport height: 18% */
    max-height: 30vh; /* 최대 높이 제한 */  
+}
+
+.modal {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 352px;
+  background-color: #ffffff;
+  border-radius: 16px 16px 0 0;
+  padding: 16px 8px 24px 16px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  animation: modalUp 0.25s ease;
+}
+
+@keyframes modalUp {
+  from {
+    bottom: -300px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0;
+    opacity: 1;
+  }
 }
 
 .modal-title{
