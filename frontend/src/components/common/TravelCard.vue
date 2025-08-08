@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { FileChartColumn, Trash2 } from 'lucide-vue-next';
+import { FileChartColumn, Trash2, TriangleAlert } from 'lucide-vue-next';
 import { useRouter, useRoute } from 'vue-router';
 import apiClient from '@/api/index.js';
 
@@ -11,6 +11,8 @@ const props = defineProps({
   endDate: String,
   activeTab: String,
   tripStatus: String,
+  isOwner: Boolean,
+  onDelete: Function,
 });
 
 const emit = defineEmits(['update:activeTab']);
@@ -49,6 +51,28 @@ async function goToChart() {
     alert('서버 오류가 발생했습니다. 다시 시도해주세요.');
   }
 }
+
+// 상태: 여행 종료 모달
+const showDeleteModal = ref(false)
+
+// 여행 종료 모달 열기
+const openDeleteModal = () => {
+  showDeleteModal.value = true
+}
+
+// 여행 종료 모달 취소
+const cancelDelete = () => {
+  showDeleteModal.value = false
+}
+
+// 여행 종료 확인
+const confirmDelete = () => {
+  showDeleteModal.value = false
+  if (props.onDelete) {
+    props.onDelete()
+  }
+}
+
 </script>
 
 <template>
@@ -68,7 +92,11 @@ async function goToChart() {
       </div>
 
       <!-- 오른쪽: 휴지통 아이콘 -->
-      <Trash2 class="icon trash-icon" />
+      <Trash2
+          class="icon trash-icon"
+          @click="openDeleteModal"
+          v-if="tripStatus === 'READY' && isOwner === true"
+      />
     </div>
 
     <!-- 카드 구분선 -->
@@ -84,6 +112,32 @@ async function goToChart() {
         @click="selectTab(tab)"
       >
         {{ tab }}
+      </div>
+    </div>
+    <div
+        v-if="showDeleteModal"
+        class="modal-overlay"
+        @click="cancelDelete"
+    >
+      <div class="delete-modal" @click.stop>
+        <!-- 아이콘 -->
+        <div class="modal-icon"></div>
+
+        <!-- 메인 메시지 -->
+        <h3 class="modal-title">
+          <TriangleAlert />  정말로 여행을 삭제하시겠습니까?
+        </h3>
+
+        <!-- 설명 텍스트 -->
+        <p class="modal-description">
+          지금까지의 모든 내역이 사라집니다.
+        </p>
+
+        <!-- 버튼들 -->
+        <div class="modal-buttons">
+          <button @click="cancelDelete" class="modal-cancel-btn">취소하기</button>
+          <button @click="confirmDelete" class="modal-confirm-btn">삭제하기</button>
+        </div>
       </div>
     </div>
   </div>
@@ -218,5 +272,152 @@ async function goToChart() {
   background-color: #ff6b6b; /* 연한 빨간색 */
   border-radius: 50%;
   border: 2px solid white; /* 외곽 경계 */
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  z-index: 1100;
+  animation: fadeIn 0.3s ease-out;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.delete-modal {
+  width: 100%;
+  max-width: 325px;
+  height: auto;
+  min-height: 230px;
+  background: white;
+  border-radius: 1.5rem;
+  box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.24);
+  padding: 28px 40px 36px 40px;
+  position: relative;
+  animation: slideUpFromBottom 0.3s ease-out;
+}
+
+.modal-icon {
+  width: 40px;
+  height: 40px;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1f2937;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  margin: 0 0 16px 0;
+}
+
+.modal-description {
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  margin: 0 0 28px 0;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.modal-cancel-btn,
+.modal-confirm-btn {
+  flex: 1;
+  height: 48px;
+  background: rgba(255, 209, 102, 0.65);
+  border-radius: 12px;
+  border: none;
+  color: #374151;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-cancel-btn:hover,
+.modal-confirm-btn:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+.modal-cancel-btn:active,
+.modal-confirm-btn:active {
+  transform: translateY(0);
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUpFromBottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 반응형 대응 */
+@media (max-width: 480px) {
+  .delete-modal {
+    padding: 24px 20px 32px 20px;
+    margin: 0 auto;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+  }
+
+  .modal-buttons {
+    gap: 8px;
+    max-width: none;
+  }
+
+  .modal-cancel-btn,
+  .modal-confirm-btn {
+    height: 44px;
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 768px) {
+  .delete-modal {
+    max-width: 325px;
+    margin: 0 auto;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+  }
 }
 </style>
