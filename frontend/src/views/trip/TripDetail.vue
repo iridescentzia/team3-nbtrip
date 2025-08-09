@@ -1,6 +1,6 @@
-<template>
-  <Header :title="title" @back="router.back" />
+<template>  
   <div class="content-container">
+    <Header :title="title" @back="router.back"/>
     <!-- 현재 userId = 1인 여행만 보임 (TripController) -->
     <TravelCard
       v-if="tripStore.currentTrip"
@@ -14,6 +14,7 @@
       :is-owner="isOwner"
       showEdit
     />
+
     <div v-if="activeTab === '그룹 지출 내역' || activeTab === '선결제 내역'">
       <Summary
           v-if="tripStore.currentTrip"
@@ -44,33 +45,29 @@
     <div v-else>
       <TripEdit ref="updateTrip" />
     </div>
+
+      <!--  TODO : 앞 두 버튼에 올바른 라우팅 적용하기  -->
+    <button
+      v-if=" !isClosed && activeTab === '그룹 지출 내역'"
+      class="floating-button"
+      @click="goToRegister">
+      +  기타 결제
+    </button>
+
+    <button
+        v-if=" !isClosed && activeTab === '선결제 내역'"
+        class="floating-button"
+        @click="goToRegister">
+      + 선결제 
+    </button>
+
+    <button
+        v-if=" !isClosed && activeTab === '그룹 관리'"
+        class="floating-button"
+        @click="callChildUpdate">
+      저장하기
+    </button>
   </div>
-
-  <!--  TODO : 앞 두 버튼에 올바른 라우팅 적용하기  -->
-
-  <button
-    v-if="!isClosed && activeTab === '그룹 지출 내역'"
-    class="floating-button"
-    @click="goToOtherRegister"
-  >
-    + 기타 결제
-  </button>
-
-  <button
-    v-if="!isClosed && activeTab === '선결제 내역'"
-    class="floating-button"
-    @click="goToPrepaidRegister"
-  >
-    + 선결제 추가
-  </button>
-
-  <button
-    v-if="!isClosed && activeTab === '그룹 관리'"
-    class="floating-button"
-    @click="callChildUpdate"
-  >
-    저장하기
-  </button>
 </template>
 
 <script setup>
@@ -317,14 +314,14 @@ onMounted(async () => {
 
 .floating-button {
   position: sticky;
-  bottom: 80px;
-  left: 85%;
-  transform: translateX(-50%); /* 가운데 정렬 */
+  bottom: 50px;
+  left: 57%;
+  /* transform: translateX(-50%); 가운데 정렬 */
   width: 120px;
   max-width: 384px;
 
-  background-color: rgb(255, 217, 130);
-  color: #4a4a4a;
+  background-color: #FFE499;
+  color: #4A4A4A;
   font-weight: bold;
   font-size: 16px;
   padding: 14px 0;
@@ -342,6 +339,6 @@ onMounted(async () => {
 }
 
 .floating-button:active {
-  transform: translateX(-50%) scale(0.95);
+  /* transform: translateX(-50%) scale(0.95); */
 }
 </style>
