@@ -49,19 +49,20 @@ const payments = ref([]); // 서버에서 받아온 전체 결제 내역
 
 // 필터링된 결제 내역
 const filteredPayments = computed(() => {
-  const { start, end } = props.dateRange;
-  console.log('[PaymentListInfo.vue] 현재 dateRange:', start, end);
+
+  const { start, end } = props.dateRange
+  // console.log('[PaymentListInfo.vue] 현재 dateRange:', start, end)
 
   let result = payments.value;
   console.log('원래 payments 수:', payments.value.length);
 
-  // 탭
-  if (props.activeTab === '그룹 지출 내역') {
-    result = result.filter(
-      (p) => p.paymentType === 'QR' || p.paymentType === 'OTHER'
-    );
+  // 탭 필터
+   if (props.activeTab === '그룹 지출 내역') {
+    result = result.filter(p => p.paymentType === 'QR' || p.paymentType === 'OTHER');
+    console.log('[DEBUG] 탭 필터 후:', result.length);
   } else if (props.activeTab === '선결제 내역') {
-    result = result.filter((p) => p.paymentType === 'PREPAID');
+    result = result.filter(p => p.paymentType === 'PREPAID');
+    console.log('[DEBUG] 탭 필터 후:', result.length);
   }
 
   // 날짜 필터
@@ -90,8 +91,22 @@ const filteredPayments = computed(() => {
 
   // 결제 참여자 필터
   if (props.selectedParticipants.length > 0) {
-    const selectedIds = props.selectedParticipants.map(String);
-    result = result.filter((p) => selectedIds.includes(String(p.userId)));
+    const selectedIds = props.selectedParticipants.map(String); 
+    
+      // 디버깅 로그
+    result.forEach(p => {
+      const matched = Array.isArray(p.participants) &&
+        p.participants.some(participant =>
+          selectedIds.includes(String(participant.userId))
+        );
+      // console.log(`[FILTER] paymentId=${p.paymentId}, matched=${matched}, participants=`, p.participants);
+    });
+    result = result.filter(p =>
+      Array.isArray(p.participants) && // participants가 undefined일 경우 방지
+      p.participants.some(participant => // participants 중 하나라도 해당되면 true
+        selectedIds.includes(String(participant.userId))
+      )
+    )
     console.log('결제 참여자 필터링 후 수:', result.length);
   }
 
