@@ -224,7 +224,7 @@
                  JOIN users receiver ON s.receiver_id = receiver.user_id
         WHERE s.trip_id = #{tripId}
           AND (s.sender_id = #{userId} OR s.receiver_id = #{userId})
-        ORDER BY s.settlement_id
+        ORDER BY s.amount DESC
     </select>
 
     <!-- 특정 사용자가 특정 여행에서 보내야 할 정산들만 조회 -->
@@ -243,7 +243,7 @@
                  JOIN users receiver ON s.receiver_id = receiver.user_id
         WHERE s.trip_id = #{tripId}
           AND s.sender_id = #{userId}
-        ORDER BY s.settlement_id
+        ORDER BY s.amount DESC
     </select>
 
     <!-- 특정 사용자가 특정 여행에서 받아야 할 정산들만 조회 -->
