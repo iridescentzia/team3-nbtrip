@@ -26,7 +26,7 @@
       >
       </Summary>
 
-      <Filter
+      <Filter2
         v-if="tripStore.currentTrip"
         :start-date="formatDate(tripStore.currentTrip.startDate)"
         :members="tripStore.currentTripMembers"
@@ -74,6 +74,7 @@
 import Header from '@/components/layout/Header.vue';
 import TravelCard from '@/components/common/TravelCard.vue';
 import Filter from '@/components/paymentlist/Filter.vue';
+import Filter2 from '@/components/paymentlist/Filter2.vue';
 
 import { onMounted, ref } from 'vue';
 import { usePaymentListStore } from '@/stores/tripStore.js';
@@ -95,6 +96,8 @@ const updateTrip = ref(null);
 const isOwner = ref(false);
 const title = ref('');
 const isClosed = ref(false);
+
+
 
 const callChildUpdate = async () => {
   if (updateTrip.value) {
