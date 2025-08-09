@@ -142,12 +142,17 @@ watch(
   }
 );
 
-function formatSub(payer, time) {
-  const t = new Date(time);
-  const h = t.getHours().toString().padStart(2, '0');
-  const m = t.getMinutes().toString().padStart(2, '0');
-  const meridiem = t.getHours() < 12 ? '오전' : '오후';
-  return `${payer} · ${meridiem} ${h}:${m}`;
+function formatSub(payer, payAt) {
+  const time = new Date(payAt);
+
+  const year = time.getFullYear().toString()
+  const month = (time.getMonth() + 1).toString().padStart(2, '0')
+  const day = time.getDate().toString().padStart(2, '0')
+
+  const hour = time.getHours().toString().padStart(2, '0');
+  const minute = time.getMinutes().toString().padStart(2, '0');
+
+  return `${payer} · ${year}-${month}-${day} ${hour}:${minute}`;
 }
 
 // 필터와 무관한 전체 지출 총액

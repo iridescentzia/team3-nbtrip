@@ -348,11 +348,20 @@ const handleDelete = async () => {
       <label class="form-label">내용</label>
       <div class="input-box">
         <input 
+        v-if="paymentType === 'QR'"
         class="input-text"
         v-model="form.content" 
         placeholder="지출 내용을 입력하세요" 
         :disabled="paymentType == 'QR'"
         />
+
+        <input
+          v-else
+          class="input-text"
+          v-model="form.memo"
+          placeholder="지출 내용을 입력하세요"
+        >
+
       </div>
     </div>
 
@@ -452,10 +461,10 @@ const handleDelete = async () => {
     </div>
 
     <!-- 메모 -->
-    <div class="form-section">
+    <div class="form-section" v-if="paymentType ==='QR'">
       <label class="form-label">메모</label>
-      <div class="textarea-box">
-        <textarea
+      <div class="textarea-box" >
+        <textarea          
           v-model="form.memo"
           class="input-text"
           placeholder="상세 내용을 입력하세요..."

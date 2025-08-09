@@ -383,7 +383,7 @@ onMounted(async () => {
   background: #fff;
 
   /* 높이: 내용기반 + 상한 */
-   height: clamp(320px, 40svh, 380px) !important;  
+  height: clamp(320px, 40svh, 380px) !important;  
   max-height: none !important;  
   display: flex;
   flex-direction: column;
@@ -412,6 +412,11 @@ onMounted(async () => {
 
 .modal-title{
   margin-left: 20px;
+}
+
+/* vue3datepicker 입력 필드 글씨 크기 변경 */
+:deep(.dp__input) {
+  font-size: 18px; /* 원하는 크기 */
 }
 
 
