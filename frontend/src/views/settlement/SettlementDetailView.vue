@@ -232,7 +232,14 @@ const confirmTransfer = async () => {
     </footer>
   </div>
 
-  <!-- ✅ 송금하기 모달  -->
+  <!-- ✅ 송금하기 모달 - 오버레이와 블러 처리 추가 -->
+  <div
+      v-if="showTransferModal && buttonState.action === 'transfer'"
+      class="modal-overlay"
+      @click="cancelTransfer"
+  ></div>
+
+  <!-- 모달 -->
   <div
       v-if="showTransferModal && buttonState.action === 'transfer'"
       class="modal"
@@ -240,10 +247,10 @@ const confirmTransfer = async () => {
     <!-- 메인 콘텐츠 -->
     <div
         style="
-      width: calc(100% - 32px);
-      text-align: center;
-      margin: 0 auto 24px auto;
-    "
+        width: calc(100% - 32px);
+        text-align: center;
+        margin: 0 auto 24px auto;
+      "
     >
       <h3 style="font-size: 22px; font-weight: bold; color: #34495e; margin: 0 0 12px 0">
         송금하시겠습니까?
@@ -257,13 +264,13 @@ const confirmTransfer = async () => {
     <!-- 버튼들 -->
     <div
         style="
-      width: calc(100% - 32px);
-      height: 48px;
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin: 0 auto;
-    "
+        width: calc(100% - 32px);
+        height: 48px;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin: 0 auto;
+      "
     >
       <button
           @click="cancelTransfer"
@@ -499,6 +506,20 @@ const confirmTransfer = async () => {
   color: var(--theme-blue);
 }
 
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1099;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 모달 */
 .modal {
   position: absolute;
   left: 50%;
@@ -509,8 +530,18 @@ const confirmTransfer = async () => {
   border-radius: 16px 16px 0 0;
   padding: 16px 16px 24px 16px;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
-  z-index: 1001;
+  z-index: 1100;
   animation: modalUp 0.25s ease;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes modalUp {
