@@ -47,7 +47,7 @@
                  JOIN users sender ON s.sender_id = sender.user_id
                  JOIN users receiver ON s.receiver_id = receiver.user_id
         WHERE s.sender_id = #{userId} OR s.receiver_id = #{userId}
-        ORDER BY s.settlement_id ASC
+        ORDER BY s.settlement_id DESC
     </select>
 
     <!-- 특정 여행 내의 정산 내역 조회 (기존) -->
@@ -72,7 +72,7 @@
                  JOIN users sender ON s.sender_id = sender.user_id
                  JOIN users receiver ON s.receiver_id = receiver.user_id
         WHERE s.trip_id = #{tripId}
-        ORDER BY s.settlement_id DESC
+        ORDER BY s.amount ASC
     </select>
 
     <!-- 단건 정산 조회 (기존) -->
@@ -262,7 +262,7 @@
                  JOIN users receiver ON s.receiver_id = receiver.user_id
         WHERE s.trip_id = #{tripId}
           AND s.receiver_id = #{userId}
-        ORDER BY s.settlement_id
+        ORDER BY s.amount ASC
     </select>
 
     <!-- 사용자별 정산 상태 통계 쿼리 -->
