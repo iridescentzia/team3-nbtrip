@@ -160,23 +160,23 @@
         WHERE trip_id = #{tripId}
     </select>
 
-    <!-- 리마인더 알림 대상 조회 -->
+    <!-- 리마인더 알림 대상 조회: 송금(보낸 사람) 기준 -->
     <select id="findUsersNeedingReminder" resultType="int">
         SELECT DISTINCT sender_id
-        FROM settlement
-        WHERE settlement_status != 'COMPLETED'
-        AND amount > 0
+        FROM settlement s
+        WHERE s.settlement_status IN ('PENDING', 'PROCESSING')
+        AND s.amount > 0
     </select>
 
-    <!-- 리마인더 대상의 trip_id 하나 가져오기 -->
+    <!-- 리마인더 대상의 trip_id 하나 가져오기: sender만 -->
     <select id="findTripIdForUserPendingSettlement" parameterType="int" resultType="int">
         SELECT s.trip_id
         FROM settlement s
-        WHERE (s.sender_id = #{userId} OR s.receiver_id = #{userId})
-          AND s.settlement_status != 'COMPLETED'
-        AND s.amount > 0
+        WHERE s.sender_id = #{userId}
+          AND s.settlement_status IN ('PENDING', 'PROCESSING')
+          AND s.amount > 0
         ORDER BY s.settlement_id DESC
-            LIMIT 1
+        LIMIT 1
     </select>
 
     <!-- 해당 trip의 정산 요청자 ID -->

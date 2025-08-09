@@ -1,8 +1,9 @@
-package org.scoula.notification.scheduler;
+package org.scoula.notification.config;
 
 import org.quartz.*;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
+import org.scoula.notification.scheduler.ReminderJob;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,8 +20,9 @@ public class QuartzConfig {
     @Bean
     public Trigger reminderTrigger() {
         CronScheduleBuilder scheduleBuilder = CronScheduleBuilder
-                .dailyAtHourAndMinute(20, 0); //20시 00분
-
+                .dailyAtHourAndMinute(17, 22) //20시 00분
+                .inTimeZone(java.util.TimeZone.getTimeZone("Asia/Seoul"))
+                .withMisfireHandlingInstructionDoNothing(); // 미스파이어 시 건너뛰기
         return TriggerBuilder.newTrigger()
                 .forJob(reminderJobDetail())
                 .withIdentity("reminderTrigger")

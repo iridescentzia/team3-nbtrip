@@ -22,7 +22,7 @@ const goToPage = (n) => {
   switch (n.notificationType) {
     case 'TRANSACTION':
       if (n.paymentId) {
-        router.push(`/paymentlist/${n.tripId}`);
+        router.push(`/trip/${n.tripId}`);
       }
       break; 
     case 'SETTLEMENT':
@@ -157,6 +157,7 @@ const getMessage = (n) => {
           <div class="card-content">
             <p class="card-title" v-if="n.notificationType !== 'INVITE' || n.memberStatus === 'JOINED' || n.memberStatus === 'LEFT'">
               [{{ n.tripName }}]
+              <span v-if="n.isRead" class="badge-read">읽음</span>
             </p>
             <p class="card-body">{{ getMessage(n) }}</p>
             <p class="card-time">{{ n.sendAt.split('.')[0].substring(0, 16) }}</p>
@@ -184,7 +185,6 @@ const getMessage = (n) => {
 .header-section{
   margin-right: 14px;
   margin-left: 14px;
-  margin-bottom: 20%;
 }
 
 .dropdown-wrapper {
@@ -261,6 +261,18 @@ const getMessage = (n) => {
   transition: background-color 0.2s ease;
 }
 
+.badge-read {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 6px;
+  font-size: 11px;
+  line-height: 1;
+  border-radius: 8px;
+  background: #e5e7eb;
+  color: #6b7280;
+  vertical-align: middle;
+}
+
 .notification-card.read {
   background: #E5E7EB;
   opacity: 0.7;
@@ -277,6 +289,9 @@ const getMessage = (n) => {
   height: 20px;
   color: #555;
 }
+.card-arrow:hover {
+  transform: translateX(2px);
+}
 
 .notification-card p {
   margin: 3px;
@@ -284,10 +299,11 @@ const getMessage = (n) => {
 
 .card-title {
   font-size: 13px;
+  font-weight: bold;
 }
 
 .card-body {
-  font-size: 13px;
+  font-size: 14px;
   white-space: pre-line;
 }
 
