@@ -36,30 +36,62 @@
   </div>
 
   <!-- 여행 종료 모달 -->
+  <!-- 모달 오버레이 -->
   <div
       v-if="showTerminateModal"
       class="modal-overlay"
       @click="cancelTerminate"
+  ></div>
+
+  <!-- 모달 -->
+  <div
+      v-if="showTerminateModal"
+      class="terminate-modal"
   >
-    <div class="terminate-modal" @click.stop>
-      <!-- 아이콘 -->
-      <div class="modal-icon"></div>
-
-      <!-- 메인 메시지 -->
-      <h3 class="modal-title">정말 여행이 끝났나요?</h3>
-
-      <!-- 설명 텍스트 -->
-      <p class="modal-description">
+    <!-- 메인 콘텐츠 -->
+    <div
+        style="
+        width: calc(100% - 32px);
+        text-align: center;
+        margin: 0 auto 24px auto;
+      "
+    >
+      <h3 style="font-size: 22px; font-weight: bold; color: #34495e; margin: 0 0 12px 0">
+        정말 여행이 끝났나요?
+      </h3>
+      <p style="color: #6b7280; font-size: 14px; margin: 0;">
         정산 요청하러 바로 넘어갈게요!
       </p>
+    </div>
 
-      <!-- 버튼들 -->
-      <div class="modal-buttons">
-        <button @click="cancelTerminate" class="modal-cancel-btn">취소</button>
-        <button @click="confirmTerminate" class="modal-confirm-btn">정산 요청하기</button>
-      </div>
+    <!-- 버튼들 -->
+    <div
+        style="
+        width: calc(100% - 32px);
+        height: 48px;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin: 0 auto;
+      "
+    >
+      <button
+          @click="cancelTerminate"
+          class="modal-cancel-btn"
+          style="margin-right: 8px; flex: 1;"
+      >
+        취소
+      </button>
+      <button
+          @click="confirmTerminate"
+          class="modal-confirm-btn"
+          style="flex: 1;"
+      >
+        정산 요청하기
+      </button>
     </div>
   </div>
+
 </template>
 
 <script setup >
@@ -292,7 +324,7 @@ const budgetMessage = computed(()=>{
   background-color: #ff6666; /* 빨간색 */
 }
 
-/* 모달 스타일 (DetailView와 동일) */
+/* 모달 오버레이 - 배경 어둡게 + 블러 처리 */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -300,68 +332,51 @@ const budgetMessage = computed(()=>{
   width: 100vw;
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  z-index: 1100;
-  animation: fadeIn 0.3s ease-out;
+  z-index: 1099;
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
+  animation: fadeIn 0.3s ease-out;
 }
 
+/* 여행 종료 모달 */
 .terminate-modal {
-  width: 100%;
-  max-width: 325px;
-  height: auto;
-  min-height: 230px;
-  background: white;
-  border-radius: 1.5rem;
-  box-shadow: 0px -4px 32px rgba(0, 0, 0, 0.24);
-  padding: 28px 40px 36px 40px;
-  position: relative;
-  animation: slideUpFromBottom 0.3s ease-out;
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 2rem; /* defaultLayout의 padding과 맞춤 */
+  width: 352px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 16px 16px 24px 16px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1100;
+  animation: modalUp 0.25s ease;
 }
 
-.modal-icon {
-  width: 40px;
-  height: 40px;
-  font-size: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px auto;
+/* 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.modal-title {
-  text-align: center;
-  color: #1f2937;
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 28px;
-  margin: 0 0 16px 0;
+@keyframes modalUp {
+  from {
+    transform: translateX(-50%) translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
 }
 
-.modal-description {
-  text-align: center;
-  color: #6b7280;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  margin: 0 0 28px 0;
-}
-
-.modal-buttons {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
+/* 버튼 스타일 */
 .modal-cancel-btn,
 .modal-confirm-btn {
-  flex: 1;
   height: 48px;
   background: rgba(255, 209, 102, 0.65);
   border-radius: 12px;
@@ -385,56 +400,5 @@ const budgetMessage = computed(()=>{
 .modal-cancel-btn:active,
 .modal-confirm-btn:active {
   transform: translateY(0);
-}
-
-/* 애니메이션 */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUpFromBottom {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* 반응형 대응 */
-@media (max-width: 480px) {
-  .terminate-modal {
-    padding: 24px 20px 32px 20px;
-    margin: 0 auto;
-    border-radius: 16px;
-    margin-bottom: 2rem;
-  }
-
-  .modal-buttons {
-    gap: 8px;
-    max-width: none;
-  }
-
-  .modal-cancel-btn,
-  .modal-confirm-btn {
-    height: 44px;
-    font-size: 15px;
-  }
-}
-
-@media (min-width: 768px) {
-  .terminate-modal {
-    max-width: 325px;
-    margin: 0 auto;
-    border-radius: 16px;
-    margin-bottom: 2rem;
-  }
 }
 </style>

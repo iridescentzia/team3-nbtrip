@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.scoula.payment.dto.ParticipantDTO;
+
+import java.util.List;
 
 /**
  * 결제 리스트에 사용할 도메인 VO.
@@ -28,4 +31,5 @@ public class PaymentListVO {
     private String paymentType;
     private String memo;
 
+    private List<ParticipantDTO> participants;
 }
