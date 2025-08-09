@@ -634,7 +634,7 @@ input[type="number"]::-webkit-outer-spin-button {
   color: #4a4a4a;
   min-width: 70px;
   padding-left:3px;
-  font-size: 19px;
+  font-size: 18px;
   transform: translateY(-1px); /* 아래로 2px 이동 */  
 }
 
