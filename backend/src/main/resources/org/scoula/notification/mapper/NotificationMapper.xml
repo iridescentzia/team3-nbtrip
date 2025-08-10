@@ -29,7 +29,14 @@
                         AND n2.notification_id &lt; n.notification_id
                     ) THEN 'UPDATE'
                    WHEN n.notification_type = 'TRANSACTION' THEN 'CREATE'
-                   WHEN n.notification_type = 'SETTLEMENT' AND s.settlement_status = 'COMPLETED' THEN 'SEND'
+                   WHEN n.notification_type = 'SETTLEMENT'
+                       AND EXISTS (
+                           SELECT 1
+                           FROM settlement s2
+                           WHERE s2.trip_id = n.trip_id
+                             AND s2.sender_id = n.from_user_id
+                             AND s2.settlement_status = 'COMPLETED'
+                       ) THEN 'SEND'
                    ELSE NULL
                    END AS actionType,
                n.is_read AS isRead,
@@ -114,7 +121,14 @@
                         n.payment_id AS paymentId,
                         n.notification_type AS notificationType,
                         CASE
-                            WHEN n.notification_type = 'SETTLEMENT' AND s.settlement_status = 'COMPLETED' THEN 'SEND'
+                            WHEN n.notification_type = 'SETTLEMENT'
+                                AND EXISTS (
+                                    SELECT 1
+                                    FROM settlement s2
+                                    WHERE s2.trip_id = n.trip_id
+                                      AND s2.sender_id = n.from_user_id
+                                      AND s2.settlement_status = 'COMPLETED'
+                                ) THEN 'SEND'
                             ELSE NULL
                             END AS actionType,
                         n.is_read AS isRead,
@@ -160,21 +174,43 @@
         WHERE trip_id = #{tripId}
     </select>
 
-    <!-- 리마인더 알림 대상 조회: 송금(보낸 사람) 기준 -->
+    <!-- 리마인더 알림 대상 조회: 송금 남은 사람, 종료 7일 이내, 미정산 -->
     <select id="findUsersNeedingReminder" resultType="int">
-        SELECT DISTINCT sender_id
+        SELECT DISTINCT s.sender_id
         FROM settlement s
-        WHERE s.settlement_status IN ('PENDING', 'PROCESSING')
-        AND s.amount > 0
+        JOIN trip t ON t.trip_id = s.trip_id
+        WHERE s.settlement_status IN ('PENDING','PROCESSING')
+            AND s.amount > 0
+            AND t.trip_status = 'CLOSED'
+            AND DATEDIFF(CURDATE(), t.end_date) BETWEEN 0 AND 7
+            AND NOT EXISTS (
+                SELECT 1 FROM notification n
+                WHERE n.user_id = s.sender_id
+                    AND n.trip_id = s.trip_id
+                    AND n.notification_type = 'REMINDER'
+                    AND n.send_at >= CURDATE()
+                    AND n.send_at &lt;  CURDATE() + INTERVAL 1 DAY
+            )
     </select>
 
-    <!-- 리마인더 대상의 trip_id 하나 가져오기: sender만 -->
+    <!-- 리마인더 대상의 trip_id 하나 가져오기 -->
     <select id="findTripIdForUserPendingSettlement" parameterType="int" resultType="int">
         SELECT s.trip_id
         FROM settlement s
+        JOIN trip t ON t.trip_id = s.trip_id
         WHERE s.sender_id = #{userId}
-          AND s.settlement_status IN ('PENDING', 'PROCESSING')
-          AND s.amount > 0
+            AND s.settlement_status IN ('PENDING','PROCESSING')
+            AND s.amount > 0
+            AND t.trip_status = 'CLOSED'
+            AND DATEDIFF(CURDATE(), t.end_date) BETWEEN 0 AND 7
+            AND NOT EXISTS (
+                SELECT 1 FROM notification n
+                WHERE n.user_id = s.sender_id
+                    AND n.trip_id = s.trip_id
+                    AND n.notification_type = 'REMINDER'
+                    AND n.send_at >= CURDATE()
+                    AND n.send_at &lt; CURDATE() + INTERVAL 1 DAY
+                )
         ORDER BY s.settlement_id DESC
         LIMIT 1
     </select>

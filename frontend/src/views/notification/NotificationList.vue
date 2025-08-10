@@ -90,7 +90,7 @@ const getMessage = (n) => {
   switch (n.notificationType) {
 
     case 'TRANSACTION':
-      if(n.actionType === 'DELETE'){
+      if(action === 'DELETE'){
         return `${user}님이 '${place}' 결제 내역을를 삭제했습니다.`;
       }
       if(action === 'UPDATE') {
@@ -99,8 +99,8 @@ const getMessage = (n) => {
       return `${user}님이 '${place}에서' \n${formatAmount(n.amount)}원을 결제했습니다.`
 
     case 'SETTLEMENT':
-      if (n.actionType === 'SEND'){
-        return `${user}님이 모든 송금을 완료했습니다.`;
+      if (action === 'SEND'){
+        return `'${user}'님이 모든 송금을 완료했습니다.`;
       }else{
         return `${user}님이 정산 요청을 보냈습니다.\n정산을 확인하시겠습니까?`;
       }
@@ -115,7 +115,7 @@ const getMessage = (n) => {
       }
 
     case 'REMINDER':
-      return `${user}님이 정산 알림을 보냈습니다.`;
+      return `"${n.tripName}"그룹에 미송금 내역이 있습니다.\n송금을 완료하여 유종의 미를 거두시길 바랍니다.`;
 
     case 'COMPLETED':
       return `"${n.tripName}"그룹의 정산이 완료되었습니다. \n여행 리포트가 생성되었어요 확인해 보세요.`;
