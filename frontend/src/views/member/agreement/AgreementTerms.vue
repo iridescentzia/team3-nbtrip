@@ -1,4 +1,4 @@
-v<script setup>
+<script setup>
 import Header from '@/components/layout/Header.vue';
 import Button from '@/components/common/Button.vue';
 import { useRouter, useRoute } from 'vue-router';

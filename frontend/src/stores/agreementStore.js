@@ -6,6 +6,7 @@ export const useAgreementStore = defineStore('agreement', () => {
     const agreements = ref({
         terms: false,
         privacy: false,
+        myData: false,
         push: false
     })
 
@@ -21,6 +22,7 @@ export const useAgreementStore = defineStore('agreement', () => {
         agreements.value = {
             terms: false,
             privacy: false,
+            myData: false,
             push: false
         }
     }
@@ -28,6 +30,6 @@ export const useAgreementStore = defineStore('agreement', () => {
     return {
         agreements,
         check,
-        reset
+        reset,
     }
 })

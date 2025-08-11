@@ -20,8 +20,14 @@ const agreements = ref([
   },
   {
     id: 'privacy',
-    label: '개인정보 수집 및 이용 동의 (필수)',
+    label: '개인정보 수집·이용 동의 (필수)',
     route: '/agreement/privacy',
+    checked: false,
+  },
+  {
+    id: 'myData',
+    label: '마이데이터 수집·활용 동의 (필수)',
+    route: '/agreement/mydata',
     checked: false,
   },
   {
