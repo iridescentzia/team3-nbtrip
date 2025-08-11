@@ -49,13 +49,13 @@ import Filter2 from '@/components/paymentlist/Filter2.vue';
 import PaymentListInfo from './PaymentListInfo.vue';
 
 import { onMounted, ref } from 'vue';
-import { useTripStore } from '@/stores/tripStore.js';
+import { usePaymentlistStore } from '@/stores/tripStore.js';
 import { useRouter, useRoute } from 'vue-router';
 import Summary from '@/components/common/Summary.vue';
 
 const router = useRouter();
 const route = useRoute();
-const tripStore = usePaymentListStore();
+const tripStore = usePaymentlistStore();
 const activeTab = ref('그룹 지출 내역');
 
 const goToRegister = () => {

@@ -13,7 +13,7 @@ export const useTravelCreateStore = defineStore('travelCreate', () => {
     return { tripName, startDate, endDate, budget }
 });
 
-export const useTripStore = defineStore('trip', () => {
+export const usePaymentlistStore = defineStore('paymentlist', () => {
     const currentTrip = ref(null)
     const currentTripId = ref(null)
     const currentTripMembers = ref([]); // 현재 여행 멤버 목록

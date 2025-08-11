@@ -76,7 +76,7 @@ import TravelCard from '@/components/common/TravelCard.vue';
 import Filter from '@/components/paymentlist/Filter.vue';
 
 import { onMounted, ref } from 'vue';
-import { useTripStore } from '@/stores/tripStore.js';
+import { usePaymentlistStore } from '@/stores/tripStore.js';
 import { useRouter, useRoute } from 'vue-router';
 import Summary from '@/components/common/Summary.vue';
 import PaymentListInfo from '@/views/paymentlist/PaymentListInfo.vue';
@@ -89,7 +89,7 @@ import {
 
 const router = useRouter();
 const route = useRoute();
-const tripStore = useTripStore();
+const tripStore = usePaymentlistStore();
 const activeTab = ref('그룹 지출 내역');
 const updateTrip = ref(null);
 const isOwner = ref(false);

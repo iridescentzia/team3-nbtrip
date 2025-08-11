@@ -122,7 +122,7 @@
 <script setup>
 import { ref, onMounted, computed, Transition } from 'vue';
 import { ChevronDown, RotateCcw } from 'lucide-vue-next';
-import { useTripStore } from "@/stores/tripStore.js";
+import { usePaymentlistStore } from "@/stores/tripStore.js";
 import Button from '@/components/common/Button.vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -140,7 +140,7 @@ const props = defineProps({
 
 const emit = defineEmits(['date-filtered', 'participant-filtered', 'category-filtered'])
 
-const tripStore = useTripStore();
+const tripStore = usePaymentlistStore();
 
 const selectedMembers = ref([]);
 const selectedCategories = ref([])

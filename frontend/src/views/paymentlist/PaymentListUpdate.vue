@@ -6,13 +6,13 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import paymentlistApi from '@/api/paymentlistApi';
 import paymentApi from '@/api/paymentApi';
-import { useTripStore } from "@/stores/tripStore.js";
+import { usePaymentlistStore } from "@/stores/tripStore.js";
 import { Trash2 } from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
 const paymentId = route.params.paymentId;
-const tripStore = useTripStore();
+const tripStore = usePaymentlistStore();
 
 const paymentType = ref('');
 const date = ref(new Date());

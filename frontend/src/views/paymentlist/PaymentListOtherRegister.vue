@@ -205,7 +205,7 @@ const handleSave = async () => {
   try {
     await paymentApi.createOther(paymentDTO);
     alert('결제 내역이 성공적으로 등록되었습니다.');
-    router.push(`/paymentlist/${tripId}`);
+    router.go(-1)
   } catch (e) {
     console.error('결제 등록 실패:', e.response?.data || e.message);
     alert('결제 등록에 실패했습니다.');
