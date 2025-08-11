@@ -1,8 +1,8 @@
 import {defineStore} from 'pinia'
-import tripApi from "@/api/tripApi.js";
-import memberApi from "@/api/memberApi.js";      // ✅ 추가
-import merchantApi from "@/api/merchantApi.js";
 import {ref} from 'vue';
+import tripApi from "@/api/tripApi.js";
+import memberApi from "@/api/memberApi.js";      
+import merchantApi from "@/api/merchantApi.js";
 
 export const useTravelCreateStore = defineStore('travelCreate', () => {
     const tripName = ref("")
@@ -13,23 +13,32 @@ export const useTravelCreateStore = defineStore('travelCreate', () => {
     return { tripName, startDate, endDate, budget }
 });
 
-export const usePaymentListStore = defineStore('paymentList', () => {
-    const currentTrip = ref("");
+export const useTripStore = defineStore('trip', () => {
+    const currentTrip = ref(null)
+    const currentTripId = ref(null)
     const currentTripMembers = ref([]); // 현재 여행 멤버 목록
     const merchantCategories = ref([]);
 
-    // 현재 tripApi는 userId = 1인 trip만 불러옴
-    // 여행 목록 불러오기
-    async function fetchTrip(tripId) {
-        const data = await tripApi.getTripDetail(tripId);
-        currentTrip.value = { ...data }; // 새 객체로 할당 => Vue가 리액티브 감지
-    }
+    const setCurrentTripId = (tripId) => {
+    currentTripId.value = tripId ?? null
+    if (tripId) localStorage.setItem('currentTripId', String(tripId))
+  }
 
-    const parseKSTDate = (dateStr) => {
-        const [year, month, day] = dateStr.split('-').map(Number);
-        // Date.UTC → 한국 시간 00:00으로 세팅
-        return new Date(year, month - 1, day, 0, 0, 0);; // UTC+9 대응
-    };
+    // 여행 목록 불러오기
+    const fetchTrip = async (tripId) => {
+    const id =
+      tripId ??
+      currentTripId.value ??
+      Number(localStorage.getItem('currentTripId') || NaN)
+
+    if (!id) throw new Error('fetchTrip: tripId가 필요합니다.')
+
+    const detail = await tripApi.getTripDetail(id)
+    currentTrip.value = detail
+    setCurrentTripId(id)
+    return detail
+  }
+
 
     // 여행 상세 정보에서 member.userId 목록을 받아오고
     // getUserInfo()로 닉네임 붙이기
@@ -75,11 +84,15 @@ export const usePaymentListStore = defineStore('paymentList', () => {
     }
 
     return {
-        fetchTrip,
-        currentTrip,
-        currentTripMembers,
-        fetchCurrentTripMemberNicknames,
-        fetchMerchantCategories,
-        merchantCategories
+    // state
+    currentTripId,
+    currentTrip,
+    currentTripMembers,
+    merchantCategories,
+    // actions
+    setCurrentTripId,
+    fetchTrip,
+    fetchCurrentTripMemberNicknames,
+    fetchMerchantCategories,
     };
 });

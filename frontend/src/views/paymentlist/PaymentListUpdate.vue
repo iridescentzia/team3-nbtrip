@@ -3,15 +3,16 @@ import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Header from '@/components/layout/Header.vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css'
 import paymentlistApi from '@/api/paymentlistApi';
 import paymentApi from '@/api/paymentApi';
-import {usePaymentListStore} from "@/stores/tripStore.js";
+import { useTripStore } from "@/stores/tripStore.js";
 import { Trash2 } from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
 const paymentId = route.params.paymentId;
-const tripStore = usePaymentListStore();
+const tripStore = useTripStore();
 
 const paymentType = ref('');
 const date = ref(new Date());
@@ -27,6 +28,7 @@ const selectedMembers = ref([]); // 결제 참여자 목록
 const splitAmounts = ref({}); // 결제 참여자별 분배 금액 저장
 const isDeleteModalVisible = ref(false);
 const isLoading = ref(true); // 로딩 여부
+const isMembersReady = ref(false)
 
 // 선택 여부 확인
 const isSelected = (userId) => {
@@ -54,60 +56,6 @@ const getSplitAmount = (userId) => {
   const member = selectedMembers.value.find(p => p.userId === userId);
   return member ? member.splitAmount : 0;
 };
-
-// 금액 수정 처리
-// const updateSplitAmount = (userId, value) => {
-//   const member = selectedMembers.value.find(p => p.userId === userId);
-//   if (member) {
-//     const clean = value.toString().replace(/[^0-9]/g, '')
-//     member.splitAmount = Number(clean);
-//   }
-// };
-
-// 수동 입력 후 자동 분배 ver.1
-// const updateSplitAmount = (userId, value) => {
-//   const totalAmount = parseInt(form.value.amount.replace(/,/g, ''), 10) || 0;
-//   const newAmount = parseInt(String(value).replace(/,/g, ''), 10);
-
-//   if (isNaN(newAmount)) {
-//     alert('숫자만 입력할 수 있습니다.');
-//     return;
-//   }
-
-//   if (newAmount > totalAmount) {
-//     alert('분배 금액은 총 결제 금액을 초과할 수 없습니다.');
-//     return;
-//   }
-
-//   const target = selectedMembers.value.find(p => p.userId === userId);
-//   if (target) {
-//     target.splitAmount = newAmount;
-//   }
-
-//   const remainingAmount = totalAmount - newAmount;
-
-//   // 나머지 참여자 필터링
-//   const others = selectedMembers.value.filter(p => p.userId !== userId);
-//   const otherCount = others.length;
-
-//   if (otherCount === 0) return;
-
-//   const base = Math.floor(remainingAmount / otherCount);
-//   let remainder = remainingAmount % otherCount;
-
-//   // 재분배
-//   others.forEach(p => {
-//     p.splitAmount = base;
-//   });
-
-//   // 나머지는 결제자에게 우선 할당
-//   const payer = others.find(p => p.userId === form.value.payerUserId);
-//   if (payer) {
-//     payer.splitAmount += remainder;
-//   } else {
-//     others[0].splitAmount += remainder;
-//   }
-// };
 
 const manuallyEditedUserIds = ref([]); // 사용자 직접 수정한 userId 추적
 
@@ -222,19 +170,41 @@ watch(() => form.value.payerUserId, () => {
   distributeAmountEqually();
 });
 
-onMounted(async () => {
-  await tripStore.fetchCurrentTripMemberNicknames();
-  await tripStore.fetchMerchantCategories();
 
+onMounted(async () => {
   try {
+    console.log("tripstore.currentTrip", tripStore.currentTrip)
+    console.log("tripStore.currentTripMembers.length", tripStore.currentTripMembers.length)
+    
+    // 1. 결제 상세 -> tripId 확보
     const data = await paymentlistApi.getPaymentListById(paymentId);
     const p = data.payment;
     paymentType.value = p.paymentType;
     console.log("paymentType: ", paymentType.value)
 
-    console.log("tripStore.merchantCategories: ", tripStore.merchantCategories)
+    // 2) tripId 결정: 응답 → 스토어 → 로컬스토리지까지 폴백
+    const fallbackLocal = Number(localStorage.getItem('currentTripId') || NaN);
+    const tripId =
+      p?.tripId ??
+      data?.tripId ??
+      tripStore.currentTripId ??
+      (Number.isFinite(fallbackLocal) ? fallbackLocal : null);
 
-    // res: 결제 참여자 목록
+    if (!tripId) {
+      console.error('payment detail:', data);
+      alert('여행 정보를 찾을 수 없습니다. (tripId 없음)');
+      return; // throw 대신 return으로 페이지가 망가지지 않게
+    }
+
+    // 3) trip 복구(스토어 채움) → 멤버/카테고리
+    await tripStore.fetchTrip(tripId);
+    await Promise.all([
+      tripStore.fetchCurrentTripMemberNicknames(),
+      tripStore.fetchMerchantCategories(),
+    ]);
+    isMembersReady.value = true;
+
+    // 4) 결제 참여자 목록
     const res = await paymentApi.getParticipantsByPaymentId(paymentId);
     selectedMembers.value = res.map(p => ({
       userId: p.userId,
@@ -247,6 +217,7 @@ onMounted(async () => {
       splitAmounts.value[p.userId] = p.splitAmount;
     })
 
+    // 5) 폼 채우기
     form.value = {
       content: p.merchantName,
       amount: Number(p.amount).toLocaleString(),
@@ -256,7 +227,7 @@ onMounted(async () => {
     };
     date.value = new Date(p.payAt);
 
-    // 초기 진입 시에도 자동 분배 적용
+    // 6) 초기 진입 시에도 자동 분배 적용
     distributeAmountEqually(); 
 
   } catch (e) {
@@ -265,6 +236,7 @@ onMounted(async () => {
     isLoading.value = false;
   }
 });
+
 
 // 저장 버튼 클릭 시 api 호출
 const handleSave = async () => {
@@ -410,7 +382,7 @@ const handleDelete = async () => {
     </div>
 
     <!-- 결제자 선택 -->
-    <div class="form-section">
+    <div class="form-section" v-if="isMembersReady">
       <label class="form-label">결제자</label>
       <select v-model="form.payerUserId" class="select-box" :disabled="paymentType === 'QR'">
         <option
@@ -424,7 +396,7 @@ const handleDelete = async () => {
     </div>
 
     <!-- 결제 참여자 선택 및 분배 금액 -->
-    <div class="form-section">
+    <div class="form-section" v-if="isMembersReady">
       <label class="form-label">결제 참여자</label>
       <div class="participant-list">
         <div
@@ -588,8 +560,15 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 ::v-deep(.date-picker input) {
-  font-size: 16px;
-  color: #000;
+  font-size: 18px;
+}
+
+::v-deep(.dp__theme_light) {
+  --dp-primary-color:rgba(255, 209, 102, 0.65); /* 메인 노랑 */
+  --dp-primary-text-color: #fff; /* 선택 날짜 글자색 */
+  --dp-hover-color: rgba(255, 209, 102, 0.65); /* hover 시 밝은 노랑 */
+  --dp-secondary-color: #c0c4cc; /* 보조 배경 */
+  /* --dp-border-color: #fff; */  
 }
 
 .select-box {
