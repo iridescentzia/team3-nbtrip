@@ -12,8 +12,12 @@ const cards = [
     route: '/agreement/terms'
   },
   {
-    title: '개인정보 수집 및 이용 동의',
+    title: '개인정보 수집·이용 동의',
     route: '/agreement/privacy'
+  },
+  {
+    title: '마이데이터 수집·활용 동의',
+    route: '/agreement/mydata'
   },
   {
     title: '푸시 알림 수신 동의',

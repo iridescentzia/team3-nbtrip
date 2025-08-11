@@ -22,7 +22,7 @@ const goToPage = (n) => {
   switch (n.notificationType) {
     case 'TRANSACTION':
       if (n.paymentId) {
-        router.push(`/paymentlist/${n.tripId}`);
+        router.push(`/trip/${n.tripId}`);
       }
       break; 
     case 'SETTLEMENT':
@@ -90,7 +90,7 @@ const getMessage = (n) => {
   switch (n.notificationType) {
 
     case 'TRANSACTION':
-      if(n.actionType === 'DELETE'){
+      if(action === 'DELETE'){
         return `${user}님이 '${place}' 결제 내역을를 삭제했습니다.`;
       }
       if(action === 'UPDATE') {
@@ -99,8 +99,8 @@ const getMessage = (n) => {
       return `${user}님이 '${place}에서' \n${formatAmount(n.amount)}원을 결제했습니다.`
 
     case 'SETTLEMENT':
-      if (n.actionType === 'SEND'){
-        return `${user}님이 모든 송금을 완료했습니다.`;
+      if (action === 'SEND'){
+        return `'${user}'님이 모든 송금을 완료했습니다.`;
       }else{
         return `${user}님이 정산 요청을 보냈습니다.\n정산을 확인하시겠습니까?`;
       }
@@ -115,7 +115,7 @@ const getMessage = (n) => {
       }
 
     case 'REMINDER':
-      return `${user}님이 정산 알림을 보냈습니다.`;
+      return `"${n.tripName}"그룹에 미송금 내역이 있습니다.\n송금을 완료하여 유종의 미를 거두시길 바랍니다.`;
 
     case 'COMPLETED':
       return `"${n.tripName}"그룹의 정산이 완료되었습니다. \n여행 리포트가 생성되었어요 확인해 보세요.`;
@@ -157,6 +157,7 @@ const getMessage = (n) => {
           <div class="card-content">
             <p class="card-title" v-if="n.notificationType !== 'INVITE' || n.memberStatus === 'JOINED' || n.memberStatus === 'LEFT'">
               [{{ n.tripName }}]
+              <span v-if="n.isRead" class="badge-read">읽음</span>
             </p>
             <p class="card-body">{{ getMessage(n) }}</p>
             <p class="card-time">{{ n.sendAt.split('.')[0].substring(0, 16) }}</p>
@@ -184,7 +185,6 @@ const getMessage = (n) => {
 .header-section{
   margin-right: 14px;
   margin-left: 14px;
-  margin-bottom: 20%;
 }
 
 .dropdown-wrapper {
@@ -261,6 +261,18 @@ const getMessage = (n) => {
   transition: background-color 0.2s ease;
 }
 
+.badge-read {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 6px;
+  font-size: 11px;
+  line-height: 1;
+  border-radius: 8px;
+  background: #e5e7eb;
+  color: #6b7280;
+  vertical-align: middle;
+}
+
 .notification-card.read {
   background: #E5E7EB;
   opacity: 0.7;
@@ -277,6 +289,9 @@ const getMessage = (n) => {
   height: 20px;
   color: #555;
 }
+.card-arrow:hover {
+  transform: translateX(2px);
+}
 
 .notification-card p {
   margin: 3px;
@@ -284,10 +299,11 @@ const getMessage = (n) => {
 
 .card-title {
   font-size: 13px;
+  font-weight: bold;
 }
 
 .card-body {
-  font-size: 13px;
+  font-size: 14px;
   white-space: pre-line;
 }
 

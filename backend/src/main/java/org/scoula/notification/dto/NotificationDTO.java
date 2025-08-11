@@ -62,7 +62,6 @@ public class NotificationDTO {
                 )
                 .isRead(isRead)
                 .memberStatus(memberStatus)
-                // .sendAt(java.sql.Timestamp.valueOf(sendAt))
                 .tripName(tripName)
                 .merchantName(merchantName)
                 .fromUserNickname(fromUserNickname)

@@ -40,6 +40,14 @@ export default [
         props: route => ({ viewOnly: route.query.viewOnly === 'true' })
     },
 
+    // 약관 동의 - 마이데이터 수집 및 활용 동의
+    {
+      path: '/agreement/mydata',
+      name: 'AgreementMyData',
+      component: () => import('@/views/member/agreement/AgreementMyData.vue'),
+      props: route => ({ viewOnly: route.query.viewOnly === 'true' })
+    },
+
     // 약관 동의 - 푸시 알림 발송 동의
     {
         path: '/agreement/push',
