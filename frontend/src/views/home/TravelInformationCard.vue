@@ -7,11 +7,13 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const goTripDetail = () => {
-  router.push(`/trip/${trip.value.tripId}`)
+  if (props.empty || !trip.value) return;
+  router.push(`/trip/${trip.value.tripId}`);
 }
 
 const props = defineProps({
-  trip: Object
+  trip: { type: Object, default: null },
+  empty: { type: Boolean, default: false }
 });
 
 const trip = ref(props.trip);
@@ -49,6 +51,7 @@ const progressPercentage = computed(() => {
 const isOverBudget = computed(() => usedAmount.value >= budget.value);
 
 onMounted(async () => {
+  if (props.empty || !trip.value) return;
   const res = await paymentlistApi.getPaymentList(trip.value.tripId);
   console.log('res:', res);
 
@@ -63,17 +66,20 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="travel-card" @click="goTripDetail">
+  <div class="travel-card" :class="{ empty }" @click="goTripDetail">
     <div class="trip-header">
       <div>
-        <h3 class="trip-name">{{ tripName }}</h3>
-        <p class="trip-date">{{ date }}</p>
+        <h3 class="trip-name">
+          <template v-if="!empty">{{ tripName }}</template>
+          <template v-else>진행 중인 여행이 없어요!</template>
+        </h3>
+        <p v-if="!empty" class="trip-date">{{ date }}</p>
       </div>
-      <ChevronRight class="arrow-icon" />
+      <ChevronRight v-if="!empty" class="arrow-icon" />
     </div>
 
     
-    <div class="amount-row">
+    <div v-if="!empty" class="amount-row">
         <span class="amount-text">현재 사용 금액</span>
         <div class="amount"> 
           {{formattedAmount}}
@@ -81,7 +87,7 @@ onMounted(async () => {
         
     </div>
 
-    <div class="progress-bar">
+    <div v-if="!empty" class="progress-bar">
       <div
           class="progress"
           :class="{over: isOverBudget}"
@@ -106,6 +112,16 @@ onMounted(async () => {
   font-family: 'IBM Plex Sans KR', sans-serif;
   cursor: pointer;
   transition: background-color 0.2s ease;
+}
+
+.travel-card.empty {
+  cursor: default;
+}
+.travel-card.empty .arrow-icon {
+  opacity: 0.4;
+}
+.travel-card.empty .trip-name {
+  color: #6b7280; /* 회색 톤 */
 }
 
 

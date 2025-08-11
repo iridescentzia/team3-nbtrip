@@ -50,14 +50,14 @@
     <button
       v-if=" !isClosed && activeTab === '그룹 지출 내역'"
       class="floating-button"
-      @click="goToRegister">
+      @click="goToOtherRegister">
       +  기타 결제
     </button>
 
     <button
         v-if=" !isClosed && activeTab === '선결제 내역'"
         class="floating-button"
-        @click="goToRegister">
+        @click="goToPrepaidRegister">
       + 선결제 
     </button>
 
