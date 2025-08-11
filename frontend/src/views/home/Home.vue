@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { useNotificationStore } from '@/stores/notificationStore';
 
 import AccountCard from './AccountCard.vue';
 import TravelInformationCard from './TravelInformationCard.vue';
@@ -16,13 +17,18 @@ import { getMyUnsettledTrips } from '@/api/settlementApi.js';
 import { getMyInfo } from '@/api/memberApi.js';
 import {
   Bell,
-  CalendarPlus,
   BellRing,
   PlaneTakeoff,
   Wallet,
 } from 'lucide-vue-next';
 
 const router = useRouter();
+const notificationStore = useNotificationStore();
+const { unreadCount } = storeToRefs(notificationStore);
+const displayUnreadCount = computed(() => {
+  if (unreadCount.value > 99) return '99+';
+  return unreadCount.value;
+});
 
 const userInfo = ref({ nickname: '', name: '' });
 const ongoingTrips = ref([]);
@@ -30,6 +36,7 @@ const unsettledList = ref([]);
 
 // API 호출
 onMounted(async () => {
+  notificationStore.getNotifications();
   try {
     const token = localStorage.getItem('accessToken');
     const res = await getMyInfo();
@@ -62,7 +69,7 @@ onMounted(async () => {
     }
   }
 });
-const userNameInitial = computed(() => userInfo.value.name?.charAt(0) || '');
+const userNameInitial = computed(() => userInfo.value.nickname?.charAt(0) || '');
 
 const goToNotification = () => router.push('/notification');
 const goToGroupCreate = () => router.push('/trip/create');
@@ -85,9 +92,7 @@ const goToMyPage = () => router.push('/mypage');
         <div class="icon-group">
           <div class="icon-btn" @click="goToNotification">
             <Bell class="header-icon" />
-          </div>
-          <div class="icon-btn" @click="goToGroupCreate">
-            <CalendarPlus class="header-icon" />
+            <span v-if="unreadCount > 0" class="badge-dot">{{ displayUnreadCount }}</span>
           </div>
           <div class="icon-btn" @click="goToMyPage">
             <div class="profile-circle">
@@ -112,12 +117,21 @@ const goToMyPage = () => router.push('/mypage');
             <PlaneTakeoff class="main-icon" />
             <span class="section-title">진행 중인 여행</span>
           </div>
+
+          <template v-if="ongoingTrips.length > 0">
+            <TravelInformationCard
+              v-for="trip in ongoingTrips"
+              :key="trip.tripId"
+              class="card"
+              :trip="trip"
+            />
+          </template>
           <TravelInformationCard
-            v-for="trip in ongoingTrips"
-            :key="trip.tripId"
+            v-else
             class="card"
-            :trip="trip"
+            :empty="true"
           />
+
         </section>
         <!-- 3. 내 계좌 요약 -->
         <section class="account-summary">
@@ -155,6 +169,8 @@ const goToMyPage = () => router.push('/mypage');
 }
 
 .content {
+  display:flex;
+  flex-direction:column;
   flex: 1;
   overflow-y: auto;
   padding: 0px 32px 0px 32px;
@@ -256,13 +272,14 @@ const goToMyPage = () => router.push('/mypage');
 .floating-button {
   position: sticky;
   bottom: 18px;
-  left: 600px;
-
+  
   display: flex;
   align-items: center;
   justify-content: center;
 
   padding: 8px 18px;
+  margin-top:auto;
+  align-self: flex-end;
   background-color: #ffe58a;
   border: none;
   border-radius: 999px;
@@ -285,4 +302,23 @@ const goToMyPage = () => router.push('/mypage');
   font-size: 20px;
   margin-right: 6px;
 }
+
+.badge-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: red;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 3px;
+  border-radius: 999px;
+  min-width: 16px;
+  text-align: center;
+  line-height: 1;
+}
+.icon-btn {
+  position: relative;
+}
+
 </style>

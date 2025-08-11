@@ -261,20 +261,24 @@ public class NotificationServiceImpl implements NotificationService {
 
         // 1. 정산 미완료 사용자 조회
         List<Integer> userIds = mapper.findUsersNeedingReminder();
+        log.info("리마인더 대상 유저 수={}", userIds.size());
 
         for (Integer userId : userIds) {
             Integer tripId = mapper.findTripIdForUserPendingSettlement(userId);
-            Integer fromUserId = tripId != null ? mapper.findSettlementRequester(tripId) : null;
+            if (tripId == null) {
+                log.debug("리마인더 스킵: userId={} (보낼 trip 없음)", userId);
+                continue;
+            }
+
             // 2. 알림 DB 저장
             NotificationDTO dto = NotificationDTO.builder()
                     .userId(userId)
                     .tripId(tripId)
-                    .fromUserId(fromUserId)
                     .notificationType("REMINDER")
                     .build();
 
 
-            log.info("리마인더 생성 대상: userId={}, tripId={}, fromUserId={}", userId, tripId, fromUserId);
+            log.info("리마인더 생성 대상: userId={}, tripId={}", userId, tripId);
             mapper.createNotification(dto.toVO());
 
             // 3. FCM 토큰 조회
@@ -284,12 +288,12 @@ public class NotificationServiceImpl implements NotificationService {
                 try {
                     Map<String, String> data = new HashMap<>();
                     data.put("type", "REMINDER");
-                    data.put("tripId", tripId == null ? "" : String.valueOf(tripId));
+                    data.put("tripId", String.valueOf(tripId));
 
                     fcmService.sendPushNotification(
                             fcmToken,
                             "정산 알림이에요",
-                            "정산하지 않은 내역이 있어요. 확인 부탁드립니다.",
+                            "송금하지 않은 내역이 있어요. 확인 부탁드립니다.",
                             data
                     );
                 } catch (Exception e) {
