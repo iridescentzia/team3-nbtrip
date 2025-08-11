@@ -49,7 +49,7 @@ import Filter2 from '@/components/paymentlist/Filter2.vue';
 import PaymentListInfo from './PaymentListInfo.vue';
 
 import { onMounted, ref } from 'vue';
-import { usePaymentListStore } from '@/stores/tripStore.js';
+import { useTripStore } from '@/stores/tripStore.js';
 import { useRouter, useRoute } from 'vue-router';
 import Summary from '@/components/common/Summary.vue';
 

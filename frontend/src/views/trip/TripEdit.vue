@@ -3,7 +3,7 @@ import memberApi from "@/api/memberApi.js";
 import tripApi from "@/api/tripApi.js";
 import { onMounted, ref} from "vue";
 import {useRoute} from "vue-router";
-import {usePaymentListStore} from "@/stores/tripStore.js";
+import {useTripStore} from "@/stores/tripStore.js";
 
 const tripDetail = ref({
   tripName: '',
@@ -17,7 +17,7 @@ const disableDates = ref([]);
 const date = ref({});
 const members = ref([]);
 const newTitle = ref("");
-const store = usePaymentListStore();
+const store = useTripStore();
 
 const formatDate = (date) => {
   if (!date) return null;
