@@ -1,7 +1,7 @@
 <template>  
   <div class="content-container">
     <Header :title="title" @back="router.back"/>
-    <!-- 현재 userId = 1인 여행만 보임 (TripController) -->
+
     <TravelCard
       v-if="tripStore.currentTrip"
       :trip-name="tripStore.currentTrip.tripName"
@@ -315,10 +315,9 @@ onMounted(async () => {
 }
 
 .floating-button {
-  position: sticky;
+  position: absolute;
   bottom: 50px;
-  left: 57%;
-  /* transform: translateX(-50%); 가운데 정렬 */
+  right: calc(50% - 192px + 20px);
   width: 120px;
   max-width: 384px;
 
