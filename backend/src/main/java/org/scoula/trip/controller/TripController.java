@@ -67,9 +67,9 @@ public class TripController {
         return ResponseEntity.ok().body(service.getTripMembers(tripId));
     }
 
-    //Security 구현 전이라 로그인한 유저는 1번이라 가정
+    //자신이 여행을 생성한 사람인지 체크
     @GetMapping("/{tripId}/isOwner")
-    public ResponseEntity<Boolean> isOwner(@AuthenticationPrincipal CustomUser customUser ,@PathVariable int tripId) {
+    public ResponseEntity<Boolean> isOwner(@AuthenticationPrincipal CustomUser customUser, @PathVariable int tripId) {
         return ResponseEntity.ok().body(service.isOwner(tripId, customUser.getUserId()));
     }
     //유저가 참여중인 여행 리스트 유저 ID로 찾아 가져오기

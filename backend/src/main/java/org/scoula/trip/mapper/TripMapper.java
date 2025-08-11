@@ -36,4 +36,5 @@ public interface TripMapper {
     List<TripVO> getTripsByStatus(@Param("userId") int userId, @Param("status") String status);
     int updateTrip(TripVO tripVO);
     int deleteTrip(int tripId);
+    TripMemberStatus getMemberStatus(@Param("tripId") int tripId, @Param("userId") int userId);
 }

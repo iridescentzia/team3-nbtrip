@@ -36,11 +36,10 @@ const goToPage = (n) => {
       break;
     case 'INVITE':
       router.push(`/trip/join/${n.tripId}`)
-      // if (!n.memberStatus) {
-      //   router.push(`/trip/join/${n.tripId}`)
-      // } else {
-      //   router.push(`/trip/${n.tripId}`)
-      // }
+      break;
+    case 'JOIN':
+    case 'LEFT':
+      router.push(`/trip/${n.tripId}`);
       break;
     default:
       alert('지원하지 않는 알림 유형입니다.');
@@ -51,7 +50,7 @@ const tabs = [
   { label: '전체', value: 'ALL' },
   { label: '결제', value: 'TRANSACTION' },
   { label: '정산', value: 'SETTLEMENT' },
-  { label: '그룹', value: 'INVITE' }
+  { label: '여행 그룹', value: 'TRIP' },
 ];
 
 const toggleDropdown = () => {
@@ -86,9 +85,8 @@ const getMessage = (n) => {
   const user = n.fromUserNickname || '누군가';
   const place = n.merchantName || '알 수 없는 장소';
   const action = (n.actionType || '').toUpperCase();
-
+  console.log("``````````````````"+JSON.stringify(n.notificationType));
   switch (n.notificationType) {
-
     case 'TRANSACTION':
       if(action === 'DELETE'){
         return `${user}님이 '${place}' 결제 내역을를 삭제했습니다.`;
@@ -106,13 +104,13 @@ const getMessage = (n) => {
       }
 
     case 'INVITE':
-      if(n.memberStatus === 'JOINED'){
-        return `${user}님이 "${n.tripName}" 그룹에 참여했어요.`;
-      } else if (n.memberStatus === 'LEFT') {
-        return `${user}님이 "${n.tripName}" 그룹에서 나갔어요.`;
-      } else {
-        return `${user}님이 "${n.tripName}" 그룹에 초대하셨습니다.\n여행에 참여하시겠습니까?`;
-      }
+      return `${user}님이 "${n.tripName}" 그룹에 초대하셨습니다.\n여행에 참여하시겠습니까?`;
+
+    case 'LEFT':
+      return `${user}님이 "${n.tripName}" 그룹에서 나갔어요.`;
+
+    case 'JOIN':
+      return `${user}님이 "${n.tripName}" 그룹에 참여했어요.`;
 
     case 'REMINDER':
       return `"${n.tripName}"그룹에 미송금 내역이 있습니다.\n송금을 완료하여 유종의 미를 거두시길 바랍니다.`;
@@ -155,7 +153,7 @@ const getMessage = (n) => {
              :class="{'read': n.isRead}"
              @click="handleCardClick(n)">
           <div class="card-content">
-            <p class="card-title" v-if="n.notificationType !== 'INVITE' || n.memberStatus === 'JOINED' || n.memberStatus === 'LEFT'">
+            <p class="card-title" v-if="n.notificationType !== 'INVITE'">
               [{{ n.tripName }}]
               <span v-if="n.isRead" class="badge-read">읽음</span>
             </p>
