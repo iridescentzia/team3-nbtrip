@@ -95,6 +95,12 @@
           AND tm.member_status = 'JOINED'
           AND t.trip_status = #{status}
     </select>
+    <select id="getMemberStatus" resultType="org.scoula.trip.domain.TripMemberStatus">
+        SELECT member_status
+        FROM trip_member
+        WHERE trip_id = #{tripId}
+        AND user_id = #{userId}
+    </select>
 
     <delete id="deleteTrip">
         DELETE FROM trip

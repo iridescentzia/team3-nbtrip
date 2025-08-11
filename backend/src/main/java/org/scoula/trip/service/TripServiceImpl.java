@@ -55,7 +55,9 @@ public class TripServiceImpl implements TripService {
 
     @Override
     public int joinTrip(int tripId, int userId) {
-        return mapper.joinTrip(tripId, userId);
+        int result = mapper.joinTrip(tripId, userId);
+        notificationService.createGroupEventNotification(userId, tripId, "JOIN");
+        return result;
     }
 
     @Override
@@ -65,8 +67,25 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
+    public TripMemberStatus getMemberStatus(int tripId, int userId) {
+        return mapper.getMemberStatus(tripId, userId);
+    }
+
+    @Override
     public int changeMemberStatus(int tripId, int userId, TripMemberStatus status) {
-        return mapper.changeMemberStatus(tripId, userId, status);
+        TripMemberStatus statusBefore = getMemberStatus(tripId, userId);
+        int result = mapper.changeMemberStatus(tripId, userId, status);
+        log.info("************ status before: {}", statusBefore);
+        log.info("************ status after: {}", status);
+        if(statusBefore != status) {
+            if (status.name().equals("LEFT")) {
+                notificationService.createGroupEventNotification(userId, tripId, "LEFT");
+            }
+            else{
+                notificationService.createGroupEventNotification(userId, tripId, "JOIN");
+            }
+        }
+        return result;
     }
 
     @Override

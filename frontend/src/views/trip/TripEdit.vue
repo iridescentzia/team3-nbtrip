@@ -5,6 +5,9 @@ import { onMounted, ref} from "vue";
 import {useRoute} from "vue-router";
 import {usePaymentListStore} from "@/stores/tripStore.js";
 
+defineProps({
+  isOwner: Boolean
+})
 const tripDetail = ref({
   tripName: '',
   startDate: '',
@@ -21,6 +24,9 @@ const store = usePaymentListStore();
 
 const formatDate = (date) => {
   if (!date) return null;
+  if (!(date instanceof Date)) {
+    date = new Date(date);
+  }
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -110,6 +116,7 @@ onMounted(async ()=>{
 <template>
   <label for="editName">여행 이름 수정</label><br>
   <input
+      :disabled="!isOwner"
       type="text"
       name="editName"
       id="editName"
@@ -138,7 +145,7 @@ onMounted(async ()=>{
       <select
           class="status_selector"
           :value="member.status"
-          :disabled="member.status === 'INVITED'"
+          :disabled="member.status === 'INVITED' || member.userId === store.currentTrip.ownerId || !isOwner "
           v-model="member.status"
       >
         <option v-if="member.status === 'INVITED'" value="INVITED">Invited</option>
