@@ -19,6 +19,9 @@ public interface MemberMapper {
     // userId로 회원 조회
     MemberVO findById(@Param("userId") int userId);
 
+    // userId로 nickname 조회
+    String findNicknameById(@Param("userId") int userId);
+
     // nickname으로 userId 조회
     int findUserIdByNickname(@Param("nickname") String nickname);
 

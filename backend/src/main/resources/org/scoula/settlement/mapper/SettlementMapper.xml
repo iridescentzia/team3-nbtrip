@@ -314,4 +314,49 @@
           AND
             s.settlement_status IN ('PENDING', 'PROCESSING')
     </select>
+
+    <!--  두 사용자 간의 정산 상세 내역 조회 쿼리
+  - 특정 여행(tripId)에서,
+  - 나와 상대방(myUserId, otherUserId)이 모두 참여한 payment_id 목록을 먼저 찾고,
+  - 해당 payment들에 대한 모든 참여자 정보와 결제자 정보를 가져옵니다.
+-->
+    <select id="findBreakdownDetails" resultType="org.scoula.settlement.dto.SettlementDTO$BreakdownDetailDTO">
+        SELECT
+            p.payment_id AS paymentId,
+            -- payment_type에 따라 memo 또는 merchant_name을 선택
+            CASE
+                WHEN p.payment_type = 'QR' THEN m.merchant_name
+                ELSE p.memo
+                END AS title,
+            p.amount AS totalAmount,
+            p.pay_at AS payAt,
+            payer.nickname AS payerNickname,
+            p.user_id AS payerId, -- isMyPayment 계산을 위해 추가
+            pp.user_id AS participantId,
+            pp.split_amount AS mySplitAmount -- 컬럼 별칭을 DTO 필드명과 유사하게 변경
+        FROM
+            payment p
+                -- 'PREPAID'나 'OTHER'는 merchant_id가 없을 수 있으므로 LEFT JOIN 사용
+                LEFT JOIN
+            merchant m ON p.merchant_id = m.merchant_id
+                JOIN
+            payment_participant pp ON p.payment_id = pp.payment_id
+                JOIN
+            users payer ON p.user_id = payer.user_id
+        WHERE
+            p.trip_id = #{tripId}
+          AND p.user_id IN (#{myUserId},#{otherUserId})
+          AND pp.user_id IN (#{myUserId},#{otherUserId})
+          AND
+            p.payment_id IN (
+                -- 나와 상대방이 모두 참여한 결제 건의 ID만 필터링
+                SELECT payment_id
+                FROM payment_participant
+                WHERE user_id = #{myUserId}
+                INTERSECT
+                SELECT payment_id
+                FROM payment_participant
+                WHERE user_id = #{otherUserId}
+            )
+    </select>
 </mapper>
