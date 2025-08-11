@@ -7,6 +7,10 @@ export const useNotificationStore = defineStore('notification', {
     selectedCategory: 'ALL'
   }),
 
+  getters: {
+    unreadCount: (state) => state.notifications.filter(n => !n.isRead).length
+  },
+
   actions: {
     // 토큰 기반 알림 조회
     async getNotifications(category = 'ALL') {
