@@ -75,13 +75,15 @@ public class NotificationServiceImpl implements NotificationService {
     public void createGroupEventNotification(Integer fromUserId, Integer tripId, String type) {
         List<Integer> memberIds = mapper.findUserIdsByTripId(tripId);
         for(Integer userId : memberIds) {
-            NotificationVO vo = NotificationVO.builder()
-                    .userId(userId)
-                    .fromUserId(fromUserId)
-                    .tripId(tripId)
-                    .notificationType(type)
-                    .build();
-            mapper.createNotification(vo);
+            if(!userId.equals(fromUserId)) {
+                NotificationVO vo = NotificationVO.builder()
+                        .userId(userId)
+                        .fromUserId(fromUserId)
+                        .tripId(tripId)
+                        .notificationType(type)
+                        .build();
+                mapper.createNotification(vo);
+            }
         }
     }
 
