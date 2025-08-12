@@ -19,6 +19,10 @@ const passwordConfirm = ref('');
 const bankCode = ref('');
 const accountNumber = ref('');
 
+// 계좌 인증 상태
+const isAccountVerified = ref(false);
+const accountStatusMessage = ref('');
+
 // 닉네임 중복 확인 상태
 const isNicknameChecked = ref(false);
 const nicknameValid = ref(false);
@@ -85,7 +89,7 @@ const phoneMessage = computed(() =>
 
 // 계좌번호 유효성 검사
 const isAccountValid = computed(() => /^\d{10,14}$/.test(accountNumber.value));
-const accountMessage = computed(() =>
+const accountValidityMessage = computed(() =>
     accountNumber.value
         ? isAccountValid.value
             ? '유효한 계좌번호입니다.'
@@ -199,6 +203,53 @@ const submitForm = async () => {
       alert(err.message || '회원가입 실패');
     }
 };
+
+// 전화번호 자동 포맷팅
+const formatPhoneNumber = (value) => {
+  const numbers = value.replace(/[^\d]/g, '');
+  if (numbers.length <= 3) {
+    return numbers;
+  } else if (numbers.length <= 7) {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+  } else {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+  }
+};
+
+// 전화번호 입력 시 자동 포맷팅 처리
+const handlePhoneInput = (event) => {
+  const input = event.target;
+  const cursorPosition = input.selectionStart;
+  const beforeLength = phoneNumber.value.length;
+  phoneNumber.value = formatPhoneNumber(input.value);
+  const afterLength = phoneNumber.value.length;
+  const newCursorPosition = cursorPosition + (afterLength - beforeLength);
+  setTimeout(() => {
+    input.setSelectionRange(newCursorPosition, newCursorPosition);
+  });
+};
+
+// 계좌 인증(목업)
+const verifyAccount = async () => {
+  if (!bankCode.value) {
+    alert('은행을 선택해주세요.');
+    return;
+  }
+  if (!isAccountValid.value) {
+    alert('올바른 계좌번호를 입력해주세요.');
+    return;
+  }
+
+  const selectedBank = bankList.value.find(b => b.bankCode === bankCode.value);
+  const bankName = selectedBank ? selectedBank.bankName : '선택된 은행';
+
+  // 1초 대기로 실제 API 호출하는 것처럼 연출
+  setTimeout(() => {
+    isAccountVerified.value = true;
+    accountStatusMessage.value = `${bankName} 계좌 인증이 완료되었습니다. (1원 입금 확인)`;
+    alert(`${bankName} 계좌로 1원을 입금했습니다.\n계좌 인증이 완료되었습니다!`);
+  }, 1000);
+};
 </script>
 
 <template>
@@ -240,12 +291,12 @@ const submitForm = async () => {
           v-model="phoneNumber"
           type="text"
           class="input-box"
-          placeholder="010-1234-5678"
+          placeholder="휴대폰 번호 (숫자만 입력)"
+          maxlength="13"
+          @input="handlePhoneInput"
       />
       <div class="check">
-        <span v-if="phoneMessage" :class="isPhoneValid ? 'success' : 'error'">
-          {{ phoneMessage }}
-        </span>
+        <span v-if="phoneMessage" :class="isPhoneValid ? 'success' : 'error'">{{ phoneMessage }}</span>
       </div>
 
       <!-- 이메일 -->
@@ -291,14 +342,32 @@ const submitForm = async () => {
 
       <!-- 계좌번호 -->
       <label class="label">계좌번호</label>
-      <input v-model="accountNumber" type="text" class="input-box" />
+      <div class="nickname-wrapper">
+        <input
+            v-model="accountNumber"
+            type="text"
+            class="nickname-input"
+            placeholder="계좌번호 입력 (10-14자리)"
+            :disabled="isAccountVerified"
+        />
+        <button
+            class="nickname-check-button"
+            @click="verifyAccount"
+            :disabled="!bankCode || !isAccountValid || isAccountVerified"
+        >
+          {{ isAccountVerified ? '인증완료' : '계좌 인증' }}
+        </button>
+      </div>
       <div class="check">
-        <span v-if="accountMessage" :class="isAccountValid ? 'success' : 'error'">
-          {{ accountMessage }}
+        <span v-if="isAccountVerified" class="success">{{ accountMessage }}</span>
+        <span v-else-if="accountNumber && !isAccountValid" class="error">
+          10~14자리 숫자만 입력 가능합니다.
+        </span>
+        <span v-else-if="accountNumber && isAccountValid" class="error">
+          계좌 인증을 완료해주세요.
         </span>
       </div>
     </div>
-
     <!-- 회원가입 버튼 -->
     <div class="bottom-fixed">
       <Button label="회원가입" @click="submitForm" />
@@ -346,9 +415,9 @@ const submitForm = async () => {
 }
 
 .label {
-  font-size: 14px;
+  font-size: 10px;
+  margin-top: 8px;
   font-weight: 500;
-  margin-top: 16px;
   display: block;
 }
 
@@ -392,8 +461,8 @@ const submitForm = async () => {
 }
 
 .nickname-check-message {
-  font-size: 12px;
-  margin-top: 4px;
+  font-size: 10px;
+  margin-top: 8px;
 }
 
 .success {
