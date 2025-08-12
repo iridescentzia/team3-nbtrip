@@ -837,12 +837,8 @@ onUnmounted(() => {
   color: #61a569;
 }
 
-.error {
+.error, .info {
   color: #a76a6a;
-}
-
-.info {
-  color: #4299e1;
 }
 
 .password-rules {
