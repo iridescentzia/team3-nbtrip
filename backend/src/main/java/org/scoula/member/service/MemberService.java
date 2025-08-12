@@ -36,6 +36,15 @@ public interface MemberService {
     // 닉네임으로 유저 검색
     List<MemberSearchResponseDTO> searchMembersByNickname(String nickname);
 
+    // 이메일로 userId 조회
+    MemberResponseDTO findByEmail(String email) throws UserNotFoundException;
+
+    // 로그인 인증(이메일 인증 상태 포함)
+    MemberResponseDTO authenticate(String email, String password) throws UserNotFoundException, AuthenticationException;
+
+    // 이메일 인증 상태 업데이트
+    void updateEmailVerified(String email, boolean verified) throws UserNotFoundException;
+
     // 비밀번호 검증 요청
     boolean verifyPassword(int userId, String password) throws UserNotFoundException, PasswordMismatchException;
 }

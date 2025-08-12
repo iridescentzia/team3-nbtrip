@@ -50,4 +50,7 @@ public class MemberDTO {
 
     // FCM Token
     private String fcmToken;
+
+    private String accountNumber;
+    private String bankName;
 }

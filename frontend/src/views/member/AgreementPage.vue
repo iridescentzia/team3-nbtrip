@@ -170,19 +170,22 @@ const goBack = () => {
 /* 메인 콘텐츠 영역을 flex container로 설정 */
 .main-content {
   flex: 1;
-  display: flex;
-  flex-direction: column; /* 자식 요소들을 수직으로 배치 */
+  overflow-y: auto;
   padding: 24px;
-  padding-top: calc(56px + 24px);
+  padding-top: 80px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .top-section {
-  /* 상단 영역은 그대로 유지 */
 }
 
 /* 하단 영역(약관)이 위로 남은 공간을 모두 차지하도록 설정 */
 .bottom-section {
-  margin-top: auto;
+  margin-top: 80px;
+  flex: 1;
+  min-height: 0;
 }
 
 .logo {
