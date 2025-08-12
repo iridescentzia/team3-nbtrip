@@ -1,5 +1,5 @@
 <script setup>
-import { Home } from 'lucide-vue-next';
+import { Home, Info } from 'lucide-vue-next';
 import {useRouter} from "vue-router";
 
 const props = defineProps({
@@ -8,6 +8,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  showInfo: {
+    type: Boolean,
+    default: false,
+  }
 });
 
 const emit = defineEmits(['back']);
@@ -18,7 +22,9 @@ function handleHomeClick() {
   router.push('/');
 }
 
-
+function handleInfoClick() {
+  router.push('/settlement/explain');
+}
 
 </script>
 
@@ -29,16 +35,26 @@ function handleHomeClick() {
 
     </div>
 
-    <!-- 중앙 영역 : 제목 -->
+    <!-- 중앙 영역 : 제목 + 인포 아이콘 -->
     <div class="center">
-      <h1 v-if="title">{{ title }}</h1>
+      <div class="title-wrapper">
+        <h1 v-if="title">{{ title }}</h1>
+        <button
+            v-if="showInfo"
+            class="info-button-wrapper"
+            @click="handleInfoClick"
+            title="정산 과정 안내"
+        >
+          <Info class="info-button" />
+        </button>
+      </div>
     </div>
 
     <!-- 오른쪽 영역 (비어 있음) -->
     <div class="right">
       <button
-        class="home-button-wrapper"
-        @click="handleHomeClick"
+          class="home-button-wrapper"
+          @click="handleHomeClick"
       >
         <Home class="home-button" />
       </button>
@@ -118,4 +134,39 @@ function handleHomeClick() {
   height: 24px;
   color: #374151; /* text-gray-700 */
 }
+
+.title-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.info-button-wrapper {
+  padding: 4px;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  cursor: pointer;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-button-wrapper:hover {
+  background-color: #f3f4f6; /* bg-gray-100 */
+}
+
+.info-button-wrapper:active {
+  background-color: #e5e7eb; /* bg-gray-200 */
+  transform: scale(0.95);
+}
+
+.info-button {
+  width: 18px;
+  height: 18px;
+  color: #374151; /* text-gray-500 */
+}
+
 </style>

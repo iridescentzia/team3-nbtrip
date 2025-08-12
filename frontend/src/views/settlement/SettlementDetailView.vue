@@ -155,7 +155,7 @@ const confirmTransfer = async () => {
 </script>
 
 <template>
-  <Header title="정산하기" />
+  <Header title="정산하기"  :showInfo="true"/>
 
   <main v-if="isLoading" class="content-container loading">
     <p>내 정산 내역을 불러오는 중...</p>
