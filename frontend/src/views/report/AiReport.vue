@@ -1,32 +1,51 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
-import { getAIComment } from '@/api/openaiApi';
+import { getReportComments } from '@/api/openaiApi';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const tripId = Number(route.params.tripId);
-const activeTab = defineModel('activeTab'); // category 또는 date
+const activeTab = defineModel('activeTab'); // 'category' | 'date'
 
-const comment = ref('AI 분석 중입니다...');
+const comments = ref({ category: '', date: '' });
+const loading = ref(true);
+const error = ref('');
 
-const loadComment = async () => {
-  comment.value = 'AI 분석 중입니다...';
-
+const loadComments = async () => {
+  loading.value = true;
+  error.value = '';
   try {
-    const result = await getAIComment(tripId, activeTab.value); // 탭에 따라 다르게 호출
-    comment.value = result;
-  } catch (err) {
-    comment.value = 'AI 분석에 실패했습니다.';
+    const res = await getReportComments(tripId); // { category, date }
+    // 혹시 문자열로 온 경우 대비해 방어 코드
+    comments.value =
+      typeof res === 'string'
+        ? JSON.parse(res)
+        : { category: res.category ?? '', date: res.date ?? '' };
+
+    // 기본 탭 보정
+    if (activeTab.value !== 'date' && activeTab.value !== 'category') {
+      activeTab.value = 'category';
+    }
+  } catch (e) {
+    console.error(e);
+    error.value = 'AI 분석을 불러오는 데 실패했습니다.';
+  } finally {
+    loading.value = false;
   }
 };
 
-onMounted(loadComment);
-watch(() => activeTab.value, loadComment);
+onMounted(loadComments);
 </script>
+
 <template>
   <div class="ai-report">
     <h3>AI 소비 분석</h3>
-    <p>{{ comment }}</p>
+
+    <p v-if="loading">AI 분석 불러오는 중...</p>
+    <p v-else-if="error">{{ error }}</p>
+    <p v-else>
+      {{ activeTab === 'date' ? comments.date : comments.category }}
+    </p>
   </div>
 </template>
 
