@@ -23,7 +23,7 @@ const paymentList = ref([]);
 const tripName = computed(() => trip.value?.tripName || '');
 
 
-// 날짜 포맷 (2025.08.01 - 2025.08.04)
+// 날짜 포맷 (2025.08.01 ~ 2025.08.04)
 const toDot = (s) => String(s).replaceAll('-', '.');
 const date = computed(() => {
   if (!trip.value) return '';
