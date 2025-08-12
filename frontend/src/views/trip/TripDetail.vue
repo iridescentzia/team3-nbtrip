@@ -53,21 +53,19 @@
     <button
       v-if="!isClosed && activeTab === '그룹 지출 내역'"
       class="floating-button"
-      @click="goToOtherRegister"
-    >
-      + 기타 결제
+      @click="goToOtherRegister">
+      +  기타 결제
     </button>
 
     <button
-      v-if="!isClosed && activeTab === '선결제 내역'"
-      class="floating-button"
-      @click="goToPrepaidRegister"
-    >
-      + 선결제
+        v-if=" !isClosed && activeTab === '선결제 내역'"
+        class="floating-button"
+        @click="goToPrepaidRegister">
+      + 선결제 
     </button>
 
     <button
-        v-if=" !isClosed && activeTab && isOwner === '그룹 관리'"
+        v-if=" !isClosed && activeTab === '그룹 관리' &&isOwner"
         class="floating-button"
         @click="callChildUpdate">
       저장하기

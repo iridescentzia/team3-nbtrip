@@ -5,7 +5,6 @@ import org.apache.ibatis.annotations.Param;
 import org.scoula.notification.domain.NotificationVO;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface NotificationMapper {

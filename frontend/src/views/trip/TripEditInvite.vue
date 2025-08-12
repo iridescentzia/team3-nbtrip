@@ -1,19 +1,22 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import tripApi from "@/api/tripApi.js";
-import {useTravelCreateStore} from "@/stores/tripStore.js";
-import {useRouter} from "vue-router";
+import memberApi from "@/api/memberApi.js";
+import {useTripStore} from "@/stores/trip.js";
+import {useRouter, useRoute} from "vue-router";
 import { MoveRight, Search } from 'lucide-vue-next';
 import Header from "@/components/layout/Header.vue";
 import { Lightbulb } from 'lucide-vue-next';
 
-const store = useTravelCreateStore();
 const userId = ref();
 const inputValue = ref('');
 const showList = ref(false);
+const store = useTripStore();
 const options = ref([]);
 const addedItems = ref([]);
 const router = useRouter();
+const route = useRoute();
+const tripData = ref(null);
 var timer;
 const debouncedFetch = value => {
   clearTimeout(timer);
@@ -38,8 +41,21 @@ async function getOptions(query) {
   }
 }
 
-async function fetchUserId() {
+async function fetchTrip() {
   userId.value = await tripApi.getUserId();
+  tripData.value = await tripApi.getTripDetail(route.params.tripId);
+  for (const member of tripData.value.members) {
+    const result = await memberApi.getUserInfo(member.userId);
+    const nickname = result.nickname;
+    console.log(nickname);
+    addedItems.value.push(
+        {
+          userId: member.userId,
+          nickname: nickname,
+          preAdded: true,
+        }
+    );
+  }
 }
 
 
@@ -51,10 +67,15 @@ function onInput(e) {
 
 function onButtonClick(option) {
   console.log(option);
+  option={
+    ...option,
+    preAdded: false,
+  }
   addedItems.value.push(option);
   inputValue.value = '';
   showList.value = false;
   options.value = [];
+  console.log(addedItems.value);
 }
 
 function removeItem(idx) {
@@ -69,33 +90,28 @@ function handleClickOutside(e) {
   }
 }
 
-async function createTrip() {
-  const createButton = document.querySelector('.round-next-btn');
+async function inviteMembers() {
+  const inviteButton = document.querySelector('.round-next-btn');
   try {
-    console.log(store.tripName);
-    const payload = {
-      tripName: store.tripName,
-      startDate: store.startDate,
-      endDate: store.endDate,
-      budget: store.budget,
-      tripStatus: 'READY',
-      members: addedItems.value     // [{id, nickname}, ...] 배열 형태로 전달
-    };
-
-    createButton.disabled = true;
-    const response = await tripApi.createTrip(payload);
-    console.log('여행 생성 성공:', response);
-    alert('여행이 생성되었습니다!');
-    router.replace('/');
+    inviteButton.disabled = true;
+    for(const item of addedItems.value){
+      if(item.preAdded){
+        continue;
+      }
+      await tripApi.inviteTrip(tripData.value.tripId, item.userId);
+    }
+    alert('여행 멤버가 초대되었습니다!');
+    await store.fetchTrip(route.params.tripId);
+    await router.replace(`/trip/${tripData.value.tripId}`);
   } catch (error) {
-    console.error('여행 생성 실패:', error);
-    createButton.disabled = false;
+    console.error('여행 초대 실패:', error);
+    inviteButton.disabled = true;
   }
 }
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
-  fetchUserId();
+  fetchTrip();
 });
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
@@ -107,7 +123,7 @@ onBeforeUnmount(() => {
   <Header title="멤버 초대하기" @back="router.back"/>
   <div class="content-container">
     <div class="info-box">
-      <p class="trip_title">{{store.tripName}}</p>
+      <p class="trip_title">{{tripData?.tripName}}</p>
       <p class="guide">친구들을 초대하고</p>
       <p class="guide">함께 여행을 계획하세요!</p>
       <div class="tip-box">
@@ -155,7 +171,10 @@ onBeforeUnmount(() => {
               <div class="avatar avatar-lg">{{ item.nickname.charAt(0)}}</div>
               <div class="list-item">
                 {{ item.nickname }}
-                <button @click="removeItem(idx)">삭제</button>
+                <button
+                    v-if="!item.preAdded"
+                    @click="removeItem(idx)"
+                >삭제</button>
               </div>
             </div>
           </li>
@@ -164,7 +183,7 @@ onBeforeUnmount(() => {
     </div>
     <button
         class="round-next-btn"
-        @click="createTrip"
+        @click="inviteMembers"
     >
       <MoveRight/>
     </button>
@@ -351,8 +370,6 @@ p{
 .round-next-btn:active {
   transform: translateX(-50%) scale(0.95);
 }
-
-
 
 .input-wrapper {
   position: relative;
