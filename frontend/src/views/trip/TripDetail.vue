@@ -50,6 +50,7 @@
     </div>
   </div>
 
+    <!--  TODO : 앞 두 버튼에 올바른 라우팅 적용하기  -->
     <button
       v-if="isReady && !isClosed && activeTab === '그룹 지출 내역'"
       class="floating-button"

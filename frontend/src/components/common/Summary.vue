@@ -31,41 +31,34 @@
   </div>
 
   <!-- 여행 종료 모달 -->
-  <!-- 모달 오버레이 -->
-  <div
-    v-if="showTerminateModal"
-    class="modal-overlay"
-    @click="cancelTerminate"
-  ></div>
-
-  <!-- 모달 -->
-  <div v-if="showTerminateModal" class="terminate-modal">
-    <!-- 메인 콘텐츠 -->
-    <div
-      style="
+  <div v-if="showTerminateModal" class="modal-overlay" @click="cancelTerminate">
+    <div class="terminate-modal">
+      <!-- 메인 콘텐츠 -->
+      <div
+          style="
         width: calc(100% - 32px);
         text-align: center;
         margin: 0 auto 24px auto;
       "
-    >
-      <h3
-        style="
+      >
+        <h3
+            style="
           font-size: 22px;
           font-weight: bold;
           color: #34495e;
           margin: 0 0 12px 0;
         "
-      >
-        정말 여행이 끝났나요?
-      </h3>
-      <p style="color: #6b7280; font-size: 14px; margin: 0">
-        정산 요청하러 바로 넘어갈게요!
-      </p>
-    </div>
+        >
+          정말 여행이 끝났나요?
+        </h3>
+        <p style="color: #6b7280; font-size: 14px; margin: 0">
+          정산 요청하러 바로 넘어갈게요!
+        </p>
+      </div>
 
-    <!-- 버튼들 -->
-    <div
-      style="
+      <!-- 버튼들 -->
+      <div
+          style="
         width: calc(100% - 32px);
         height: 48px;
         display: flex;
@@ -73,21 +66,22 @@
         gap: 8px;
         margin: 0 auto;
       "
-    >
-      <button
-        @click="cancelTerminate"
-        class="modal-cancel-btn"
-        style="margin-right: 8px; flex: 1"
       >
-        취소
-      </button>
-      <button
-        @click="confirmTerminate"
-        class="modal-confirm-btn"
-        style="flex: 1"
-      >
-        정산 요청하기
-      </button>
+        <button
+            @click="cancelTerminate"
+            class="modal-cancel-btn"
+            style="margin-right: 8px; flex: 1"
+        >
+          취소
+        </button>
+        <button
+            @click="confirmTerminate"
+            class="modal-confirm-btn"
+            style="flex: 1"
+        >
+          정산 요청하기
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -129,19 +123,37 @@ const toggleInfo = () => {
 // 상태: 여행 종료 모달
 const showTerminateModal = ref(false);
 
+const lockScroll = () => {
+  const container = document.querySelector('.content-container');
+  if (container) {
+    container.scrollTop = 0;
+    container.style.overflow = 'hidden';
+  }
+};
+
+const unlockScroll = () => {
+  const container = document.querySelector('.content-container');
+  if (container) {
+    container.style.overflow = 'auto';
+  }
+};
+
 // 여행 종료 모달 열기
 const openTerminateModal = () => {
   showTerminateModal.value = true;
+  lockScroll();
 };
 
 // 여행 종료 모달 취소
 const cancelTerminate = () => {
   showTerminateModal.value = false;
+  unlockScroll();
 };
 
 // 여행 종료 확인
 const confirmTerminate = () => {
   showTerminateModal.value = false;
+  unlockScroll();
   if (props.onTerminate) {
     props.onTerminate();
   }
@@ -321,13 +333,13 @@ const budgetMessage = computed(() => {
   background-color: #ff6666; /* 빨간색 */
 }
 
-/* 모달 오버레이 - 배경 어둡게 + 블러 처리 */
+/* 모달 오버레이 */
 .modal-overlay {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   background-color: rgba(0, 0, 0, 0.6);
   z-index: 1099;
   backdrop-filter: blur(2px);
@@ -335,15 +347,14 @@ const budgetMessage = computed(() => {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* 여행 종료 모달 */
 .terminate-modal {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 2rem; /* defaultLayout의 padding과 맞춤 */
-  width: 352px;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 352px;
   background-color: #ffffff;
-  border-radius: 16px;
+  border-radius: 16px 16px 0 0;
   padding: 16px 16px 24px 16px;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
   z-index: 1100;
@@ -362,11 +373,11 @@ const budgetMessage = computed(() => {
 
 @keyframes modalUp {
   from {
-    transform: translateX(-50%) translateY(100%);
+    bottom: -300px;
     opacity: 0;
   }
   to {
-    transform: translateX(-50%) translateY(0);
+    bottom: 0;
     opacity: 1;
   }
 }

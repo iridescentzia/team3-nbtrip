@@ -29,5 +29,10 @@ export default [
     path: '/settlement/:tripId/failure',
     name: 'SettlementFailureNotice',
     component: () => import('@/views/settlement/SettlementFailureNotice.vue'),
-  }
+  },
+  {
+    path: '/settlement/explain',
+    name: 'SettlementGuide',
+    component: () => import('@/views/settlement/SettlementGuide.vue'),
+  },
 ];
