@@ -27,7 +27,12 @@ async function getOptions(query) {
   }
   try {
     console.log("검색 요청:", query);
-    options.value = await tripApi.searchNickname(query);
+    const results = await tripApi.searchNickname(query);
+    options.value = results.filter(
+        (item) =>
+            !addedItems.value.some((added) => added.userId === item.userId) &&
+            item.userId !== userId.value
+    );
   } catch (error) {
     console.error("검색어 불러오기 실패:", error);
   }
@@ -46,12 +51,7 @@ function onInput(e) {
 
 function onButtonClick(option) {
   console.log(option);
-  const alreadyAdded = addedItems.value.some(
-      (item) => item.userId === option.userId
-  );
-  if (!alreadyAdded && option.userId !== userId.value) {
-    addedItems.value.push(option);
-  }
+  addedItems.value.push(option);
   inputValue.value = '';
   showList.value = false;
   options.value = [];
@@ -176,7 +176,6 @@ p{
   margin: 0;
 }
 
-/* 메인 콘텐츠 */
 .content-container {
   flex-grow: 1;
   overflow-y: auto;
