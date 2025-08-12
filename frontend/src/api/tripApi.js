@@ -104,5 +104,8 @@ export default {
     },
     async deleteTrip(tripId) {
         await api.delete(`${BASE_URL}/${tripId}/delete`);
+    },
+    async inviteTrip(tripId, userId) {
+        await api.post(`${BASE_URL}/${tripId}/invite/${userId}`);
     }
 }
