@@ -43,10 +43,7 @@
       />
     </div>
     <div v-else>
-      <TripEdit
-          ref="updateTrip"
-          :isOwner="isOwner"
-      />
+      <TripEdit ref="updateTrip" :isOwner="isOwner" />
     </div>
 
     <!--  TODO : 앞 두 버튼에 올바른 라우팅 적용하기  -->
