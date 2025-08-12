@@ -277,33 +277,32 @@ const confirmTransfer = async () => {
     <p>상세 내역을 계산 중입니다...</p>
   </div>
 
-  <!-- ✅ 송금하기 모달 - 오버레이와 블러 처리 추가 -->
+  <!-- 송금하기 모달 -->
   <div
-    v-if="showTransferModal && buttonState.action === 'transfer'"
-    class="modal-overlay"
-    @click="cancelTransfer"
+      v-if="showTransferModal && buttonState.action === 'transfer'"
+      class="modal-overlay"
+      @click="cancelTransfer"
   ></div>
 
-  <!-- 모달 -->
   <div
-    v-if="showTransferModal && buttonState.action === 'transfer'"
-    class="modal"
+      v-if="showTransferModal && buttonState.action === 'transfer'"
+      class="modal"
   >
     <!-- 메인 콘텐츠 -->
     <div
-      style="
-        width: calc(100% - 32px);
-        text-align: center;
-        margin: 0 auto 24px auto;
-      "
+        style="
+      width: calc(100% - 32px);
+      text-align: center;
+      margin: 0 auto 24px auto;
+    "
     >
       <h3
-        style="
-          font-size: 22px;
-          font-weight: bold;
-          color: #34495e;
-          margin: 0 0 12px 0;
-        "
+          style="
+        font-size: 22px;
+        font-weight: bold;
+        color: #34495e;
+        margin: 0 0 12px 0;
+      "
       >
         송금하시겠습니까?
       </h3>
@@ -315,26 +314,26 @@ const confirmTransfer = async () => {
 
     <!-- 버튼들 -->
     <div
-      style="
-        width: calc(100% - 32px);
-        height: 48px;
-        display: flex;
-        justify-content: center;
-        gap: 8px;
-        margin: 0 auto;
-      "
+        style="
+      width: calc(100% - 32px);
+      height: 48px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 0 auto;
+    "
     >
       <button
-        @click="cancelTransfer"
-        class="modal-cancel-btn"
-        style="margin-right: 8px; flex: 1"
+          @click="cancelTransfer"
+          class="modal-cancel-btn"
+          style="margin-right: 8px; flex: 1"
       >
         취소
       </button>
       <button
-        @click="confirmTransfer"
-        class="modal-confirm-btn"
-        style="flex: 1"
+          @click="confirmTransfer"
+          class="modal-confirm-btn"
+          style="flex: 1"
       >
         송금
       </button>
@@ -558,8 +557,8 @@ const confirmTransfer = async () => {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   background-color: rgba(0, 0, 0, 0.6);
   z-index: 1099;
   backdrop-filter: blur(2px);
@@ -567,13 +566,12 @@ const confirmTransfer = async () => {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* 모달 */
 .modal {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
+  position: absolute;
+  left: 0;
   bottom: 0;
-  width: 352px;
+  width: 100%;
+  max-width: 352px;
   background-color: #ffffff;
   border-radius: 16px 16px 0 0;
   padding: 16px 16px 24px 16px;
@@ -582,7 +580,7 @@ const confirmTransfer = async () => {
   animation: modalUp 0.25s ease;
 }
 
-/* 애니메이션 */
+/* 애니메이션  */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -631,7 +629,7 @@ const confirmTransfer = async () => {
   transform: translateY(0);
 }
 
-/* 모달 로딩 오버레이 스타일 (선택 사항) */
+/* 모달 로딩 오버레이 스타일 */
 .modal-loading-overlay {
   position: fixed;
   top: 0;
@@ -642,7 +640,7 @@ const confirmTransfer = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1001; /* 모달보다 한 겹 위에 위치 */
+  z-index: 1001;
   color: white;
   font-size: 1.2rem;
   font-weight: bold;

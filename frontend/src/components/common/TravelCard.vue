@@ -114,33 +114,29 @@ const confirmDelete = () => {
         {{ tab }}
       </div>
     </div>
-    <div
-        v-if="showDeleteModal"
-        class="modal-overlay"
-        @click="cancelDelete"
-    >
-      <div class="delete-modal" @click.stop>
-        <!-- 아이콘 -->
-        <div class="modal-icon"></div>
+    <div v-if="showDeleteModal" class="modal-overlay" @click="cancelDelete"></div>
 
-        <!-- 메인 메시지 -->
-        <h3 class="modal-title">
-          <TriangleAlert />  정말로 여행을 삭제하시겠습니까?
-        </h3>
+    <div v-if="showDeleteModal" class="delete-modal">
+      <!-- 아이콘 -->
+      <div class="modal-icon"></div>
 
-        <!-- 설명 텍스트 -->
-        <p class="modal-description">
-          지금까지의 모든 내역이 사라집니다.
-        </p>
+      <!-- 메인 메시지 -->
+      <h3 class="modal-title">
+        <TriangleAlert />  정말로 여행을 삭제하시겠습니까?
+      </h3>
 
-        <!-- 버튼들 -->
-        <div class="modal-buttons">
-          <button @click="cancelDelete" class="modal-cancel-btn">취소하기</button>
-          <button @click="confirmDelete" class="modal-confirm-btn">삭제하기</button>
-        </div>
+      <!-- 설명 텍스트 -->
+      <p class="modal-description">
+        지금까지의 모든 내역이 사라집니다.
+      </p>
+
+      <!-- 버튼들 -->
+      <div class="modal-buttons">
+        <button @click="cancelDelete" class="modal-cancel-btn">취소하기</button>
+        <button @click="confirmDelete" class="modal-confirm-btn">삭제하기</button>
       </div>
     </div>
-  </div>
+    </div>
 </template>
 
 <style scoped>
@@ -274,35 +270,57 @@ const confirmDelete = () => {
   border: 2px solid white; /* 외곽 경계 */
 }
 
+/* 모달 오버레이 */
 .modal-overlay {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  z-index: 1100;
-  animation: fadeIn 0.3s ease-out;
+  z-index: 1099;
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
+  animation: fadeIn 0.3s ease-out;
 }
 
+/* 삭제 모달 */
 .delete-modal {
+  position: absolute;
+  left: 0;
+  bottom: 0;
   width: 100%;
-  max-width: 325px;
-  height: auto;
-  min-height: 230px;
-  background: white;
-  border-radius: 1.5rem;
-  box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.24);
-  padding: 28px 40px 36px 40px;
-  position: relative;
-  animation: slideUpFromBottom 0.3s ease-out;
+  max-width: 352px;
+  background-color: #ffffff;
+  border-radius: 16px 16px 0 0;
+  padding: 16px 16px 24px 16px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1100;
+  animation: modalUp 0.25s ease;
 }
 
+/* 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalUp {
+  from {
+    bottom: -300px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0;
+    opacity: 1;
+  }
+}
+
+/* 모달 내용 스타일 */
 .modal-icon {
   width: 40px;
   height: 40px;
@@ -342,6 +360,7 @@ const confirmDelete = () => {
   margin: 0 auto;
 }
 
+/* 버튼 스타일 */
 .modal-cancel-btn,
 .modal-confirm-btn {
   flex: 1;
@@ -368,56 +387,5 @@ const confirmDelete = () => {
 .modal-cancel-btn:active,
 .modal-confirm-btn:active {
   transform: translateY(0);
-}
-
-/* 애니메이션 */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUpFromBottom {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* 반응형 대응 */
-@media (max-width: 480px) {
-  .delete-modal {
-    padding: 24px 20px 32px 20px;
-    margin: 0 auto;
-    border-radius: 16px;
-    margin-bottom: 2rem;
-  }
-
-  .modal-buttons {
-    gap: 8px;
-    max-width: none;
-  }
-
-  .modal-cancel-btn,
-  .modal-confirm-btn {
-    height: 44px;
-    font-size: 15px;
-  }
-}
-
-@media (min-width: 768px) {
-  .delete-modal {
-    max-width: 325px;
-    margin: 0 auto;
-    border-radius: 16px;
-    margin-bottom: 2rem;
-  }
 }
 </style>
