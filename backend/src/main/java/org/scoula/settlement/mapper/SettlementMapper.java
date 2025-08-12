@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Param;
 import org.scoula.settlement.domain.SettlementVO;
 import org.scoula.settlement.dto.SettlementDTO;
 import java.util.List;
+import java.util.Map;
 
 @Mapper // mybatis 정산 매퍼, SettlementMapper.xml과 연동하여 sql 실행
 public interface SettlementMapper {
@@ -123,4 +124,18 @@ public interface SettlementMapper {
      * @return 미정산 여행 정보 DTO 리스트
      */
     List<SettlementDTO.UnsettledTripInfo> findUnsettledTripsByUserId(@Param("userId") int userId);
+
+    /**
+     * [NEW] 두 사용자 간의 정산 과정 상세 내역을 조회함.
+     *
+     * @param tripId      조회할 여행의 ID
+     * @param myUserId    현재 로그인한 사용자의 ID
+     * @param otherUserId 상대방 사용자의 ID
+     * @return 두 사용자 간의 모든 거래 상세 정보 목록
+     */
+    List<SettlementDTO.BreakdownDetailDTO> findBreakdownDetails(
+            @Param("tripId") int tripId,
+            @Param("myUserId") int myUserId,
+            @Param("otherUserId") int otherUserId
+    );
 }
