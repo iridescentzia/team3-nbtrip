@@ -24,7 +24,7 @@ public class QuartzConfig {
     @Bean
     public Trigger reminderTrigger(JobDetail reminderJobDetail) {
         CronScheduleBuilder scheduleBuilder = CronScheduleBuilder
-                .dailyAtHourAndMinute(18, 17) //20시 00분
+                .dailyAtHourAndMinute(10, 35) //20시 00분
                 .inTimeZone(java.util.TimeZone.getTimeZone("Asia/Seoul"))
                 .withMisfireHandlingInstructionDoNothing(); // 미스파이어 시 건너뛰기
 

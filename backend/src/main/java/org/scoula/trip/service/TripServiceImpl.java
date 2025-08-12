@@ -63,7 +63,18 @@ public class TripServiceImpl implements TripService {
     @Override
     public TripDTO inviteMember(int tripId, int userId, TripMemberStatus status) {
         mapper.inviteTrip(tripId, userId, status);
-        return get(tripId);
+        TripDTO result = get(tripId);
+        if(status == TripMemberStatus.INVITED) {
+            NotificationDTO notificationDTO = NotificationDTO.builder()
+                    .userId(userId)
+                    .fromUserId(result.getOwnerId())
+                    .tripId(result.getTripId())
+                    .notificationType("INVITE")
+                    .fromUserNickname(memberService.getMemberInfo(result.getOwnerId()).getNickname())
+                    .build();
+            notificationService.createNotification(notificationDTO);
+        }
+        return result;
     }
 
     @Override
@@ -75,8 +86,6 @@ public class TripServiceImpl implements TripService {
     public int changeMemberStatus(int tripId, int userId, TripMemberStatus status) {
         TripMemberStatus statusBefore = getMemberStatus(tripId, userId);
         int result = mapper.changeMemberStatus(tripId, userId, status);
-        log.info("************ status before: {}", statusBefore);
-        log.info("************ status after: {}", status);
         if(statusBefore != status) {
             if (status.name().equals("LEFT")) {
                 notificationService.createGroupEventNotification(userId, tripId, "LEFT");
@@ -109,14 +118,6 @@ public class TripServiceImpl implements TripService {
         inviteMember(tripVO.getTripId(),tripVO.getOwnerId(),TripMemberStatus.JOINED);
         for (MemberSearchResponseDTO memberSearchResponseDTO : tripCreateDTO.getMembers()) {
             inviteMember(tripVO.getTripId(), memberSearchResponseDTO.getUserId(), TripMemberStatus.INVITED);
-            NotificationDTO notificationDTO = NotificationDTO.builder()
-                    .userId(memberSearchResponseDTO.getUserId())
-                    .fromUserId(tripVO.getOwnerId())
-                    .tripId(tripVO.getTripId())
-                    .notificationType("INVITE")
-                    .fromUserNickname(memberService.getMemberInfo(tripVO.getOwnerId()).getNickname())
-                    .build();
-            notificationService.createNotification(notificationDTO);
         }
         return get(tripVO.getTripId());
     }

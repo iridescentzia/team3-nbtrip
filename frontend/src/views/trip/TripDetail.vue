@@ -43,35 +43,29 @@
       />
     </div>
     <div v-else>
-      <TripEdit
-          ref="updateTrip"
-          :isOwner="isOwner"
-      />
+      <TripEdit ref="updateTrip" :isOwner="isOwner" />
     </div>
 
     <!--  TODO : 앞 두 버튼에 올바른 라우팅 적용하기  -->
     <button
       v-if="!isClosed && activeTab === '그룹 지출 내역'"
       class="floating-button"
-      @click="goToOtherRegister"
-    >
-      + 기타 결제
-    </button>
-
-    <button
-      v-if="!isClosed && activeTab === '선결제 내역'"
-      class="floating-button"
-      @click="goToPrepaidRegister"
-    >
-      + 선결제
-    </button>
-
-    <button
-      v-if="!isClosed && activeTab === '그룹 관리'"
-      class="floating-button"
-      @click="callChildUpdate"
-    >
+      @click="goToOtherRegister">
       +  기타 결제
+    </button>
+
+    <button
+        v-if=" !isClosed && activeTab === '선결제 내역'"
+        class="floating-button"
+        @click="goToPrepaidRegister">
+      + 선결제 
+    </button>
+
+    <button
+        v-if=" !isClosed && activeTab === '그룹 관리' &&isOwner"
+        class="floating-button"
+        @click="callChildUpdate">
+      저장하기
     </button>
   </div>
 </template>
@@ -279,6 +273,7 @@ onMounted(async () => {
   if (tripStore.currentTrip) {
     await tripStore.fetchCurrentTripMemberNicknames();
     await checkIsOwner();
+    console.log("isOwner: "+ isOwner.value)
     tripStore.currentTrip.tripStatus === 'ACTIVE'
       ? (title.value = '진행 중인 여행')
       : tripStore.currentTrip.tripStatus === 'READY'
