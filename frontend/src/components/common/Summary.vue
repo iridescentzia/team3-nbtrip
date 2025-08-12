@@ -3,189 +3,218 @@
     <div class="summary-header">
       <span class="label">총 사용 금액</span>
       <button
-          v-if="isOwner && !isClosed"
-          class="terminate"
-          small
-          @click="openTerminateModal"
+        v-if="isOwner && !isClosed"
+        class="terminate"
+        small
+        @click="openTerminateModal"
       >
         여행 종료하기
       </button>
     </div>
     <div class="amount-row">
-      <div class="amount">{{formattedAmount}}</div>
+      <div class="amount">{{ formattedAmount }}</div>
       <div class="info-wrapper">
         <!-- info 아이콘 -->
-        <Info class="info-icon" @click="toggleInfo"/>
+        <Info class="info-icon" @click="toggleInfo" />
         <!-- 예산 사용 정보 메시지 팝업 -->
-        <div
-            v-if="showInfo"
-            class="info-popup"
-            v-html="budgetMessage"
-        >
-        </div>
+        <div v-if="showInfo" class="info-popup" v-html="budgetMessage"></div>
       </div>
     </div>
 
     <div class="progress-bar">
       <div
-          class="progress"
-          :class="{over: isOverBudget}"
-          :style="{width: progressPercentage + '%'}"
+        class="progress"
+        :class="{ over: isOverBudget }"
+        :style="{ width: progressPercentage + '%' }"
       ></div>
     </div>
   </div>
 
   <!-- 여행 종료 모달 -->
+  <!-- 모달 오버레이 -->
   <div
-      v-if="showTerminateModal"
-      class="modal-overlay"
-      @click="cancelTerminate"
-  >
-    <div class="terminate-modal" @click.stop>
-      <!-- 아이콘 -->
-      <div class="modal-icon"></div>
+    v-if="showTerminateModal"
+    class="modal-overlay"
+    @click="cancelTerminate"
+  ></div>
 
-      <!-- 메인 메시지 -->
-      <h3 class="modal-title">정말 여행이 끝났나요?</h3>
-
-      <!-- 설명 텍스트 -->
-      <p class="modal-description">
+  <!-- 모달 -->
+  <div v-if="showTerminateModal" class="terminate-modal">
+    <!-- 메인 콘텐츠 -->
+    <div
+      style="
+        width: calc(100% - 32px);
+        text-align: center;
+        margin: 0 auto 24px auto;
+      "
+    >
+      <h3
+        style="
+          font-size: 22px;
+          font-weight: bold;
+          color: #34495e;
+          margin: 0 0 12px 0;
+        "
+      >
+        정말 여행이 끝났나요?
+      </h3>
+      <p style="color: #6b7280; font-size: 14px; margin: 0">
         정산 요청하러 바로 넘어갈게요!
       </p>
+    </div>
 
-      <!-- 버튼들 -->
-      <div class="modal-buttons">
-        <button @click="cancelTerminate" class="modal-cancel-btn">취소</button>
-        <button @click="confirmTerminate" class="modal-confirm-btn">정산 요청하기</button>
-      </div>
+    <!-- 버튼들 -->
+    <div
+      style="
+        width: calc(100% - 32px);
+        height: 48px;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin: 0 auto;
+      "
+    >
+      <button
+        @click="cancelTerminate"
+        class="modal-cancel-btn"
+        style="margin-right: 8px; flex: 1"
+      >
+        취소
+      </button>
+      <button
+        @click="confirmTerminate"
+        class="modal-confirm-btn"
+        style="flex: 1"
+      >
+        정산 요청하기
+      </button>
     </div>
   </div>
 </template>
 
-<script setup >
-import {computed, ref} from 'vue'
+<script setup>
+import { computed, ref } from 'vue';
 import { Info } from 'lucide-vue-next';
 
 // props: amount(사용금액 합계), budget(여행 예산)
 const props = defineProps({
   amount: {
     type: Number,
-    required: true
+    required: true,
   },
-  budget:{
+  budget: {
     type: Number,
-    required: true
+    required: true,
   },
   onTerminate: {
     type: Function,
-    required: false
+    required: false,
   },
   isOwner: {
     type: Boolean,
-    default: false
+    default: false,
   },
   isClosed: {
     type: Boolean,
-    default: false
-  }
-})
+    default: false,
+  },
+});
 
 // 상태: info 팝업 토글
-const showInfo = ref(false)
+const showInfo = ref(false);
 const toggleInfo = () => {
-  showInfo.value = !showInfo.value
-}
+  showInfo.value = !showInfo.value;
+};
 
 // 상태: 여행 종료 모달
-const showTerminateModal = ref(false)
+const showTerminateModal = ref(false);
 
 // 여행 종료 모달 열기
 const openTerminateModal = () => {
-  showTerminateModal.value = true
-}
+  showTerminateModal.value = true;
+};
 
 // 여행 종료 모달 취소
 const cancelTerminate = () => {
-  showTerminateModal.value = false
-}
+  showTerminateModal.value = false;
+};
 
 // 여행 종료 확인
 const confirmTerminate = () => {
-  showTerminateModal.value = false
+  showTerminateModal.value = false;
   if (props.onTerminate) {
-    props.onTerminate()
+    props.onTerminate();
   }
-}
+};
 
 // 총 금액 포맷팅 (ex. 350,000원)
-const formattedAmount = computed(()=>{
-  return props.amount.toLocaleString() + '원'
-})
+const formattedAmount = computed(() => {
+  return props.amount.toLocaleString() + '원';
+});
 
 // 예산 포맷팅 (ex. 350,000원)
-const formattedBudget = computed(()=>{
-  return props.budget.toLocaleString() + '원'
-})
+const formattedBudget = computed(() => {
+  return props.budget.toLocaleString() + '원';
+});
 
 // 진행 바 퍼센트 계산 (진행률 = amount / budget * 100)
-const progressPercentage = computed(()=>{
+const progressPercentage = computed(() => {
   const { amount, budget } = props;
   // console.log("budget: ", budget);
 
-  if(!budget || budget === 0) return 0;
+  if (!budget || budget === 0) return 0;
 
   // 퍼센트 계산 (최대 100%)
-  const percentage = (amount / budget) * 100
+  const percentage = (amount / budget) * 100;
   // 범위 제한
-  const clamped = Math.min(percentage, 100)
+  const clamped = Math.min(percentage, 100);
 
   // 소수점 1자리까지 / 최대 100% (예산보다 초과해도 100)
-  return clamped.toFixed(1)
-})
+  return clamped.toFixed(1);
+});
 
 // 예산 초과 감지
-const isOverBudget = computed(() =>{
+const isOverBudget = computed(() => {
   return props.amount >= props.budget;
-})
+});
 
 // 숫자 -> 한국어 단위 변환 함수
 function formatKoreanCurrency(amount) {
-  if (amount === 0) return '0원'
+  if (amount === 0) return '0원';
 
   const units = [
     { value: 10000, label: '만' },
     { value: 1000, label: '천' },
     { value: 100, label: '백' },
     { value: 10, label: '십' },
-  ]
+  ];
 
-  let result = ''
-  let remaining = amount
+  let result = '';
+  let remaining = amount;
 
   for (const unit of units) {
-    const unitAmount = Math.floor(remaining / unit.value)
+    const unitAmount = Math.floor(remaining / unit.value);
     if (unitAmount > 0) {
-      result += `${unitAmount}${unit.label} `
-      remaining %= unit.value
+      result += `${unitAmount}${unit.label} `;
+      remaining %= unit.value;
     }
   }
 
-  return result.trim() + '원'
+  return result.trim() + '원';
 }
 
 // 예산 사용 정보 메시지 생성
-const budgetMessage = computed(()=>{
-  const diff = props.budget - props.amount
-  const formattedDiff = formatKoreanCurrency(Math.abs(diff))
+const budgetMessage = computed(() => {
+  const diff = props.budget - props.amount;
+  const formattedDiff = formatKoreanCurrency(Math.abs(diff));
   if (diff > 0) {
-    return `💡예산보다 ${diff.toLocaleString()}원<br> 아끼고 있어요.`
+    return `💡예산보다 ${diff.toLocaleString()}원<br> 아끼고 있어요.`;
   } else if (diff < 0) {
-    return `⚠️예산보다 ${Math.abs(diff).toLocaleString()}원<br> 더 썼어요.`
+    return `⚠️예산보다 ${Math.abs(diff).toLocaleString()}원<br> 더 썼어요.`;
   } else {
-    return '✅예산을 딱 맞췄어요!'
+    return '✅예산을 딱 맞췄어요!';
   }
-})
-
+});
 </script>
 
 <style scoped>
@@ -209,12 +238,12 @@ const budgetMessage = computed(()=>{
 
 .label {
   font-size: 14px;
-  color: #AAAAAA;
+  color: #aaaaaa;
 }
 
 .terminate {
-  background-color: #F1F5F9;
-  color: #4A4A4A;
+  background-color: #f1f5f9;
+  color: #4a4a4a;
   border: none;
   padding: 6px 12px;
   font-size: 12px;
@@ -238,13 +267,13 @@ const budgetMessage = computed(()=>{
   margin-right: 7px;
 }
 
-.info-wrapper{
-  position:relative;
+.info-wrapper {
+  position: relative;
 }
 
-.info-icon{
-  color:#AAAAAA;
-  width:18px;
+.info-icon {
+  color: #aaaaaa;
+  width: 18px;
   /* padding-bottom:5px; */
   cursor: pointer;
   transform: translateY(3px); /* 3px 아래로 */
@@ -260,11 +289,11 @@ const budgetMessage = computed(()=>{
   border-radius: 8px;
   padding: 12px 16px;
   font-size: 14px;
-  line-height: 1.6;    /*  줄 간격 여유 있게 */
-  min-width: 170px;    /*  최소 너비 확보 */
-  max-width: 240px;    /*  너무 길지 않게 제한 */
+  line-height: 1.6; /*  줄 간격 여유 있게 */
+  min-width: 170px; /*  최소 너비 확보 */
+  max-width: 240px; /*  너무 길지 않게 제한 */
   white-space: normal; /*  줄바꿈 허용 */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
 }
 
@@ -283,7 +312,7 @@ const budgetMessage = computed(()=>{
 
 .progress {
   height: 100%;
-  background-color: #5C8EF6;
+  background-color: #5c8ef6;
   border-radius: 4px;
   transition: width 0.3s ease-in-out;
 }
@@ -292,7 +321,7 @@ const budgetMessage = computed(()=>{
   background-color: #ff6666; /* 빨간색 */
 }
 
-/* 모달 스타일 (DetailView와 동일) */
+/* 모달 오버레이 - 배경 어둡게 + 블러 처리 */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -300,68 +329,51 @@ const budgetMessage = computed(()=>{
   width: 100vw;
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  z-index: 1100;
-  animation: fadeIn 0.3s ease-out;
+  z-index: 1099;
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
+  animation: fadeIn 0.3s ease-out;
 }
 
+/* 여행 종료 모달 */
 .terminate-modal {
-  width: 100%;
-  max-width: 325px;
-  height: auto;
-  min-height: 230px;
-  background: white;
-  border-radius: 1.5rem;
-  box-shadow: 0px -4px 32px rgba(0, 0, 0, 0.24);
-  padding: 28px 40px 36px 40px;
-  position: relative;
-  animation: slideUpFromBottom 0.3s ease-out;
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 2rem; /* defaultLayout의 padding과 맞춤 */
+  width: 352px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 16px 16px 24px 16px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1100;
+  animation: modalUp 0.25s ease;
 }
 
-.modal-icon {
-  width: 40px;
-  height: 40px;
-  font-size: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px auto;
+/* 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.modal-title {
-  text-align: center;
-  color: #1f2937;
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 28px;
-  margin: 0 0 16px 0;
+@keyframes modalUp {
+  from {
+    transform: translateX(-50%) translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
 }
 
-.modal-description {
-  text-align: center;
-  color: #6b7280;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  margin: 0 0 28px 0;
-}
-
-.modal-buttons {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
+/* 버튼 스타일 */
 .modal-cancel-btn,
 .modal-confirm-btn {
-  flex: 1;
   height: 48px;
   background: rgba(255, 209, 102, 0.65);
   border-radius: 12px;
@@ -385,56 +397,5 @@ const budgetMessage = computed(()=>{
 .modal-cancel-btn:active,
 .modal-confirm-btn:active {
   transform: translateY(0);
-}
-
-/* 애니메이션 */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUpFromBottom {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* 반응형 대응 */
-@media (max-width: 480px) {
-  .terminate-modal {
-    padding: 24px 20px 32px 20px;
-    margin: 0 auto;
-    border-radius: 16px;
-    margin-bottom: 2rem;
-  }
-
-  .modal-buttons {
-    gap: 8px;
-    max-width: none;
-  }
-
-  .modal-cancel-btn,
-  .modal-confirm-btn {
-    height: 44px;
-    font-size: 15px;
-  }
-}
-
-@media (min-width: 768px) {
-  .terminate-modal {
-    max-width: 325px;
-    margin: 0 auto;
-    border-radius: 16px;
-    margin-bottom: 2rem;
-  }
 }
 </style>

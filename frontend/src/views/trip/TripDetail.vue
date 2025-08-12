@@ -1,6 +1,6 @@
 <template>
-  <Header :title="title" @back="router.back" />
   <div class="content-container">
+    <Header :title="title" @back="router.back" />
     <!-- 현재 userId = 1인 여행만 보임 (TripController) -->
     <TravelCard
       v-if="tripStore.currentTrip"
@@ -14,18 +14,19 @@
       :is-owner="isOwner"
       showEdit
     />
+
     <div v-if="activeTab === '그룹 지출 내역' || activeTab === '선결제 내역'">
       <Summary
-          v-if="tripStore.currentTrip"
-          :amount="totalAmount"
-          :budget="tripStore.currentTrip.budget"
-          :on-terminate="handleTripTerminate"
-          :is-owner="isOwner"
-          :is-closed="isClosed"
+        v-if="tripStore.currentTrip"
+        :amount="totalAmount"
+        :budget="tripStore.currentTrip.budget"
+        :on-terminate="handleTripTerminate"
+        :is-owner="isOwner"
+        :is-closed="isClosed"
       >
       </Summary>
 
-      <Filter
+      <Filter2
         v-if="tripStore.currentTrip"
         :start-date="formatDate(tripStore.currentTrip.startDate)"
         :members="tripStore.currentTripMembers"
@@ -42,41 +43,62 @@
       />
     </div>
     <div v-else>
-      <TripEdit ref="updateTrip" />
+      <TripEdit
+          ref="updateTrip"
+          :isOwner="isOwner"
+      />
     </div>
+
+    <!--  TODO : 앞 두 버튼에 올바른 라우팅 적용하기  -->
+    <button
+      v-if="!isClosed && activeTab === '그룹 지출 내역'"
+      class="floating-button"
+<<<<<<< HEAD
+      @click="goToOtherRegister"
+    >
+      + 기타 결제
+    </button>
+
+    <button
+      v-if="!isClosed && activeTab === '선결제 내역'"
+      class="floating-button"
+      @click="goToPrepaidRegister"
+    >
+      + 선결제
+    </button>
+
+    <button
+      v-if="!isClosed && activeTab === '그룹 관리'"
+      class="floating-button"
+      @click="callChildUpdate"
+    >
+=======
+      @click="goToOtherRegister">
+      +  기타 결제
+    </button>
+
+    <button
+        v-if=" !isClosed && activeTab === '선결제 내역'"
+        class="floating-button"
+        @click="goToPrepaidRegister">
+      + 선결제 
+    </button>
+
+    <button
+        v-if=" !isClosed && activeTab && isOwner === '그룹 관리'"
+        class="floating-button"
+        @click="callChildUpdate">
+>>>>>>> acc64dc02a3210cd86f4af69fbb839d091f4709b
+      저장하기
+    </button>
   </div>
-
-  <!--  TODO : 앞 두 버튼에 올바른 라우팅 적용하기  -->
-
-  <button
-    v-if="!isClosed && activeTab === '그룹 지출 내역'"
-    class="floating-button"
-    @click="goToOtherRegister"
-  >
-    + 기타 결제
-  </button>
-
-  <button
-    v-if="!isClosed && activeTab === '선결제 내역'"
-    class="floating-button"
-    @click="goToPrepaidRegister"
-  >
-    + 선결제 추가
-  </button>
-
-  <button
-    v-if="!isClosed && activeTab === '그룹 관리'"
-    class="floating-button"
-    @click="callChildUpdate"
-  >
-    저장하기
-  </button>
 </template>
 
 <script setup>
 import Header from '@/components/layout/Header.vue';
 import TravelCard from '@/components/common/TravelCard.vue';
 import Filter from '@/components/paymentlist/Filter.vue';
+import Filter2 from '@/components/paymentlist/Filter2.vue';
 
 import { onMounted, ref } from 'vue';
 import { usePaymentListStore } from '@/stores/tripStore.js';
@@ -210,7 +232,7 @@ const handleTripTerminate = async () => {
       alert(
         '여행이 종료되었습니다. 모든 멤버의 결제 금액이 같아 정산이 필요하지 않습니다.'
       );
-      router.push('/'); // 또는 '/trips' 등 적절한 페이지
+      await router.push('/'); // 또는 '/trips' 등 적절한 페이지
     }
   } catch (error) {
     console.error('여행 종료 중 오류 발생:', error);
@@ -218,13 +240,14 @@ const handleTripTerminate = async () => {
   }
 };
 
+//삭제 버튼 클릭 처리하는 함수
 const handleDelete = async () => {
   const tripId = route.params.tripId;
   await tripApi.deleteTrip(Number(tripId));
-  console.log("id: "+tripId+" 여행 삭제");
-  alert("여행이 삭제되었습니다.");
+  console.log('id: ' + tripId + ' 여행 삭제');
+  alert('여행이 삭제되었습니다.');
   await router.replace(`/`);
-}
+};
 
 // 정산 필요 여부 확인 함수
 const checkIfSettlementNeeded = async () => {
@@ -274,8 +297,11 @@ onMounted(async () => {
   if (tripStore.currentTrip) {
     await tripStore.fetchCurrentTripMemberNicknames();
     await checkIsOwner();
-    tripStore.currentTrip.tripStatus === 'ACTIVE' ? title.value = '진행 중인 여행' :
-        tripStore.currentTrip.tripStatus === 'READY' ? title.value = '예정된 여행' : title.value = '지난 여행'
+    tripStore.currentTrip.tripStatus === 'ACTIVE'
+      ? (title.value = '진행 중인 여행')
+      : tripStore.currentTrip.tripStatus === 'READY'
+      ? (title.value = '예정된 여행')
+      : (title.value = '지난 여행');
   }
   if (tripStore.currentTrip.tripStatus === 'CLOSED') {
     isClosed.value = true;
@@ -317,13 +343,13 @@ onMounted(async () => {
 
 .floating-button {
   position: sticky;
-  bottom: 80px;
-  left: 85%;
-  transform: translateX(-50%); /* 가운데 정렬 */
+  bottom: 50px;
+  left: 57%;
+  /* transform: translateX(-50%); 가운데 정렬 */
   width: 120px;
   max-width: 384px;
 
-  background-color: rgb(255, 217, 130);
+  background-color: #ffe499;
   color: #4a4a4a;
   font-weight: bold;
   font-size: 16px;
@@ -342,6 +368,6 @@ onMounted(async () => {
 }
 
 .floating-button:active {
-  transform: translateX(-50%) scale(0.95);
+  /* transform: translateX(-50%) scale(0.95); */
 }
 </style>

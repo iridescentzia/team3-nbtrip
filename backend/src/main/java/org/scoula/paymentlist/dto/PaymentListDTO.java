@@ -4,7 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.scoula.payment.dto.ParticipantDTO;
 import org.scoula.paymentlist.domain.PaymentListVO;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -26,6 +29,8 @@ public class PaymentListDTO {
     private String paymentType;
     private String memo;
 
+    private List<ParticipantDTO> participants;
+
     /**
      * VO → DTO 변환
      */
@@ -45,6 +50,7 @@ public class PaymentListDTO {
                 .amount(vo.getAmount())
                 .paymentType(vo.getPaymentType())
                 .memo(vo.getMemo())
+                .participants(vo.getParticipants())
                 .build();
     }
 

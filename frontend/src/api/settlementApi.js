@@ -29,6 +29,17 @@ export const requestSettlement = (payload) => {
 };
 
 /**
+ * [NEW] 멤버별 정산 영수증 상세 내역 조회 API
+ * @param {number} tripId - 여행 ID
+ * @param {number} otherUserId - 상대방 사용자 ID
+ * @returns {Promise} - Axios Promise 객체
+ */
+export const getSettlementBreakdown = (tripId, otherUserId) => {
+  // JWT 토큰에 담긴 내 userId는 서버에서 자동으로 인식합니다.
+  return apiClient.get(`/settlements/${tripId}/breakdown/${otherUserId}`);
+};
+
+/**
  * 개인별 정산 내역 조회 API
  * @param {number} tripId - 여행 ID
  * @return {Promise} - Axios Promise

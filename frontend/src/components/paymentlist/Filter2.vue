@@ -70,7 +70,7 @@
     <transition name="slide-up" appear>
       <div class="bottom-modal">
         <h3 class="modal-title">카테고리</h3>
-        <div class="member-list">
+        <div class="member-list member-list--no-scroll">
           <label
             v-for="category in tripStore.merchantCategories"
             :key="category.categoryId"
@@ -83,8 +83,9 @@
           />
           {{ category.categoryName }}
           </label>
+          </div>
         <Button @click="applyCategoryFilter" label="조회하기"></Button>
-        </div>
+        
       </div>
     </transition>
   </div>
@@ -96,9 +97,9 @@
     @click.self="closeParticipantModal"
   >
     <Transition name="slide-up" appear>
-      <div class="modal">
+      <div class="bottom-modal">
         <h3 class="modal-title">결제 참여자</h3>
-        <div class="member-list">
+        <div class="member-list member-list--no-scroll">
           <label
             v-for="member in props.members"
             :key="member.userId"
@@ -159,6 +160,21 @@ const dateRange = ref({ start: '', end: '' });
 const categoryFilter = ref(null);
 const selectedParticipants = ref([]); // 복수 선택 가능
 
+// 공통: 스크롤 잠금 / 해제
+const lockScroll = () => {
+  const container = document.querySelector('.content-container');
+  if (container) {
+    container.scrollTop = 0;      // 스크롤 맨 위로
+    container.style.overflow = 'hidden';
+  }
+};
+const unlockScroll = () => {
+  const container = document.querySelector('.content-container');
+  if (container) {
+    container.style.overflow = 'auto';
+  }
+};
+
 // 버튼 active 여부 계산
 const isDateFiltered = computed(() => {
  return hasApplied.value && (
@@ -172,10 +188,18 @@ const isParticipantsFiltered = computed(() => selectedMembers.value.length > 0);
 // 날짜 모달 토글 함수
 const toggleDateModal = () => {
   isDateModalOpen.value = !isDateModalOpen.value;
+  
+  // 모달창 열려 있으면 스크롤 잠금
+  if (isDateModalOpen.value) {
+    lockScroll();
+  } else {
+    unlockScroll();
+  }
 };
 
 const closeDateModal = () => {
   isDateModalOpen.value = false;
+  unlockScroll();
 };
 
 
@@ -212,10 +236,18 @@ const applyDateFilter = () => {
 
 const toggleCategoryModal = async () => {
   isCategoryModalOpen.value = !isCategoryModalOpen.value;
+
+    // 모달창 열려 있으면 스크롤 잠금
+  if (isCategoryModalOpen.value) {
+    lockScroll();
+  } else {
+    unlockScroll();
+  }
 };
 
 const closeCategoryModal = () => {
   isCategoryModalOpen.value = false;
+  unlockScroll();
 };
 
 // 선택된 카테고리 필터링
@@ -226,10 +258,18 @@ const applyCategoryFilter = () => {
 
 const toggleParticipantModal = async () => {
   isParticipantModalOpen.value = !isParticipantModalOpen.value;
+
+    // 모달창 열려 있으면 스크롤 잠금
+  if (isParticipantModalOpen.value) {
+    lockScroll();
+  } else {
+    unlockScroll();
+  }
 };
 
 const closeParticipantModal = () => {
   isParticipantModalOpen.value = false;
+  unlockScroll();
 };
 
 // 선택된 결제 참여자 필터링
@@ -326,39 +366,38 @@ onMounted(async () => {
   position: absolute;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.3);
-  z-index: 1500;
+  z-index: 2000;
 }
 
 .bottom-modal {
-  position: absolute;
+  position: absolute;   /* content-container 기준 유지 */
   bottom: 0;
+  /* ✅ 수평 정렬 방식 교체 */
   left: 0;
+  right: 0;
+  margin: 0 auto;
+  transform: none;
+
   width: 100%;
   max-width: 384px;
-  /* max-width: 24rem; */
-  margin: 0;
-  background-color: white;
+  background: #fff;
 
-  padding: 20px 0 ;
+  /* 높이: 내용기반 + 상한 */
+   height: clamp(320px, 40svh, 380px) !important;  
+  max-height: none !important;  
+  display: flex;
+  flex-direction: column;
+
+  padding: 16px 0;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  z-index: 20;
-  height: 25vh; /* viewport height: 18% */
-   max-height: 30vh; /* 최대 높이 제한 */  
-}
-
-.modal {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 352px;
-  background-color: #ffffff;
-  border-radius: 16px 16px 0 0;
-  padding: 16px 8px 24px 16px;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
-  z-index: 1001;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.15);
+  z-index: 2001;
   animation: modalUp 0.25s ease;
 }
+/*@supports not (height: 100svh) {
+  .bottom-modal { max-height: 60vh; }
+}*/
 
 @keyframes modalUp {
   from {
@@ -375,13 +414,116 @@ onMounted(async () => {
   margin-left: 20px;
 }
 
-.member-list{
+
+/* 내부 스크롤 영역 */
+.member-list {
+  padding: 0 30px;
+  padding-bottom: 40px;
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2열로 구성 */
-  gap: 10px 16px; /* 세로 10px, 가로 16px 간격 */
-  padding: 0 20px;
-  overflow-y: auto; /* 내용이 넘치면 스크롤 */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 16px;
 }
+
+/* ✅ 카테고리: 스크롤 없음 */
+.member-list--no-scroll {
+  overflow: hidden;                   /* 스크롤 막기 */
+  max-height: none;                    /* 높이 제한 없음 (카테고리 개수 적다는 가정) */
+}
+
+/* ✅ 결제참여자: 내부 스크롤 + 깔끔한 스크롤바 */
+.member-list--scroll {
+  max-height: 40svh;                   /* 모달 내에서 적당히만 보이게 */
+  overflow-y: auto;
+  overscroll-behavior: contain;        /* 스크롤 체인 방지(바깥으로 튐 방지) */
+  
+  /* Firefox 스타일 */
+  scrollbar-width: thin;
+  scrollbar-color: #bbb #f0f0f0;
+}
+
+/* ✅ WebKit(Chrome/Edge/Safari)은 :deep() 필요 */
+.member-list--scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.member-list--scroll::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 50px;
+}
+.member-list--scroll::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 50px;          /* tripdetail과 동일하게 둥글게 */
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.member-list--scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #888;
+}
+
+/* ── 체크박스 아이템 한 줄 레이아웃 ── */
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;               /* 체크박스와 텍스트 간격 */
+  font-size: 18px;
+  color: #333333;
+  user-select: none;      /* 텍스트 드래그 방지 */
+  line-height: 1.2;
+  cursor:pointer;
+  padding-bottom:2px;
+}
+
+/* ── 커스텀 체크박스 ── */
+.member-item input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ffd166;   
+  border-radius: 4px;
+  background-color: #ffffff;
+  cursor: pointer;
+  position: relative;
+  margin: 0;                   /* 라벨 내부이므로 margin 제거 */
+  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+/* hover/focus 상태 (선택) */
+.member-item input[type='checkbox']:hover {
+  box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.25);
+}
+.member-item input[type='checkbox']:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.45);
+}
+
+/* 체크됨 */
+.member-item input[type='checkbox']:checked {
+  background-color: #ffd166;
+  border-color: #ffd166;
+}
+
+/* 체크 표시 (하얀색 V) */
+.member-item input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -60%) rotate(45deg);
+  display: block;
+}
+
+/* 비활성화 상태 (필요 시) */
+.member-item input[type='checkbox']:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 
 /* 슬라이드 애니메이션 */
 .slide-up-enter-active,
@@ -404,5 +546,6 @@ onMounted(async () => {
 .date-picker {
   width: calc(100% - 2rem);
   margin: 0 1rem;
+  padding-bottom: 40px;
 }
 </style>

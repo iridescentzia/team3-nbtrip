@@ -37,6 +37,13 @@
         WHERE user_id = #{userId}
     </select>
 
+    <!-- userId로 회원 닉네임 조회 -->
+    <select id="findNicknameById" parameterType="java.lang.Integer" resultType="string">
+        SELECT nickname
+        FROM users
+        WHERE user_id = #{userId}
+    </select>
+
     <!-- nickname으로 회원 조회 -->
     <select id="findUserIdByNickname" parameterType="string" resultType="java.lang.Integer">
         SELECT user_id

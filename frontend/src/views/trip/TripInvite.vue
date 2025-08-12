@@ -70,6 +70,7 @@ function handleClickOutside(e) {
 }
 
 async function createTrip() {
+  const createButton = document.querySelector('.round-next-btn');
   try {
     console.log(store.tripName);
     const payload = {
@@ -81,12 +82,14 @@ async function createTrip() {
       members: addedItems.value     // [{id, nickname}, ...] 배열 형태로 전달
     };
 
+    createButton.disabled = true;
     const response = await tripApi.createTrip(payload);
     console.log('여행 생성 성공:', response);
     alert('여행이 생성되었습니다!');
     router.replace('/');
   } catch (error) {
     console.error('여행 생성 실패:', error);
+    createButton.disabled = false;
   }
 }
 
@@ -331,13 +334,25 @@ p{
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 45px;
-  width: 45px;
+  height: 50px;
+  width: 50px;
   position: absolute;
-  bottom : 5%;
+  bottom : 8%;
   left: 50%;
   transform: translateX(-50%);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
+
+.round-next-btn:hover{
+  background-color: #FFD166;
+}
+
+.round-next-btn:active {
+  transform: translateX(-50%) scale(0.95);
+}
+
+
 
 .input-wrapper {
   position: relative;

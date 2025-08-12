@@ -3,6 +3,7 @@ package org.scoula.report.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.scoula.report.dto.ChartDTO;
+import org.scoula.report.mapper.ReportCommentMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,19 +15,38 @@ public class OpenAiServiceImpl implements OpenAiService {
 
     private final ChartService chartService;
     private final ChatGPTClient chatGPTClient;
+    private final ReportCommentMapper reportCommentMapper;
 
     @Override
     public String getDonutReport(int tripId) {
+        // 1) 최신 코멘트 있으면 재사용
+        var saved = reportCommentMapper.findLatest(tripId, "CATEGORY");
+        if (saved != null) return saved.getContent();
+
+        // 2) 없으면 생성
         List<ChartDTO> donutData = chartService.getDonutChart(tripId);
         String prompt = buildDonutPrompt(donutData);
-        return chatGPTClient.getCompletion(prompt);
+        String content = safeCallOpenAI(prompt);
+
+        // 3) 저장
+        reportCommentMapper.insert(tripId, "CATEGORY", content);
+        return content;
     }
 
     @Override
     public String getLineReport(int tripId) {
+        // 1) 최신 코멘트 있으면 재사용
+        var saved = reportCommentMapper.findLatest(tripId, "DATE");
+        if (saved != null) return saved.getContent();
+
+        // 2) 없으면 생성
         List<ChartDTO> lineData = chartService.getLineChart(tripId);
         String prompt = buildLinePrompt(lineData);
-        return chatGPTClient.getCompletion(prompt);
+        String content = safeCallOpenAI(prompt);
+
+        // 3) 저장
+        reportCommentMapper.insert(tripId, "DATE", content);
+        return content;
     }
 
     private String buildDonutPrompt(List<ChartDTO> donutData) {
@@ -51,5 +71,18 @@ public class OpenAiServiceImpl implements OpenAiService {
         }
         sb.append("\n이 데이터를 분석해 소비 추이에 대한 조언을 140자 이내 한국어로 작성해 주세요.");
         return sb.toString();
+    }
+
+    private String safeCallOpenAI(String prompt) {
+        try {
+            String res = chatGPTClient.getCompletion(prompt);
+            if (res == null || res.isBlank()) {
+                return "AI 분석을 생성하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+            }
+            return res;
+        } catch (Exception e) {
+            log.error("OpenAI 호출 실패", e);
+            return "AI 분석을 생성하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+        }
     }
 }
