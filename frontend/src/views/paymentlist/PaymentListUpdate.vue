@@ -60,22 +60,22 @@ const getSplitAmount = (userId) => {
 const manuallyEditedUserIds = ref([]); // 사용자 직접 수정한 userId 추적
 
 const updateSplitAmount = (userId, value) => {
+  // 콤마 제거 후 숫자 변환
   const totalAmount = parseInt(form.value.amount.replace(/,/g, ''), 10) || 0;
-  const newAmount = parseInt(String(value).replace(/,/g, ''), 10);
-
-  if (isNaN(newAmount)) {
-    alert('숫자만 입력할 수 있습니다.');
-    return;
-  }
+ 
+  // 이벤트/문자 모두 대응 + 숫자만 추출, 빈 문자열 허용
+  const raw = value && value.target ? value.target.value : value;
+  const digits = String(raw).replace(/[^0-9]/g, ''); // 숫자만 남기고 나머지 문자는 제거
+  let newAmount = digits === '' ? 0 : parseInt(digits, 10);
 
   if (newAmount > totalAmount) {
     alert('분배 금액은 총 결제 금액을 초과할 수 없습니다.');
-    return;
+    newAmount = totalAmount // 초과 시 최대값으로 고정
   }
 
   // 직접 수정한 유저 목록에 등록
   if (!manuallyEditedUserIds.value.includes(userId)) {
-    manuallyEditedUserIds.value.push(userId);
+    manuallyEditedUserIds.value.push(userId); // 수동 편집자들은 고정, 나머지에게만 자동으로 1/N 재분배 적용
   }
 
   // 현재 유저 splitAmount 업데이트
@@ -84,7 +84,7 @@ const updateSplitAmount = (userId, value) => {
     target.splitAmount = newAmount;
   }
 
-  // 총 금액 - 직접 입력된 유저들의 합
+  // (자동 재분배해야 할 잔액) = (총 금액) - (직접 입력된 유저들의 합)
   const manuallyEnteredTotal = selectedMembers.value
     .filter(p => manuallyEditedUserIds.value.includes(p.userId))
     .reduce((sum, p) => sum + p.splitAmount, 0);
@@ -113,9 +113,10 @@ const updateSplitAmount = (userId, value) => {
   } else {
     toDistribute[0].splitAmount += remainder;
   }
+
+  // 입력창 표시값을 콤마로 갱신
+  if (value && value.target) value.target.value = newAmount.toLocaleString();
 };
-
-
 
 // 금액 입력 시 콤마 포맷 적용
 const formatAmountInput = () => {
@@ -420,11 +421,10 @@ const handleDelete = async () => {
           <!-- 분배 금액 입력 -->
           <div v-if="isSelected(member.userId)" class="input-box" style="margin-top: 8px;">
             <input
-              type="number"
-              :value="getSplitAmount(member.userId)"
-              @input="updateSplitAmount(member.userId, $event.target.value)"
-              class="input-text"
-              style="width: 100px;"
+              type="text"
+              :value="getSplitAmount(member.userId).toLocaleString()"
+              @input="updateSplitAmount(member.userId, $event)"
+              class="input-text split-input"
             />
             <span class="input-suffix">원</span>
           </div>
@@ -540,7 +540,7 @@ const handleDelete = async () => {
 
 .input-text,
 .input-suffix {
-  font-size: 18px;
+  font-size: 17px;
   color: #000;
   border: none;
   outline: none;
@@ -600,6 +600,16 @@ input[type="number"]::-webkit-outer-spin-button {
   gap: 10px;
   justify-content: space-between; /* 왼쪽/오른쪽 정렬 */
   
+}
+
+/* 결제 참여자 분배 입력칸 gap 최소화 */
+.participant-item .input-box {
+  gap: 0px;
+}
+
+.split-input{
+  width: 90px; 
+  text-align:right
 }
 
 .badge {
