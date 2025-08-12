@@ -139,8 +139,8 @@ onMounted(async ()=>{
   <div class="member-list">
     <div class="member-list-item" v-for="member in members" :key="member.userId">
       <div class="avatar-and-name">
-        <div class="avatar avatar-lg">{{member.name.charAt(0)}}</div>
-        {{ member.name }}
+        <div class="avatar avatar-lg">{{member.nickname.charAt(0)}}</div>
+        {{ member.nickname }}
       </div>
       <select
           class="status_selector"
