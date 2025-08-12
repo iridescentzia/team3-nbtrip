@@ -3,7 +3,7 @@
     <Header :title="title" @back="router.back"/>
 
     <TravelCard
-      v-if="tripStore.currentTrip"
+      v-if="isReady"
       :trip-name="tripStore.currentTrip.tripName"
       :start-date="formatDate(tripStore.currentTrip.startDate)"
       :end-date="formatDate(tripStore.currentTrip.endDate)"
@@ -15,7 +15,7 @@
       showEdit
     />
 
-    <div v-if="activeTab === '그룹 지출 내역' || activeTab === '선결제 내역'">
+    <div v-if="isReady && (activeTab === '그룹 지출 내역' || activeTab === '선결제 내역')">
       <Summary
         v-if="tripStore.currentTrip"
         :amount="totalAmount"
@@ -42,7 +42,7 @@
         @init-total="onInitTotal"
       />
     </div>
-    <div v-else>
+    <div v-else-if="isReady">
       <TripEdit
           ref="updateTrip"
           :isOwner="isOwner"
@@ -51,7 +51,7 @@
   </div>
 
     <button
-      v-if="!isClosed && activeTab === '그룹 지출 내역'"
+      v-if="isReady && !isClosed && activeTab === '그룹 지출 내역'"
       class="floating-button"
       @click="goToOtherRegister"
     >
@@ -59,7 +59,7 @@
     </button>
 
     <button
-      v-if="!isClosed && activeTab === '선결제 내역'"
+      v-if="isReady && !isClosed && activeTab === '선결제 내역'"
       class="floating-button"
       @click="goToPrepaidRegister"
     >
@@ -67,7 +67,7 @@
     </button>
 
     <button
-      v-if="!isClosed && activeTab === '그룹 관리'"
+      v-if="isReady && !isClosed && activeTab === '그룹 관리'"
       class="floating-button"
       @click="callChildUpdate"
     >
@@ -81,7 +81,7 @@ import Header from '@/components/layout/Header.vue';
 import TravelCard from '@/components/common/TravelCard.vue';
 import Filter from '@/components/paymentlist/Filter.vue';
 
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { usePaymentlistStore } from '@/stores/tripStore.js';
 import { useRouter, useRoute } from 'vue-router';
 import Summary from '@/components/common/Summary.vue';
@@ -101,6 +101,8 @@ const updateTrip = ref(null);
 const isOwner = ref(false);
 const title = ref('');
 const isClosed = ref(false);
+
+const isReady = computed(()=> !!tripStore.currentTrip) // 데이터 준비 여부
 
 const callChildUpdate = async () => {
   if (updateTrip.value) {
