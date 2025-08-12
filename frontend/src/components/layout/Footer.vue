@@ -1,13 +1,11 @@
 <script setup>
 import { House, Scan, Plane, User } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-// vue router 인스턴스
 const router = useRouter();
 const route = useRoute();
 
-// footer 탭 정보
 const navItems = [
   {
     name: 'home',
@@ -35,12 +33,13 @@ const navItems = [
   },
 ];
 
-// 현재 활성화된 탭
 const activeTab = computed(() => {
   return route.path;
 });
 
-// 탭 클릭 시 실행되는 handler 함수
+// State to track hovered tab
+const hoveredTabName = ref(null);
+
 const handlerTabClick = (item) => {
   if (route.path !== item.path) {
     router.push(item.path);
@@ -49,14 +48,19 @@ const handlerTabClick = (item) => {
 </script>
 
 <template>
-  <!-- 하단 고정 footer -->
   <footer class="footer">
     <div
       v-for="item in navItems"
       :key="item.name"
       class="footer-item"
-      :class="{ active: activeTab === item.path }"
+      :class="{
+        active:
+          hoveredTabName === item.name ||
+          (hoveredTabName === null && activeTab === item.path),
+      }"
       @click="handlerTabClick(item)"
+      @mouseenter="hoveredTabName = item.name"
+      @mouseleave="hoveredTabName = null"
     >
       <div class="icon"><component :is="item.icon" /><br /></div>
       <span class="label">{{ item.label }}</span>
@@ -65,14 +69,13 @@ const handlerTabClick = (item) => {
 </template>
 
 <style scoped>
-/* 하단 네비게이션 바 컨테이너 */
 .footer {
   bottom: 0;
   left: 0;
   right: 0;
-  margin: 0 auto; /* PC에서 가운데 정렬 */
+  margin: 0 auto;
   width: 100%;
-  max-width: 375px; /* 모바일 최대 폭 */
+  max-width: 375px;
   height: 69px;
   background-color: #ffffff;
   border-top: 1px solid #e2e8f0;
@@ -84,7 +87,6 @@ const handlerTabClick = (item) => {
   padding: 4px;
 }
 
-/* 개별 탭 아이템 스타일 */
 .footer-item {
   display: flex;
   flex-direction: column;
@@ -98,23 +100,22 @@ const handlerTabClick = (item) => {
   font-weight: 400;
   white-space: nowrap;
   cursor: pointer;
+  transition: color 0.2s ease-in-out;
 }
 
-/* 탭 내부 아이콘 영역 */
 .footer-item .icon {
   width: 24px;
   height: 24px;
   color: #8d8d8d;
   display: block;
+  transition: color 0.2s ease-in-out;
 }
 
-/* 활성화된 탭 스타일 */
 .footer-item.active {
   color: #fddf99;
   font-weight: 700;
 }
 
-/* 활성화된 탭 아이콘 스타일 */
 .footer-item.active .icon {
   color: #fddf99;
 }

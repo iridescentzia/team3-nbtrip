@@ -569,7 +569,7 @@ const confirmTransfer = async () => {
 
 /* 모달 */
 .modal {
-  position: fixed;
+  position: absolute;
   left: 50%;
   transform: translateX(-50%);
   bottom: 0;
