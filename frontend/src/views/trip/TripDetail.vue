@@ -53,9 +53,8 @@
     <button
       v-if="isReady && !isClosed && activeTab === '그룹 지출 내역'"
       class="floating-button"
-      @click="goToOtherRegister"
-    >
-      + 기타 결제
+      @click="goToOtherRegister">
+      +  기타 결제
     </button>
 
     <button
@@ -280,6 +279,7 @@ onMounted(async () => {
   if (tripStore.currentTrip) {
     await tripStore.fetchCurrentTripMemberNicknames();
     await checkIsOwner();
+    console.log("isOwner: "+ isOwner.value)
     tripStore.currentTrip.tripStatus === 'ACTIVE'
       ? (title.value = '진행 중인 여행')
       : tripStore.currentTrip.tripStatus === 'READY'

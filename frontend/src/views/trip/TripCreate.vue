@@ -137,12 +137,9 @@ onMounted(()=>{
   justify-content: center;
 }
 
-:deep(.dp__main){
-  width: 100% !important;
-}
 
 :deep(.dp__calendar) {
-  width: 100% !important;
+  width: 324px;
 }
 
 </style>
