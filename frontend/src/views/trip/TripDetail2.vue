@@ -1,9 +1,9 @@
-<template>
+<template>  
   <div class="content-container">
     <Header :title="title" @back="router.back"/>
 
     <TravelCard
-      v-if="isReady"
+      v-if="tripStore.currentTrip"
       :trip-name="tripStore.currentTrip.tripName"
       :start-date="formatDate(tripStore.currentTrip.startDate)"
       :end-date="formatDate(tripStore.currentTrip.endDate)"
@@ -15,14 +15,14 @@
       showEdit
     />
 
-    <div v-if="isReady && (activeTab === '그룹 지출 내역' || activeTab === '선결제 내역')">
+    <div v-if="activeTab === '그룹 지출 내역' || activeTab === '선결제 내역'">
       <Summary
-        v-if="tripStore.currentTrip"
-        :amount="totalAmount"
-        :budget="tripStore.currentTrip.budget"
-        :on-terminate="handleTripTerminate"
-        :is-owner="isOwner"
-        :is-closed="isClosed"
+          v-if="tripStore.currentTrip"
+          :amount="totalAmount"
+          :budget="tripStore.currentTrip.budget"
+          :on-terminate="handleTripTerminate"
+          :is-owner="isOwner"
+          :is-closed="isClosed"
       >
       </Summary>
 
@@ -42,35 +42,32 @@
         @init-total="onInitTotal"
       />
     </div>
-    <div v-else-if="isReady">
+    <div v-else>
       <TripEdit
           ref="updateTrip"
           :isOwner="isOwner"
       />
     </div>
   </div>
-
-    <!--  TODO : 앞 두 버튼에 올바른 라우팅 적용하기  -->
+      <!--  TODO : 앞 두 버튼에 올바른 라우팅 적용하기  -->
     <button
-      v-if="isReady && !isClosed && activeTab === '그룹 지출 내역'"
+      v-if=" !isClosed && activeTab === '그룹 지출 내역'"
       class="floating-button"
       @click="goToOtherRegister">
       +  기타 결제
     </button>
 
     <button
-      v-if="isReady && !isClosed && activeTab === '선결제 내역'"
-      class="floating-button"
-      @click="goToPrepaidRegister"
-    >
-      + 선결제
+        v-if=" !isClosed && activeTab === '선결제 내역'"
+        class="floating-button"
+        @click="goToPrepaidRegister">
+      + 선결제 
     </button>
 
     <button
-      v-if="isReady && !isClosed && activeTab && isOwner === '그룹 관리'"
-      class="floating-button"
-      @click="callChildUpdate"
-    >
+        v-if=" !isClosed && activeTab === '그룹 관리'"
+        class="floating-button"
+        @click="callChildUpdate">
       저장하기
     </button>
 
@@ -81,7 +78,7 @@ import Header from '@/components/layout/Header.vue';
 import TravelCard from '@/components/common/TravelCard.vue';
 import Filter from '@/components/paymentlist/Filter.vue';
 
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { usePaymentlistStore } from '@/stores/tripStore.js';
 import { useRouter, useRoute } from 'vue-router';
 import Summary from '@/components/common/Summary.vue';
@@ -102,7 +99,7 @@ const isOwner = ref(false);
 const title = ref('');
 const isClosed = ref(false);
 
-const isReady = computed(()=> !!tripStore.currentTrip) // 데이터 준비 여부
+
 
 const callChildUpdate = async () => {
   if (updateTrip.value) {
@@ -227,10 +224,10 @@ const handleTripTerminate = async () => {
 const handleDelete = async () => {
   const tripId = route.params.tripId;
   await tripApi.deleteTrip(Number(tripId));
-  console.log('id: ' + tripId + ' 여행 삭제');
-  alert('여행이 삭제되었습니다.');
+  console.log("id: "+tripId+" 여행 삭제");
+  alert("여행이 삭제되었습니다.");
   await router.replace(`/`);
-};
+}
 
 // 정산 필요 여부 확인 함수
 const checkIfSettlementNeeded = async () => {
@@ -280,12 +277,8 @@ onMounted(async () => {
   if (tripStore.currentTrip) {
     await tripStore.fetchCurrentTripMemberNicknames();
     await checkIsOwner();
-    console.log("isOwner: "+ isOwner.value)
-    tripStore.currentTrip.tripStatus === 'ACTIVE'
-      ? (title.value = '진행 중인 여행')
-      : tripStore.currentTrip.tripStatus === 'READY'
-      ? (title.value = '예정된 여행')
-      : (title.value = '지난 여행');
+    tripStore.currentTrip.tripStatus === 'ACTIVE' ? title.value = '진행 중인 여행' :
+        tripStore.currentTrip.tripStatus === 'READY' ? title.value = '예정된 여행' : title.value = '지난 여행'
   }
   if (tripStore.currentTrip.tripStatus === 'CLOSED') {
     isClosed.value = true;
@@ -328,11 +321,11 @@ onMounted(async () => {
 .floating-button {
   position: absolute;
   bottom: 50px;
-  right: calc(50% - 192px + 40px);  /* 화면 가운데 정렬된 384px 카드의 오른쪽 끝에서 20px 안쪽 */
+  right: calc(50% - 192px + 20px);
   width: 120px;
 
-  background-color: #ffe499;
-  color: #4a4a4a;
+  background-color: #FFE499;
+  color: #4A4A4A;
   font-weight: bold;
   font-size: 16px;
   padding: 14px 0;
@@ -341,6 +334,7 @@ onMounted(async () => {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   z-index: 1000;
+  transition: background-color 0.2s ease, transform 0.1s ease;
   font-family: 'IBM Plex Sans KR', sans-serif;
 }
 
@@ -348,4 +342,7 @@ onMounted(async () => {
   background-color: #ffd166;
 }
 
+.floating-button:active {
+  /* transform: translateX(-50%) scale(0.95); */
+}
 </style>
