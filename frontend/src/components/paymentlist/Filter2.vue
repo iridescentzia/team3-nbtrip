@@ -122,7 +122,7 @@
 <script setup>
 import { ref, onMounted, computed, Transition } from 'vue';
 import { ChevronDown, RotateCcw } from 'lucide-vue-next';
-import {usePaymentListStore} from "@/stores/tripStore.js";
+import { usePaymentlistStore } from "@/stores/tripStore.js";
 import Button from '@/components/common/Button.vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -140,7 +140,7 @@ const props = defineProps({
 
 const emit = defineEmits(['date-filtered', 'participant-filtered', 'category-filtered'])
 
-const tripStore = usePaymentListStore();
+const tripStore = usePaymentlistStore();
 
 const selectedMembers = ref([]);
 const selectedCategories = ref([])
@@ -383,8 +383,8 @@ onMounted(async () => {
   background: #fff;
 
   /* 높이: 내용기반 + 상한 */
-   height: clamp(320px, 40svh, 380px) !important;  
-  max-height: none !important;  
+  height: auto;
+  /* max-height: none;   */
   display: flex;
   flex-direction: column;
 
@@ -412,6 +412,11 @@ onMounted(async () => {
 
 .modal-title{
   margin-left: 20px;
+}
+
+/* vue3datepicker 입력 필드 글씨 크기 변경 */
+:deep(.dp__input) {
+  font-size: 18px; /* 원하는 크기 */
 }
 
 
