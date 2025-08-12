@@ -21,7 +21,7 @@ const load = async () => {
 }
 
 const toNextPage=() => {
-  router.push(`/`);
+  router.push(`/trip/${tripId.value}`);
 }
 
 load();

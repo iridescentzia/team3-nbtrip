@@ -43,13 +43,17 @@
       />
     </div>
     <div v-else>
-      <TripEdit ref="updateTrip" />
+      <TripEdit
+          ref="updateTrip"
+          :isOwner="isOwner"
+      />
     </div>
 
     <!--  TODO : 앞 두 버튼에 올바른 라우팅 적용하기  -->
     <button
       v-if="!isClosed && activeTab === '그룹 지출 내역'"
       class="floating-button"
+<<<<<<< HEAD
       @click="goToOtherRegister"
     >
       + 기타 결제
@@ -68,6 +72,23 @@
       class="floating-button"
       @click="callChildUpdate"
     >
+=======
+      @click="goToOtherRegister">
+      +  기타 결제
+    </button>
+
+    <button
+        v-if=" !isClosed && activeTab === '선결제 내역'"
+        class="floating-button"
+        @click="goToPrepaidRegister">
+      + 선결제 
+    </button>
+
+    <button
+        v-if=" !isClosed && activeTab && isOwner === '그룹 관리'"
+        class="floating-button"
+        @click="callChildUpdate">
+>>>>>>> acc64dc02a3210cd86f4af69fbb839d091f4709b
       저장하기
     </button>
   </div>
@@ -211,7 +232,7 @@ const handleTripTerminate = async () => {
       alert(
         '여행이 종료되었습니다. 모든 멤버의 결제 금액이 같아 정산이 필요하지 않습니다.'
       );
-      router.push('/'); // 또는 '/trips' 등 적절한 페이지
+      await router.push('/'); // 또는 '/trips' 등 적절한 페이지
     }
   } catch (error) {
     console.error('여행 종료 중 오류 발생:', error);
@@ -219,6 +240,7 @@ const handleTripTerminate = async () => {
   }
 };
 
+//삭제 버튼 클릭 처리하는 함수
 const handleDelete = async () => {
   const tripId = route.params.tripId;
   await tripApi.deleteTrip(Number(tripId));

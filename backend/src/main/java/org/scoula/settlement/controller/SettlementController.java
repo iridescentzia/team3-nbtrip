@@ -270,6 +270,15 @@ public class SettlementController {
                 // 첫 번째 정산 건으로 tripId 조회
                 SettlementVO firstSettlement = settlementService.getById(request.getSettlementIds().get(0));
 
+                // 송금 완료 알림(SEND) 발송
+                NotificationDTO dto = NotificationDTO.builder()
+                        .fromUserId(loginUserId)
+                        .fromUserNickname(customUser.getNickname())
+                        .tripId(firstSettlement.getTripId())
+                        .notificationType("SEND") // 서비스에서 SETTLEMENT/SEND로 처리됨
+                        .build();
+                notificationService.createNotification(dto);
+
                 // 전체 정산 완료 확인
                 if (settlementService.isAllSettlementCompleted(firstSettlement.getTripId())) {
                     sendSettlementCompletedNotification(loginUserId, firstSettlement.getTripId());

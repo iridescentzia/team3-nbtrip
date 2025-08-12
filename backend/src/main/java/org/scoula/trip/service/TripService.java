@@ -24,4 +24,5 @@ public interface TripService {
     List<TripDTO> getTripsByStatus(int userId, TripStatus status);
     TripDTO updateTrip(TripUpdateDTO tripUpdateDTO);
     int deleteTrip(int tripId);
+    TripMemberStatus getMemberStatus(int tripId, int userId);
 }
