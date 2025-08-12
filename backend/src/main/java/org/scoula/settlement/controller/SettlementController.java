@@ -66,6 +66,31 @@ public class SettlementController {
         // 계산된 결과를 ResponseEntity에 담아 프론트엔드로 반환
         return ResponseEntity.ok(resultDto);
     }
+    // ==================== 정산 영수증 API ====================
+
+    /**
+     * 멤버별 정산 영수증(정산 과정) 상세 내역 조회 API
+     *
+     * @param tripId 조회할 여행의 ID
+     * @param otherUserId 상대방 사용자의 ID
+     * @param customUser 현재 로그인한 사용자 정보
+     * @return ResponseEntity<SettlementBreakdownResponseDto> 두 사용자 간의 정산 과정 상세 내역
+     */
+    @GetMapping("/{tripId}/breakdown/{otherUserId}")
+    public ResponseEntity<SettlementDTO.SettlementBreakdownResponseDto> getSettlementBreakdown(
+            @PathVariable("tripId") int tripId,
+            @PathVariable("otherUserId") int otherUserId,
+            @AuthenticationPrincipal CustomUser customUser) {
+
+        // 1. @AuthenticationPrincipal을 통해 현재 로그인한 사용자의 ID를 안전하게 가져옵니다.
+        int myUserId = customUser.getUserId();
+
+        // 2. Service에 필요한 모든 ID를 전달하여 비즈니스 로직을 수행합니다.
+        SettlementDTO.SettlementBreakdownResponseDto breakdownDto = settlementService.getSettlementBreakdown(tripId, myUserId, otherUserId);
+
+        // 3. 조회된 데이터를 ResponseEntity에 담아 프론트엔드로 반환합니다.
+        return ResponseEntity.ok(breakdownDto);
+    }
 
     // ==================== 조회 API ====================
 

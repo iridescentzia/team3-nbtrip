@@ -12,10 +12,7 @@ import org.scoula.settlement.mapper.SettlementMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -473,5 +470,81 @@ public class SettlementServiceImpl implements SettlementService {
     public List<SettlementDTO.UnsettledTripInfo> getUnsettledTrips(int userId) {
         // Mapper의 메소드를 호출하여 DB 작업을 위임하고, 결과를 그대로 반환함.
         return mapper.findUnsettledTripsByUserId(userId);
+    }
+
+    /**
+     * [NEW] 두 사용자 간의 정산 과정 상세 내역을 조회하는 로직을 구현함.
+     */
+
+    @Override
+    public SettlementDTO.SettlementBreakdownResponseDto getSettlementBreakdown(int tripId, int myUserId, int otherUserId) {
+
+        // 1. Mapper를 통해 DB에서 두 사람 간의 모든 거래 원본 데이터를 조회
+        // FIX: 반환 타입을 DTO로 변경합니다.
+        List<SettlementDTO.BreakdownDetailDTO> rawDetails = mapper.findBreakdownDetails(tripId, myUserId, otherUserId);
+        log.info(rawDetails.toString());
+
+
+        // 2. [핵심] 조회된 결과를 payment_id를 기준으로 그룹화합니다.
+        Map<Integer, List<SettlementDTO.BreakdownDetailDTO>> paymentsById = rawDetails.stream()
+                .collect(Collectors.groupingBy(SettlementDTO.BreakdownDetailDTO::getPaymentId));
+        log.info(paymentsById.toString());
+
+        SettlementDTO.SettlementBreakdownResponseDto breakdownDto = new SettlementDTO.SettlementBreakdownResponseDto();
+        List<SettlementDTO.BreakdownItem> items = new ArrayList<>();
+        int finalAmount = 0;
+
+        // 3. 각 결제 건(그룹)별로 순회하며 하나의 영수증 항목만 생성합니다.
+        for (List<SettlementDTO.BreakdownDetailDTO> paymentDetails : paymentsById.values()) {
+            SettlementDTO.BreakdownDetailDTO firstDetail = paymentDetails.get(0); // 공통 정보는 첫 번째 데이터에서 가져옴
+            log.info(firstDetail.toString());
+
+            int payerId = firstDetail.getPayerId();
+            int mySplitAmount = 0;
+            int otherUserSplitAmount = 0;
+
+            // 해당 결제 건에서 나와 상대방의 분담액을 각각 찾습니다.
+            for (SettlementDTO.BreakdownDetailDTO detail : paymentDetails) {
+                log.info(detail.toString());
+                int participantId = detail.getParticipantId();
+                if (participantId == myUserId) {
+                    mySplitAmount = detail.getMySplitAmount();
+                }
+                if (participantId == otherUserId) {
+                    otherUserSplitAmount = detail.getMySplitAmount();
+                }
+            }
+
+            // 하나의 결제 건에 대해, 하나의 영수증 항목(BreakdownItem)만 생성합니다.
+            SettlementDTO.BreakdownItem item = new SettlementDTO.BreakdownItem();
+            item.setTitle(firstDetail.getTitle());
+            item.setTotalAmount(firstDetail.getTotalAmount());
+            item.setPayAt(firstDetail.getPayAt());
+            item.setPayerNickname(firstDetail.getPayerNickname());
+            if(payerId == myUserId) {
+                item.setMySplitAmount(otherUserSplitAmount);
+            } else{
+                item.setMySplitAmount(mySplitAmount);
+            }
+            item.setMyPayment(payerId == myUserId);
+            items.add(item);
+
+            // 4. 최종 상계 금액 계산
+            if (payerId == myUserId) {
+                // 내가 결제했다면, 상대방의 부담액만큼 받아야 함 (+)
+                finalAmount += otherUserSplitAmount;
+            } else if (payerId == otherUserId) {
+                // 상대방이 결제했다면, 나의 부담액만큼 보내야 함 (-)
+                finalAmount -= mySplitAmount;
+            }
+        }
+
+        // 5. 최종 DTO에 모든 정보 설정
+        breakdownDto.setItems(items);
+        breakdownDto.setFinalAmount(finalAmount);
+        breakdownDto.setMyNickname(memberMapper.findNicknameById(myUserId));
+        breakdownDto.setOtherUserNickname(memberMapper.findNicknameById(otherUserId));
+
+        return breakdownDto;
     }
 }
