@@ -8,10 +8,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Log4j2
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class OpenAiServiceImpl implements OpenAiService {
+
+    private static final String FALLBACK = "AI 분석을 불러오는 데 실패했습니다.";
 
     private final ChartService chartService;
     private final ChatGPTClient chatGPTClient;
@@ -19,32 +21,40 @@ public class OpenAiServiceImpl implements OpenAiService {
 
     @Override
     public String getDonutReport(int tripId) {
-        // 1) 최신 코멘트 있으면 재사용
+        // 1) 이미 있으면 재사용
         var saved = reportCommentMapper.findLatest(tripId, "CATEGORY");
         if (saved != null) return saved.getContent();
 
-        // 2) 없으면 생성
-        List<ChartDTO> donutData = chartService.getDonutChart(tripId);
+        // 2) 생성 시도
+        var donutData = chartService.getDonutChart(tripId);
         String prompt = buildDonutPrompt(donutData);
-        String content = safeCallOpenAI(prompt);
+        String content = chatGPTClient.getCompletion(prompt);
 
-        // 3) 저장
+        // 3) 실패면 저장하지 말고 실패 문구만 반환
+        if (content == null || content.isBlank()) {
+            log.warn("[AI] CATEGORY 생성 실패 -> DB 저장 안 함 (tripId={})", tripId);
+            return FALLBACK;
+        }
+
+        // 4) 성공 시에만 저장
         reportCommentMapper.insert(tripId, "CATEGORY", content);
         return content;
     }
 
     @Override
     public String getLineReport(int tripId) {
-        // 1) 최신 코멘트 있으면 재사용
         var saved = reportCommentMapper.findLatest(tripId, "DATE");
         if (saved != null) return saved.getContent();
 
-        // 2) 없으면 생성
-        List<ChartDTO> lineData = chartService.getLineChart(tripId);
+        var lineData = chartService.getLineChart(tripId);
         String prompt = buildLinePrompt(lineData);
-        String content = safeCallOpenAI(prompt);
+        String content = chatGPTClient.getCompletion(prompt);
 
-        // 3) 저장
+        if (content == null || content.isBlank()) {
+            log.warn("[AI] DATE 생성 실패 -> DB 저장 안 함 (tripId={})", tripId);
+            return FALLBACK;
+        }
+
         reportCommentMapper.insert(tripId, "DATE", content);
         return content;
     }

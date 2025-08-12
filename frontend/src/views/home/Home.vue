@@ -222,7 +222,7 @@ const goToMyPage = () => router.push('/mypage');
   height: 37px;
   border-radius: 50%;
   background-color: #fddf99;
-  color: #333;
+  color: #f8fafc;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -262,7 +262,7 @@ const goToMyPage = () => router.push('/mypage');
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-bottom: 24px;
+  margin-bottom: 15px;
 }
 
 .footer {
