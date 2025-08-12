@@ -20,9 +20,10 @@ public class MemberVO {
     private String fcmToken;
     private String name;
     private String phoneNumber;
+    private boolean emailVerified;
 
     @Builder
-    public MemberVO(int userId, String email, String password, String nickname, LocalDateTime createdAt, LocalDateTime updatedAt, String fcmToken, String name, String phoneNumber) {
+    public MemberVO(int userId, String email, String password, String nickname, LocalDateTime createdAt, LocalDateTime updatedAt, String fcmToken, String name, String phoneNumber, boolean emailVerified) {
         this.userId = userId;
         this.email = email;
         this.password = password;
@@ -32,5 +33,6 @@ public class MemberVO {
         this.fcmToken = fcmToken;
         this.name = name;
         this.phoneNumber = phoneNumber;
+        this.emailVerified = emailVerified;
     }
 }

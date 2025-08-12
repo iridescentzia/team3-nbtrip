@@ -46,4 +46,8 @@ public interface MemberMapper {
     void updateFcmToken(@Param("userId") int userId,
                         @Param("fcmToken") String fcmToken,
                         @Param("updatedAt")LocalDateTime updatedAt);
+
+    // 이메일 인증 상태 업데이트
+    void updateEmailVerified(@Param("email") String email,
+                             @Param("emailVerified") boolean emailVerified);
 }
