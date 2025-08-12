@@ -45,6 +45,8 @@ onMounted(async () => {
 const openReceiptModal = async (otherUserId) => {
   isBreakdownLoading.value = true;
   isModalVisible.value = true; // 로딩 상태를 먼저 보여주기 위해 모달을 바로 엽니다.
+  lockScroll();
+
   try {
     const response = await getSettlementBreakdown(tripId, otherUserId);
     breakdownData.value = response.data;
@@ -62,6 +64,7 @@ const openReceiptModal = async (otherUserId) => {
 const closeReceiptModal = () => {
   isModalVisible.value = false;
   breakdownData.value = null; // 데이터를 초기화하여 다음 열릴 때를 대비합니다.
+  unlockScroll();
 };
 
 // 버튼 상태를 위한 계산된 속성 추가
@@ -93,12 +96,28 @@ const buttonState = computed(() => {
   }
 });
 
+const lockScroll = () => {
+  const container = document.querySelector('.content-container');
+  if (container) {
+    container.scrollTop = 0;
+    container.style.overflow = 'hidden';
+  }
+};
+
+const unlockScroll = () => {
+  const container = document.querySelector('.content-container');
+  if (container) {
+    container.style.overflow = 'auto';
+  }
+};
+
 // ✅ 송금하기 버튼 클릭
 const handleButtonClick = () => {
   if (buttonState.value.action === 'transfer') {
     // 송금하기 버튼 동작 (기존 로직)
     try {
       settlementStore.openTransferModal();
+      lockScroll();
     } catch (err) {
       alert(err.message);
     }
@@ -118,11 +137,13 @@ const goHome = () => {
 // ✅ 모달 취소
 const cancelTransfer = () => {
   settlementStore.closeTransferModal();
+  unlockScroll();
 };
 
 // ✅ 실제 송금 실행
 const confirmTransfer = async () => {
   settlementStore.closeTransferModal();
+  unlockScroll();
 
   try {
     const transferResult = await settlementStore.executeTransfer();

@@ -52,22 +52,40 @@ async function goToChart() {
   }
 }
 
-// 상태: 여행 종료 모달
+// 상태: 여행 삭제 모달
 const showDeleteModal = ref(false)
 
-// 여행 종료 모달 열기
+const lockScroll = () => {
+  const container = document.querySelector('.content-container');
+  if (container) {
+    container.scrollTop = 0;
+    container.style.overflow = 'hidden';
+  }
+};
+
+const unlockScroll = () => {
+  const container = document.querySelector('.content-container');
+  if (container) {
+    container.style.overflow = 'auto';
+  }
+};
+
+// 여행 삭제 모달 열기
 const openDeleteModal = () => {
   showDeleteModal.value = true
+  lockScroll();
 }
 
-// 여행 종료 모달 취소
+// 여행 삭제 모달 취소
 const cancelDelete = () => {
   showDeleteModal.value = false
+  unlockScroll();
 }
 
-// 여행 종료 확인
+// 여행 삭제 확인
 const confirmDelete = () => {
   showDeleteModal.value = false
+  unlockScroll();
   if (props.onDelete) {
     props.onDelete()
   }

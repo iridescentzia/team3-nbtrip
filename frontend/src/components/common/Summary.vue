@@ -123,19 +123,37 @@ const toggleInfo = () => {
 // 상태: 여행 종료 모달
 const showTerminateModal = ref(false);
 
+const lockScroll = () => {
+  const container = document.querySelector('.content-container');
+  if (container) {
+    container.scrollTop = 0;
+    container.style.overflow = 'hidden';
+  }
+};
+
+const unlockScroll = () => {
+  const container = document.querySelector('.content-container');
+  if (container) {
+    container.style.overflow = 'auto';
+  }
+};
+
 // 여행 종료 모달 열기
 const openTerminateModal = () => {
   showTerminateModal.value = true;
+  lockScroll();
 };
 
 // 여행 종료 모달 취소
 const cancelTerminate = () => {
   showTerminateModal.value = false;
+  unlockScroll();
 };
 
 // 여행 종료 확인
 const confirmTerminate = () => {
   showTerminateModal.value = false;
+  unlockScroll();
   if (props.onTerminate) {
     props.onTerminate();
   }
