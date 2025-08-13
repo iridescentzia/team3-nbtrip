@@ -3,7 +3,7 @@ import memberApi from "@/api/memberApi.js";
 import tripApi from "@/api/tripApi.js";
 import { onMounted, ref} from "vue";
 import {useRoute, useRouter} from "vue-router";
-import {usePaymentListStore} from "@/stores/tripStore.js";
+import {usePaymentlistStore} from "@/stores/tripStore.js";
 
 defineProps({
   isOwner: Boolean
