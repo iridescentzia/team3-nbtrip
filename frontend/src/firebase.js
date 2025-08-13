@@ -28,8 +28,8 @@ function mapUrlFromData(data = {}) {
 
   switch (type) {
     case 'TRANSACTION':
-      if (paymentId) return `/paymentlist/${tripId}`;
-      return `/paymentlist/${tripId}`;
+      if (paymentId) return `/trip/${tripId}`;
+      return `/trip/${tripId}`;
     case 'SETTLEMENT':
       return `/settlement/${tripId}/detail`;
     case 'COMPLETED':
@@ -38,6 +38,9 @@ function mapUrlFromData(data = {}) {
       return `/settlement/${tripId}/detail`;
     case 'INVITE':
       return `/trip/join/${tripId}`;
+    case 'JOIN':
+    case 'LEFT':
+      return `/trip/${tripId}`;
     default:
       return '/';
   }
