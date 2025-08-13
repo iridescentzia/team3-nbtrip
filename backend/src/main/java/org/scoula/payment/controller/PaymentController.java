@@ -55,7 +55,7 @@ public class PaymentController {
     // 선결제 등록
     @PostMapping("/prepaid")
     public ResponseEntity<String> registerPrepaidPayment(@RequestBody PaymentDTO paymentDTO, @AuthenticationPrincipal CustomUser customUser) {
-        Integer userId = customUser.getUserId();
+        int userId = paymentDTO.getPayerId();
         try {
             int tripId = paymentDTO.getTripId();
 
@@ -74,7 +74,7 @@ public class PaymentController {
     // 기타 결제 등록
     @PostMapping("/other")
     public ResponseEntity<String> registerOtherPayment(@RequestBody PaymentDTO paymentDTO, @AuthenticationPrincipal CustomUser customUser) {
-        Integer userId = customUser.getUserId();
+        int userId = paymentDTO.getPayerId();
         try {
             List<TripDTO> trips = tripService.getJoinedTrips(userId);
             TripDTO currentTrip = new TripDTO();

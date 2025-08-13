@@ -176,7 +176,7 @@ const confirmTransfer = async () => {
 </script>
 
 <template>
-  <Header title="정산하기"  :showInfo="true"/>
+  <Header title="정산하기" :showInfo="true" />
 
   <main v-if="isLoading" class="content-container loading">
     <p>내 정산 내역을 불러오는 중...</p>
@@ -300,30 +300,30 @@ const confirmTransfer = async () => {
 
   <!-- 송금하기 모달 -->
   <div
-      v-if="showTransferModal && buttonState.action === 'transfer'"
-      class="modal-overlay"
-      @click="cancelTransfer"
+    v-if="showTransferModal && buttonState.action === 'transfer'"
+    class="modal-overlay"
+    @click="cancelTransfer"
   ></div>
 
   <div
-      v-if="showTransferModal && buttonState.action === 'transfer'"
-      class="modal"
+    v-if="showTransferModal && buttonState.action === 'transfer'"
+    class="modal"
   >
     <!-- 메인 콘텐츠 -->
     <div
-        style="
-      width: calc(100% - 32px);
-      text-align: center;
-      margin: 0 auto 24px auto;
-    "
+      style="
+        width: calc(100% - 32px);
+        text-align: center;
+        margin: 0 auto 24px auto;
+      "
     >
       <h3
-          style="
-        font-size: 22px;
-        font-weight: bold;
-        color: #34495e;
-        margin: 0 0 12px 0;
-      "
+        style="
+          font-size: 22px;
+          font-weight: bold;
+          color: #34495e;
+          margin: 0 0 12px 0;
+        "
       >
         송금하시겠습니까?
       </h3>
@@ -335,26 +335,26 @@ const confirmTransfer = async () => {
 
     <!-- 버튼들 -->
     <div
-        style="
-      width: calc(100% - 32px);
-      height: 48px;
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin: 0 auto;
-    "
+      style="
+        width: calc(100% - 32px);
+        height: 48px;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin: 0 auto;
+      "
     >
       <button
-          @click="cancelTransfer"
-          class="modal-cancel-btn"
-          style="margin-right: 8px; flex: 1"
+        @click="cancelTransfer"
+        class="modal-cancel-btn"
+        style="margin-right: 8px; flex: 1"
       >
         취소
       </button>
       <button
-          @click="confirmTransfer"
-          class="modal-confirm-btn"
-          style="flex: 1"
+        @click="confirmTransfer"
+        class="modal-confirm-btn"
+        style="flex: 1"
       >
         송금
       </button>

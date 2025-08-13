@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import tripApi from '@/api/tripApi.js';
-import paymentlistApi from '@/api/paymentlistApi.js'
+import paymentlistApi from '@/api/paymentlistApi.js';
 import { ChevronRight } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
@@ -9,11 +9,11 @@ const router = useRouter();
 const goTripDetail = () => {
   if (props.empty || !trip.value) return;
   router.push(`/trip/${trip.value.tripId}`);
-}
+};
 
 const props = defineProps({
   trip: { type: Object, default: null },
-  empty: { type: Boolean, default: false }
+  empty: { type: Boolean, default: false },
 });
 
 const trip = ref(props.trip);
@@ -21,7 +21,6 @@ const paymentList = ref([]);
 
 // tripName
 const tripName = computed(() => trip.value?.tripName || '');
-
 
 // 날짜 포맷 (2025.08.01 ~ 2025.08.04)
 const toDot = (s) => String(s).replaceAll('-', '.');
@@ -40,7 +39,9 @@ const usedAmount = computed(() => {
 const budget = computed(() => trip.value?.budget || 0);
 
 // 포맷팅
-const formattedAmount = computed(() => usedAmount.value.toLocaleString() + '원');
+const formattedAmount = computed(
+  () => usedAmount.value.toLocaleString() + '원'
+);
 const formattedBudget = computed(() => budget.value.toLocaleString() + '원');
 
 // 진행률
@@ -63,7 +64,6 @@ onMounted(async () => {
     console.warn('❌ 결제 데이터 형식이 예상과 다름:', res);
   }
 });
-
 </script>
 
 <template>
@@ -79,26 +79,22 @@ onMounted(async () => {
       <ChevronRight v-if="!empty" class="arrow-icon" />
     </div>
 
-    
     <div v-if="!empty" class="amount-row">
-        <span class="amount-text">현재 사용 금액</span>
-        <div class="amount"> 
-          {{formattedAmount}}
-        </div>
-        
+      <span class="amount-text">현재 사용 금액</span>
+      <div class="amount">
+        {{ formattedAmount }}
+      </div>
     </div>
 
     <div v-if="!empty" class="progress-bar">
       <div
-          class="progress"
-          :class="{over: isOverBudget}"
-          :style="{width: progressPercentage + '%'}"
+        class="progress"
+        :class="{ over: isOverBudget }"
+        :style="{ width: progressPercentage + '%' }"
       ></div>
     </div>
   </div>
 </template>
-
-
 
 <style scoped>
 .travel-card {
@@ -107,12 +103,36 @@ onMounted(async () => {
   border-radius: 12px;
   box-sizing: border-box;
   padding: 16px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   font-family: 'IBM Plex Sans KR', sans-serif;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
+  margin-bottom: 0px;
+}
+
+.travel-card:hover {
+  /* background-color: #ffe58a; */
+  /* background-color: #008cff; */
+  background-color: #ffe262;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.travel-card:hover .trip-name,
+.travel-card:hover .amount {
+  /* color: #000000; */
+  color: #fff;
+  font-weight: 600;
+}
+
+.travel-card:hover .trip-date,
+.travel-card:hover .amount-text,
+.travel-card:hover .arrow-icon {
+  /* color: #5f5f5f; */
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .travel-card:hover {
@@ -130,7 +150,6 @@ onMounted(async () => {
   color: #6b7280; /* 회색 톤 */
 }
 
-
 .trip-name {
   font-size: 20px;
   color: black;
@@ -141,7 +160,7 @@ onMounted(async () => {
   font-size: 15px;
   color: #666;
   margin: 0%;
-  
+  font-weight: 600;
 }
 
 .amount-row {
@@ -151,17 +170,18 @@ onMounted(async () => {
   margin-top: 10%;
 }
 
-.amount-text{
-    font-size: 15px;
-    color: #666;
+.amount-text {
+  font-size: 15px;
+  color: #666;
+  font-weight: 600;
 }
-.amount{
-    font-size: 30px;
-    font-weight: bold;
+.amount {
+  font-size: 30px;
+  font-weight: bold;
 
-    display: flex;
-    align-items: center;
-    gap: 30px; 
+  display: flex;
+  align-items: center;
+  gap: 30px;
 }
 
 .trip-header {
@@ -175,6 +195,7 @@ onMounted(async () => {
   width: 24px;
   height: 24px;
   color: #888;
+  font-weight: 600;
 }
 
 .progress-bar {
@@ -183,16 +204,28 @@ onMounted(async () => {
   background-color: #eee;
   border-radius: 4px;
   overflow: hidden;
+  transition: background-color 0.3s ease;
 }
 
 .progress {
   height: 100%;
-  background-color: #5C8EF6;
-  transition: width 0.3s ease;
+  background-color: #3071fd;
+  transition: width 0.3s ease, background-color 0.3s ease;
 }
 
 .progress.over {
   background-color: #ff6666;
 }
 
+/* Hover effects for progress bar */
+.travel-card:hover .progress-bar {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+.travel-card:hover .progress {
+  /* background-color: #3071fd; */
+  background-color: #ffffff;
+}
+.travel-card:hover .progress.over {
+  background-color: #ff8c8c; /* Lighter red for over budget on hover */
+}
 </style>

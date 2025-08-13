@@ -20,6 +20,7 @@ public class PaymentDTO {
     private int amount;
     private String memo;
     private PaymentType paymentType;
+    private int payerId;
 
     // 결제 참여자
     private List<ParticipantDTO> participants;
