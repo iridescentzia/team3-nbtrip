@@ -1,6 +1,6 @@
 <template>
   <div class="content-container">
-    <Header :title="title" @back="router.back"/>
+    <Header :title="title" @back="router.back" />
 
     <TravelCard
       v-if="isReady"
@@ -15,7 +15,12 @@
       showEdit
     />
 
-    <div v-if="isReady && (activeTab === '그룹 지출 내역' || activeTab === '선결제 내역')">
+    <div
+      v-if="
+        isReady &&
+        (activeTab === '그룹 지출 내역' || activeTab === '선결제 내역')
+      "
+    >
       <Summary
         v-if="tripStore.currentTrip"
         :amount="totalAmount"
@@ -43,37 +48,34 @@
       />
     </div>
     <div v-else-if="isReady">
-      <TripEdit
-          ref="updateTrip"
-          :isOwner="isOwner"
-      />
+      <TripEdit ref="updateTrip" :isOwner="isOwner" />
     </div>
   </div>
 
-    <!--  TODO : 앞 두 버튼에 올바른 라우팅 적용하기  -->
-    <button
-      v-if="isReady && !isClosed && activeTab === '그룹 지출 내역'"
-      class="floating-button"
-      @click="goToOtherRegister">
-      +  기타 결제
-    </button>
+  <!--  TODO : 앞 두 버튼에 올바른 라우팅 적용하기  -->
+  <button
+    v-if="isReady && !isClosed && activeTab === '그룹 지출 내역'"
+    class="floating-button"
+    @click="goToOtherRegister"
+  >
+    + 기타 결제
+  </button>
 
-    <button
-      v-if="isReady && !isClosed && activeTab === '선결제 내역'"
-      class="floating-button"
-      @click="goToPrepaidRegister"
-    >
-      + 선결제
-    </button>
+  <button
+    v-if="isReady && !isClosed && activeTab === '선결제 내역'"
+    class="floating-button"
+    @click="goToPrepaidRegister"
+  >
+    + 선결제
+  </button>
 
-    <button
-      v-if="isReady && !isClosed && activeTab && isOwner === '그룹 관리'"
-      class="floating-button"
-      @click="callChildUpdate"
-    >
-      저장하기
-    </button>
-
+  <button
+    v-if="isReady && !isClosed && activeTab && isOwner === '그룹 관리'"
+    class="floating-button"
+    @click="callChildUpdate"
+  >
+    저장하기
+  </button>
 </template>
 
 <script setup>
@@ -102,7 +104,7 @@ const isOwner = ref(false);
 const title = ref('');
 const isClosed = ref(false);
 
-const isReady = computed(()=> !!tripStore.currentTrip) // 데이터 준비 여부
+const isReady = computed(() => !!tripStore.currentTrip); // 데이터 준비 여부
 
 const callChildUpdate = async () => {
   if (updateTrip.value) {
@@ -280,7 +282,7 @@ onMounted(async () => {
   if (tripStore.currentTrip) {
     await tripStore.fetchCurrentTripMemberNicknames();
     await checkIsOwner();
-    console.log("isOwner: "+ isOwner.value)
+    console.log('isOwner: ' + isOwner.value);
     tripStore.currentTrip.tripStatus === 'ACTIVE'
       ? (title.value = '진행 중인 여행')
       : tripStore.currentTrip.tripStatus === 'READY'
@@ -328,7 +330,9 @@ onMounted(async () => {
 .floating-button {
   position: absolute;
   bottom: 50px;
-  right: calc(50% - 192px + 40px);  /* 화면 가운데 정렬된 384px 카드의 오른쪽 끝에서 20px 안쪽 */
+  right: calc(
+    50% - 192px + 40px
+  ); /* 화면 가운데 정렬된 384px 카드의 오른쪽 끝에서 20px 안쪽 */
   width: 120px;
 
   background-color: #ffe499;
@@ -347,5 +351,4 @@ onMounted(async () => {
 .floating-button:hover {
   background-color: #ffd166;
 }
-
 </style>

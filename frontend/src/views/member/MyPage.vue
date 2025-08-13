@@ -9,7 +9,7 @@ import {
   ChevronRight,
 } from 'lucide-vue-next';
 import { getMyInfo, logoutMember } from '@/api/memberApi.js';
-import tripApi from "@/api/tripApi.js";
+import tripApi from '@/api/tripApi.js';
 
 const router = useRouter();
 const userInfo = ref({ nickname: '', name: '' });
@@ -69,7 +69,7 @@ const closedTrips = ref([]);
 onMounted(async () => {
   readyTrips.value = await tripApi.getTripsByStatus('READY');
   closedTrips.value = await tripApi.getTripsByStatus('CLOSED');
-})
+});
 </script>
 
 <template>
@@ -81,9 +81,9 @@ onMounted(async () => {
       <!-- 프로필 이미지 + 닉네임 -->
       <div class="profile-section">
         <img
-            src="@/assets/img/airplane_left.png"
-            alt="프로필"
-            class="profile-img"
+          src="@/assets/img/airplane_left.png"
+          alt="프로필"
+          class="profile-img"
         />
         <div class="nickname">{{ userInfo.nickname || '김냥이' }}</div>
       </div>
@@ -215,6 +215,12 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   margin-bottom: 8px;
+  transition: all 0.2s ease-in-out;
+}
+
+.icon-wrapper:hover .icon-button {
+  background-color: #ffe58a;
+  transform: scale(1.1);
 }
 
 .menu-list {
@@ -236,6 +242,12 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.menu-item:hover {
+  background-color: #ffe58a;
+  transform: scale(1.02);
 }
 
 .arrow {
