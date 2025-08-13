@@ -1,6 +1,6 @@
 <script setup>
 import tripApi from "@/api/tripApi.js";
-import {onMounted, ref} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import { useTravelCreateStore } from "@/stores/tripStore.js"
@@ -10,6 +10,8 @@ import Header from "@/components/layout/Header.vue";
 const router=useRouter();
 const rawDate = ref(null);
 const disableDates = ref();
+const budgetInput = ref("");
+const budgetError = ref("");
 const store = useTravelCreateStore();
 const load = async () => {
   try {
@@ -32,6 +34,33 @@ const handleDate = (modelData) => {
   store.endDate = modelData[1];
   console.log('저장된 날짜:', store.startDate, store.endDate);
 }
+
+// 천 단위 콤마 포맷 적용 & 숫자 검증
+const formatBudget = (e) => {
+  let value = e.target.value.replace(/,/g, ''); // 기존 콤마 제거
+  if (!/^\d*$/.test(value)) {
+    budgetError.value = "숫자만 입력해주세요.";
+    return;
+  } else {
+    budgetError.value = "";
+  }
+  if (value) {
+    budgetInput.value = Number(value).toLocaleString();
+    store.budget = Number(value);
+  } else {
+    budgetInput.value = "";
+    store.budget = null;
+  }
+};
+
+// 모든 필수 입력이 완료됐는지 확인
+const isFormValid = computed(() => {
+  return store.tripName?.trim() &&
+      store.startDate &&
+      store.endDate &&
+      store.budget &&
+      !budgetError.value;
+});
 
 onMounted(() => {
   load(); // 비활성화 날짜 불러오기
@@ -78,11 +107,24 @@ onMounted(() => {
     <p class="label-text">예산을 입력해주세요.</p>
     <div class="input-area">
       <div class="input-wrapper">
-        <input type="number" class="input-box" name="budget" id="budget" v-model="store.budget">
+        <input
+            type="text"
+            class="input-box"
+            name="budget"
+            id="budget"
+            :value="budgetInput"
+            @input="formatBudget"
+        >
         <span class="unit-text">원</span>
       </div>
+      <p v-if="budgetError" class="error-text">{{ budgetError }}</p>
     </div>
-    <Button class="next-btn" @click="toNextPage" label="다음"></Button>
+    <Button
+        class="next-btn"
+        :disabled="!isFormValid"
+        @click="toNextPage"
+        label="다음"
+    ></Button>
   </div>
 </template>
 
@@ -149,6 +191,12 @@ onMounted(() => {
 
 .input-area{
   margin-bottom: 25px;
+}
+
+.error-text {
+  color: var(--theme-red);
+  font-size: 12px;
+  margin-top: 5px;
 }
 
 

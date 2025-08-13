@@ -49,7 +49,6 @@
       />
     </div>
     <div v-else-if="isReady">
-      <TripEdit ref="updateTrip" :isOwner="isOwner" />
       <TripEdit
           ref="updateTrip"
           :is-owner="isOwner"
