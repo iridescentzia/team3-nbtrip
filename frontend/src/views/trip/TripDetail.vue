@@ -1,6 +1,7 @@
 <template>
   <div class="content-container">
-    <Header :title="title" @back="router.back" />
+    <Header3 v-if="isReady && tripStore.currentTrip.tripStatus === 'READY'" :title="title"/>
+    <Header v-else :title="title" @back="router.back"/>
 
     <TravelCard
       v-if="isReady"
@@ -48,7 +49,11 @@
       />
     </div>
     <div v-else-if="isReady">
-      <TripEdit ref="updateTrip" :isOwner="isOwner" />
+      <TripEdit
+          ref="updateTrip"
+          :is-owner="isOwner"
+          :is-closed="isClosed"
+      />
     </div>
   </div>
 
@@ -70,9 +75,9 @@
   </button>
 
   <button
-    v-if="isReady && !isClosed && activeTab && isOwner === '그룹 관리'"
-    class="floating-button"
-    @click="callChildUpdate"
+      v-if="isReady && !isClosed && activeTab  === '그룹 관리' && (isOwner)"
+      class="floating-button"
+      @click="callChildUpdate"
   >
     저장하기
   </button>
@@ -94,6 +99,7 @@ import {
   requestSettlement,
   getSettlementSummary,
 } from '@/api/settlementApi.js';
+import Header3 from "@/components/layout/Header3.vue";
 
 const router = useRouter();
 const route = useRoute();
