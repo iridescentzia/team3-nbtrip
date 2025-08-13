@@ -32,11 +32,10 @@ load();
   <div class="content-container">
     <img src="@/assets/img/smiling_cat.png"/>
     <div class="trip-info" v-if="tripDetails">
-      <h2>[{{tripDetails.tripName}}]의<br>
-        멤버가 되셨어요!
-      </h2>
+      <h2 class="trip-name">[{{tripDetails.tripName}}]의</h2>
+      <h2 class="welcome-text">멤버가 되셨어요!</h2>
     </div>
-    <p>여행 정보를 확인해보세요!</p>
+    <p>여행 정보를 확인해보세요.</p>
     <Button class="next-btn" @click="toNextPage" label="여행 정보로 이동하기"/>
   </div>
 </template>
@@ -94,6 +93,27 @@ img{
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-bottom: 1rem;
+}
+
+/* 여행 이름과 환영 메시지 스타일 */
+.trip-name,
+.welcome-text {
+  text-align: center;
+  margin: 0;
+  line-height: 1.4;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.trip-name {
+  margin-bottom: 0.3rem;
+  word-break: keep-all; /* 한국어 단어 단위로 줄바꿈 */
+  color: #333;
+}
+
+.welcome-text {
+  color: #333;
 }
 
 
@@ -101,7 +121,7 @@ img{
   width: 90%;
   height: 50px;
   position: absolute;
-  bottom : 10%;
+  bottom : 0;
   left: 50%;
   transform: translateX(-50%);
 }

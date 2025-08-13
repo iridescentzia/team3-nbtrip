@@ -10,6 +10,11 @@ export default [
         component: () => import('../views/trip/TripDetail.vue'),
     },
     {
+        path: '/trip/:tripId/invite',
+        name: 'tripEditInvite',
+        component: () => import('../views/trip/TripEditInvite.vue'),
+    },
+    {
         path: '/trip/create',
         name: 'tripCreate',
         component: () => import('../views/trip/TripCreate.vue'),

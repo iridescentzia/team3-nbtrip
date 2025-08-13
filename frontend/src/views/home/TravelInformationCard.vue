@@ -23,11 +23,12 @@ const paymentList = ref([]);
 const tripName = computed(() => trip.value?.tripName || '');
 
 
-// 날짜 포맷 (2025.08.01 - 2025.08.04)
+// 날짜 포맷 (2025.08.01 ~ 2025.08.04)
+const toDot = (s) => String(s).replaceAll('-', '.');
 const date = computed(() => {
   if (!trip.value) return '';
   const { startDate, endDate } = trip.value;
-  return `${startDate} - ${endDate}`;
+  return `${toDot(startDate)} ~ ${toDot(endDate)}`;
 });
 
 // 사용 금액
@@ -112,6 +113,11 @@ onMounted(async () => {
   font-family: 'IBM Plex Sans KR', sans-serif;
   cursor: pointer;
   transition: background-color 0.2s ease;
+}
+
+.travel-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .travel-card.empty {

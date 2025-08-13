@@ -2,8 +2,8 @@
 import memberApi from "@/api/memberApi.js";
 import tripApi from "@/api/tripApi.js";
 import { onMounted, ref} from "vue";
-import {useRoute} from "vue-router";
-import {usePaymentListStore} from "@/stores/tripStore.js";
+import {useRoute, useRouter} from "vue-router";
+import {usePaymentlistStore} from "@/stores/tripStore.js";
 
 defineProps({
   isOwner: Boolean
@@ -16,6 +16,7 @@ const tripDetail = ref({
 });
 const tripStatus = ref('');
 const route = useRoute();
+const router = useRouter();
 const disableDates = ref([]);
 const date = ref({});
 const members = ref([]);
@@ -103,6 +104,10 @@ const load = async () => {
 
 };
 
+function toEditInvite(){
+  router.push(`/trip/${store.currentTrip.tripId}/invite`);
+}
+
 defineExpose({
   handleUpdate
 });
@@ -134,13 +139,20 @@ onMounted(async ()=>{
       cancelText="취소"
       selectText="선택"
   />
-  <p>멤버 목록</p>
+  <div class="list-title">
+    <p>멤버 목록</p>
+    <button
+        class="to-edit-invite-btn"
+        @click="toEditInvite"
+        v-if="isOwner"
+    >멤버 추가</button>
+  </div>
   <!-- 멤버 목록 추가 -->
   <div class="member-list">
     <div class="member-list-item" v-for="member in members" :key="member.userId">
       <div class="avatar-and-name">
-        <div class="avatar avatar-lg">{{member.name.charAt(0)}}</div>
-        {{ member.name }}
+        <div class="avatar avatar-lg">{{member.nickname.charAt(0)}}</div>
+        {{ member.nickname }}
       </div>
       <select
           class="status_selector"
@@ -157,6 +169,23 @@ onMounted(async ()=>{
 </template>
 
 <style scoped>
+.list-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.to-edit-invite-btn {
+  background: var(--theme-primary);
+  color: var(--theme-text);
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  height: 50%;
+  cursor: pointer;
+}
+.to-edit-invite-btn:hover {
+  background: #ffd166;
+}
 .member-list-item {
   display: flex;
   justify-content: space-between;

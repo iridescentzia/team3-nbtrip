@@ -2,6 +2,9 @@ package org.scoula.member.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.scoula.account.dto.AccountRegisterDTO;
+import org.scoula.account.mapper.AccountMapper;
+import org.scoula.account.service.AccountService;
 import org.scoula.member.domain.MemberVO;
 import org.scoula.member.dto.*;
 import org.scoula.member.exception.*;
@@ -15,8 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -25,6 +30,10 @@ public class MemberServiceImpl implements MemberService {
     private final MemberMapper memberMapper;
     private PasswordEncoder passwordEncoder;
     private JwtProcessor jwtProcessor;
+    private AccountService accountService;
+
+    // 목업 userId
+    private static final Set<Integer> MOCKUP_USER_IDS = Set.of(1, 2, 3, 4, 5, 6, 7, 8);
 
     // 생성자에서는 MemberMapper만 주입
     public MemberServiceImpl(MemberMapper memberMapper) {
@@ -42,7 +51,9 @@ public class MemberServiceImpl implements MemberService {
     public void setJwtProcessor(JwtProcessor jwtProcessor) {
         this.jwtProcessor = jwtProcessor;
     }
-
+    @Autowired
+    @Lazy
+    public void setAccountService(AccountService accountService) { this.accountService = accountService; }
 
     // 전화번호 마스킹 처리 메서드
     private String maskPhoneNumber(String phoneNumber) {
@@ -57,37 +68,67 @@ public class MemberServiceImpl implements MemberService {
         try {
             // 1. 이메일 중복 확인
             if(memberMapper.existsByEmail(memberDTO.getEmail())) {
-                log.warn("이미 가입된 이메일 : {}", memberDTO.getEmail());
                 throw new DuplicateEmailException("이미 가입된 이메일입니다.");
             }
 
             // 2. 닉네임 중복 확인
             if(memberMapper.existsByNickname(memberDTO.getNickname())) {
-                log.warn("이미 사용중인 닉네임 : {}", memberDTO.getNickname());
                 throw new DuplicateNicknameException("이미 사용중인 닉네임입니다.");
             }
 
-            // 3. MemberVO 생성 및 비밀번호 암호화
+            // 3. JWT 토큰 기반 이메일 인증
+            boolean emailVerifiedStatus = false;
+            log.info("JWT 토큰 기반 이메일 인증 방식 사용 - 초기 상태: false");
+
+            // 4. MemberVO 생성 - 변수명 수정 필요
             MemberVO memberVO = MemberVO.builder()
                     .email(memberDTO.getEmail())
                     .password(passwordEncoder.encode(memberDTO.getPassword()))
                     .nickname(memberDTO.getNickname())
                     .name(memberDTO.getName())
                     .phoneNumber(memberDTO.getPhoneNumber())
-                    .fcmToken(memberDTO.getFcmToken())
+                    .fcmToken(memberDTO.getFcmToken() != null ? memberDTO.getFcmToken() : "") // null 방지
+                    .emailVerified(emailVerifiedStatus)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
 
-            // 4. MyBatis로 회원 정보 저장
+            // 5. 회원 정보 저장
             memberMapper.insertMember(memberVO);
-            log.info("회원가입 완료 - 회원 ID : {}, 이메일 : {}", memberVO.getUserId(), memberVO.getEmail());
+            log.info("✅ 사용자 정보 저장 완료 - userId: {}", memberVO.getUserId());
+
+            // 6. 계좌 정보 저장
+            if (memberDTO.getAccountNumber() != null && memberDTO.getBankName() != null) {
+                AccountRegisterDTO accountDTO = new AccountRegisterDTO();
+                accountDTO.setUserId(memberVO.getUserId());
+                accountDTO.setAccountNumber(memberDTO.getAccountNumber());
+                accountDTO.setBankName(memberDTO.getBankName());
+
+                try {
+                    accountService.registerAccount(accountDTO);
+                    log.info("✅ 계좌 정보 저장 완료 - userId: {}, 계좌: {}, 은행: {}", memberVO.getUserId(), memberDTO.getAccountNumber(), memberDTO.getBankName());
+                } catch (Exception e) {
+                    log.error("❌ 계좌 정보 저장 실패 - userId: {}, 오류: {}", memberVO.getUserId(), e.getMessage());
+                    throw new RuntimeException("계좌 정보 저장에 실패했습니다.");
+                }
+            }
+
+            // 7. 목업 사용자 처리
+            if (MOCKUP_USER_IDS.contains(memberVO.getUserId())) {
+                memberVO.setEmailVerified(true);
+                memberMapper.updateEmailVerified(memberDTO.getEmail(), true);
+                log.info("🎯 목업 사용자 자동 이메일 인증 완료 - userId: {}", memberVO.getUserId());
+            }
+
+            log.info("🎉 회원가입 완료 - 회원 ID: {}, 이메일 인증: {}",
+                    memberVO.getUserId(), memberVO.isEmailVerified());
             return new ApiResponse(true, "회원가입이 완료되었습니다.");
+
         } catch (DuplicateEmailException | DuplicateNicknameException e) {
             throw e;
         } catch (Exception e) {
-            log.error("회원가입 처리 중 오류 발생 : {}", e.getMessage(), e);
-            throw new RuntimeException("회원가입 처리 중 오류가 발생했습니다.");
+            log.error("💥 회원가입 처리 중 오류 발생 : {}", e.getMessage(), e);
+            throw new RuntimeException("회원가입 처리 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 
@@ -106,24 +147,31 @@ public class MemberServiceImpl implements MemberService {
                 throw new AuthenticationException("이메일 또는 비밀번호가 올바르지 않습니다.");
             }
 
-            // 3. 액세스 토큰 생성(24시간)
+            // 3. 이메일 인증 상태 체크(목업 = true)
+            if(!memberVO.isEmailVerified()) {
+                log.warn("로그인 실패 - 이메일 미인증 : {}", loginRequestDTO.getEmail());
+                throw new AuthenticationException("이메일 인증이 필요합니다. 이메일을 확인해주세요.");
+            }
+
+            // 4. 액세스 토큰 생성(24시간)
             String accessToken = jwtProcessor.generateAccessToken(
                     memberVO.getEmail(), memberVO.getUserId(), memberVO.getNickname()
             );
 
-            // 4. 로그인 결과
+            // 5. 로그인 결과
             log.info("로그인 성공 - 회원 ID : {}, 이메일 : {}", memberVO.getUserId(), memberVO.getEmail());
 
-            // 5. MemberResponseDTO 생성
+            // 6. MemberResponseDTO 생성
             MemberResponseDTO memberResponse = new MemberResponseDTO();
             memberResponse.setUserId(memberVO.getUserId());
             memberResponse.setEmail(memberVO.getEmail());
             memberResponse.setNickname(memberVO.getNickname());
             memberResponse.setName(memberVO.getName());
+            memberResponse.setEmailVerified(memberVO.isEmailVerified());
             memberResponse.setMaskedPhoneNumber(maskPhoneNumber(memberVO.getPhoneNumber()));
             memberResponse.setCreatedAt(memberVO.getCreatedAt());
 
-            // 6. 토큰 만료 시간 계산
+            // 7. 토큰 만료 시간 계산
             Long expiresIn = 86400000L;
             return MemberLoginResponseDTO.builder()
                     .accessToken(accessToken)
@@ -173,6 +221,7 @@ public class MemberServiceImpl implements MemberService {
             responseDTO.setNickname(memberVO.getNickname());
             responseDTO.setName(memberVO.getName());
             responseDTO.setPhoneNumber(memberVO.getPhoneNumber());
+            responseDTO.setEmailVerified(memberVO.isEmailVerified());
             responseDTO.setMaskedPhoneNumber(maskPhoneNumber(memberVO.getPhoneNumber()));
             responseDTO.setCreatedAt(memberVO.getCreatedAt());
             responseDTO.setUpdatedAt(memberVO.getUpdatedAt());
@@ -230,6 +279,7 @@ public class MemberServiceImpl implements MemberService {
             responseDTO.setEmail(memberVO.getEmail());
             responseDTO.setNickname(memberVO.getNickname());
             responseDTO.setName(memberVO.getName());
+            responseDTO.setEmailVerified(memberVO.isEmailVerified());
             responseDTO.setMaskedPhoneNumber(maskPhoneNumber(memberVO.getPhoneNumber()));
             responseDTO.setCreatedAt(memberVO.getCreatedAt());
             return responseDTO;
@@ -316,7 +366,16 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(readOnly = true)
     public boolean checkNicknameDuplicate(String nickname) {
         log.debug("닉네임 중복 확인 - 닉네임 : {}", nickname);
-        return memberMapper.existsByNickname(nickname);
+        try {
+            boolean exists = memberMapper.existsByNickname(nickname);
+            log.info("닉네임 '{}' 중복 확인 결과: {}", nickname, exists);
+            return exists;
+        } catch (Exception e) {
+            // 여기서 정확한 예외 스택 트레이스를 로그에 남깁니다.
+            log.error("❌ 닉네임 중복 확인 중 오류 발생 - 닉네임: {}, 오류: {}", nickname, e.getMessage(), e);
+            // 에러를 다시 던져서 상위 컨트롤러가 500 에러를 반환하게 합니다.
+            throw new RuntimeException("닉네임 중복 확인 중 서버 오류가 발생했습니다.", e);
+        }
     }
 
     // 닉네임으로 사용자 ID 조회 구현
@@ -337,9 +396,108 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
+    // 사용자 검색
     @Override
     @Transactional(readOnly = true)
     public List<MemberSearchResponseDTO> searchMembersByNickname(String nickname) {
         return memberMapper.searchUserByNickname(nickname).stream().map(MemberSearchResponseDTO::of).toList();
+    }
+
+    // 이메일로 userId 조회
+    @Override
+    @Transactional(readOnly = true)
+    public MemberResponseDTO findByEmail(String email) throws UserNotFoundException {
+        log.info("이메일로 사용자 조회 - email: {}", email);
+        try {
+            MemberVO member = memberMapper.findByEmail(email);
+            if(member == null) {
+                log.warn("사용자를 찾을 수 없음 - email: {}", email);
+                throw new UserNotFoundException("사용자를 찾을 수 없습니다.");
+            }
+
+            MemberResponseDTO responseDTO = new MemberResponseDTO();
+            responseDTO.setUserId(member.getUserId());
+            responseDTO.setEmail(member.getEmail());
+            responseDTO.setNickname(member.getNickname());
+            responseDTO.setName(member.getName());
+            responseDTO.setPhoneNumber(member.getPhoneNumber());
+            responseDTO.setEmailVerified(member.isEmailVerified());
+            responseDTO.setMaskedPhoneNumber(maskPhoneNumber(member.getPhoneNumber()));
+            responseDTO.setCreatedAt(member.getCreatedAt());
+            responseDTO.setUpdatedAt(member.getUpdatedAt());
+
+            log.info("이메일로 사용자 조회 성공 - email: {}, userId: {}", email, member.getUserId());
+            return responseDTO;
+
+        } catch (UserNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("이메일로 사용자 조회 중 오류 발생 - email: {}, 오류: {}", email, e.getMessage(), e);
+            throw new RuntimeException("사용자 조회 중 오류가 발생했습니다.");
+        }
+    }
+
+    // 로그인 인증(이메일 인증 상태 포함)
+    @Override
+    @Transactional(readOnly = true)
+    public MemberResponseDTO authenticate(String email, String password) throws UserNotFoundException, AuthenticationException {
+        log.info("로그인 인증 처리 - email: {}", email);
+
+        try {
+            MemberVO member = memberMapper.findByEmail(email);
+            if (member == null) {
+                log.warn("로그인 실패 - 사용자 없음: {}", email);
+                throw new UserNotFoundException("이메일 또는 비밀번호가 올바르지 않습니다.");
+            }
+
+            if (!passwordEncoder.matches(password, member.getPassword())) {
+                log.warn("로그인 실패 - 비밀번호 불일치: {}", email);
+                throw new AuthenticationException("이메일 또는 비밀번호가 올바르지 않습니다.");
+            }
+
+            // MemberVO를 MemberResponseDTO로 변환
+            MemberResponseDTO responseDTO = new MemberResponseDTO();
+            responseDTO.setUserId(member.getUserId());
+            responseDTO.setEmail(member.getEmail());
+            responseDTO.setNickname(member.getNickname());
+            responseDTO.setName(member.getName());
+            responseDTO.setEmailVerified(member.isEmailVerified()); // 이메일 인증 상태
+            responseDTO.setMaskedPhoneNumber(maskPhoneNumber(member.getPhoneNumber()));
+            responseDTO.setCreatedAt(member.getCreatedAt());
+            responseDTO.setUpdatedAt(member.getUpdatedAt());
+
+            log.info("로그인 인증 성공 - email: {}, emailVerified: {}", email, member.isEmailVerified());
+            return responseDTO;
+
+        } catch (UserNotFoundException | AuthenticationException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("로그인 인증 중 오류 발생 - email: {}, 오류: {}", email, e.getMessage(), e);
+            throw new RuntimeException("로그인 인증 중 오류가 발생했습니다.");
+        }
+    }
+
+    // 이메일 인증 상태 업데이트
+    @Override
+    public void updateEmailVerified(String email, boolean verified) throws UserNotFoundException {
+        log.info("이메일 인증 상태 업데이트 - email: {}, verified: {}", email, verified);
+
+        try {
+            // 사용자 존재 확인
+            MemberVO member = memberMapper.findByEmail(email);
+            if (member == null) {
+                log.warn("이메일 인증 상태 업데이트 실패 - 사용자 없음: {}", email);
+                throw new UserNotFoundException("사용자를 찾을 수 없습니다.");
+            }
+
+            memberMapper.updateEmailVerified(email, verified);
+            log.info("✅ 이메일 인증 상태 업데이트 완료 - email: {}, verified: {}", email, verified);
+
+        } catch (UserNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("이메일 인증 상태 업데이트 실패 - email: {}, 오류: {}", email, e.getMessage(), e);
+            throw new RuntimeException("이메일 인증 상태 업데이트에 실패했습니다.");
+        }
     }
 }

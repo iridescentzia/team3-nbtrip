@@ -170,19 +170,22 @@ const goBack = () => {
 /* 메인 콘텐츠 영역을 flex container로 설정 */
 .main-content {
   flex: 1;
-  display: flex;
-  flex-direction: column; /* 자식 요소들을 수직으로 배치 */
+  overflow-y: auto;
   padding: 24px;
-  padding-top: calc(56px + 24px);
+  padding-top: 80px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .top-section {
-  /* 상단 영역은 그대로 유지 */
 }
 
 /* 하단 영역(약관)이 위로 남은 공간을 모두 차지하도록 설정 */
 .bottom-section {
-  margin-top: auto;
+  margin-top: 80px;
+  flex: 1;
+  min-height: 0;
 }
 
 .logo {
@@ -241,9 +244,37 @@ const goBack = () => {
 }
 
 input[type='checkbox'] {
+  appearance: none; /* 브라우저 기본 체크박스 스타일 제거 */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
   width: 20px;
   height: 20px;
   margin-right: 8px;
+  border: 2px solid #ffd166;       /* 노란색 테두리 */
+  border-radius: 4px;               /* 살짝 둥근 모서리 */
+  background-color: white;          /* 기본 배경색 흰색 */
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+/* 체크된 상태 */
+input[type='checkbox']:checked {
+  background-color: #ffd166; /* 노란색 배경 */
+}
+
+/* 체크 표시(✓) */
+input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 9px;
+  border: solid white;       /* 체크 표시 색상: 흰색 */
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .chevron-icon {

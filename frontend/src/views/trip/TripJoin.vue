@@ -53,11 +53,20 @@ load();
     <img src="@/assets/img/airplane_right.png"/>
     <div class="trip-info" v-if="tripDetails && ownerData && tripDetails.members">
       <h2>[{{tripDetails.tripName}}]</h2>
-      <p>
-        • 여행 기간: {{formatDate(tripDetails.startDate)}} ~ {{formatDate(tripDetails.endDate)}}<br>
-        • 여행 인원: {{tripDetails.members.length}}<br>
-        • 그룹 본부장: {{ownerData.name}}<br>
-      </p>
+      <div class="info-list">
+        <div class="info-item">
+          <span class="info-label">• 여행 기간:</span>
+          <span class="info-content">{{formatDate(tripDetails.startDate)}} ~ {{formatDate(tripDetails.endDate)}}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">• 여행 인원:</span>
+          <span class="info-content">{{tripDetails.members.length}}명</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">• 그룹장:</span>
+          <span class="info-content">{{ownerData.name}}</span>
+        </div>
+      </div>
     </div>
     <h3>참여하시겠습니까?</h3>
     <Button class="next-btn" @click="toNextPage" label="참여하기"/>
@@ -82,15 +91,53 @@ img{
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-bottom: 2rem;
 }
 
+.trip-info h2 {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 300px;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.info-label {
+  flex-shrink: 0;
+  width: 80px; /* 라벨 영역 고정 너비 */
+  font-weight: 500;
+  color: #666;
+}
+
+.info-content {
+  flex: 1;
+  color: #333;
+  font-weight: 600;
+}
 
 .next-btn {
   width: 90%;
   height: 50px;
   position: absolute;
-  bottom : 0;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
+}
+
+h3 {
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  text-align: center;
 }
 </style>
