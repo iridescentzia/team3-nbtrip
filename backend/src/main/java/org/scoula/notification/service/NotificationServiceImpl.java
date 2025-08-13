@@ -69,21 +69,52 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     // 그룹 참여/탈퇴 알림 생성 (joined, left)
-    // 실제 notification_type은 ENUM에 맞춰 'INVITE'로 저장하며
-    // JOINED / LEFT 구분은 member_status 기반으로 프론트에서 처리
     @Override
     public void createGroupEventNotification(Integer fromUserId, Integer tripId, String type) {
+
+        final String eventType = (type == null ? "JOIN" : type.trim().toUpperCase());
+
+        // 1) 알림 대상 조회 => 같은 여행 멤버 (본인 제외)
         List<Integer> memberIds = mapper.findUserIdsByTripId(tripId);
+
         for(Integer userId : memberIds) {
-            if(!userId.equals(fromUserId)) {
-                NotificationVO vo = NotificationVO.builder()
-                        .userId(userId)
-                        .fromUserId(fromUserId)
-                        .tripId(tripId)
-                        .notificationType(type)
-                        .build();
-                mapper.createNotification(vo);
+            if(userId.equals(fromUserId)) continue;
+            // 2) db 저장
+            NotificationVO vo = NotificationVO.builder()
+                    .userId(userId)
+                    .fromUserId(fromUserId)
+                    .tripId(tripId)
+                    .notificationType(eventType)
+                    .build();
+            mapper.createNotification(vo);
+
+            // 3) 토큰 조회 및 검증
+            String fcmToken = mapper.findFcmTokenByUserId(userId);
+            if(fcmToken == null || fcmToken.isBlank()) continue;
+
+            Map<String, String> data = new HashMap<>();
+            data.put("type", eventType);
+            data.put("tripId", String.valueOf(tripId));
+            data.put("fromUserId", String.valueOf(fromUserId));
+
+            String title = "여행 멤버 상태 알림";
+            String body  = eventType.equals("JOIN")
+                    ? "여행에 들어온 멤버가 있습니다."
+                    : "여행에서 나간 멤버가 있습니다.";
+
+            // 4) 푸시 전송
+            try {
+                fcmService.sendPushNotification(
+                        fcmToken,
+                        title,
+                        body,
+                        data
+                );
+            } catch (Exception e) {
+                log.error("GROUP_EVENT 푸시 실패: userId={}, tripId={}, type={}",
+                        userId, tripId, eventType, e);
             }
+
         }
     }
 
