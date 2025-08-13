@@ -1,6 +1,7 @@
 <template>
   <div class="content-container">
-    <Header :title="title" @back="router.back"/>
+    <Header3 v-if="isReady && tripStore.currentTrip.tripStatus === 'READY'" :title="title"/>
+    <Header v-else :title="title" @back="router.back"/>
 
     <TravelCard
       v-if="isReady"
@@ -93,6 +94,7 @@ import {
   requestSettlement,
   getSettlementSummary,
 } from '@/api/settlementApi.js';
+import Header3 from "@/components/layout/Header3.vue";
 
 const router = useRouter();
 const route = useRoute();
