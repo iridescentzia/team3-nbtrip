@@ -33,44 +33,54 @@ const handleDate = (modelData) => {
   console.log('저장된 날짜:', store.startDate, store.endDate);
 }
 
-onMounted(()=>{
-  load();
-})
+onMounted(() => {
+  load(); // 비활성화 날짜 불러오기
+  store.tripName = '';
+  store.startDate = null;
+  store.endDate = null;
+  store.budget = null;
+});
 
 </script>
 
 <template>
   <Header title="새로운 여행 만들기" @back="router.back"/>
   <div class="content-container">
-    <label for="trip_name" class="label-text">어떤 여행인가요?</label><br>
-    <input
-        type="text"
-        name="trip_name"
-        id="trip_name"
-        placeholder="예) 서울 우정 여행"
-        v-model="store.tripName"
-        class="input-box"
-    />
-    <p class="label-text">언제 떠나시나요?</p>
-    <div class="datepicker-wrapper">
-      <VueDatePicker
-          inline auto-apply
-          v-model="rawDate"
-          model-type="yyyy-MM-dd"
-          :min-date="new Date()"
-          :range="{ noDisabledRange: true }"
-          :enable-time-picker="false"
-          :disabled-dates="disableDates"
-          locale="ko"
-          cancelText="취소"
-          selectText="선택"
-          @update:model-value="handleDate"
-      ></VueDatePicker>
+    <div class="input-area">
+      <p class="label-text">어떤 여행인가요?</p>
+      <input
+          type="text"
+          name="trip_name"
+          id="trip_name"
+          placeholder="예) 서울 우정 여행"
+          v-model="store.tripName"
+          class="input-box"
+      />
     </div>
-    <label for="budget" class="label-text">예산을 입력해주세요</label><br>
-    <div class="input-wrapper">
-      <input type="number" class="input-box" name="budget" id="budget" v-model="store.budget">
-      <span class="unit-text">원</span>
+    <div class="input-area">
+      <p class="label-text">언제 떠나시나요?</p>
+      <div class="datepicker-wrapper">
+        <VueDatePicker
+            inline auto-apply
+            v-model="rawDate"
+            model-type="yyyy-MM-dd"
+            :min-date="new Date()"
+            :range="{ noDisabledRange: true }"
+            :enable-time-picker="false"
+            :disabled-dates="disableDates"
+            locale="ko"
+            cancelText="취소"
+            selectText="선택"
+            @update:model-value="handleDate"
+        ></VueDatePicker>
+      </div>
+    </div>
+    <p class="label-text">예산을 입력해주세요.</p>
+    <div class="input-area">
+      <div class="input-wrapper">
+        <input type="number" class="input-box" name="budget" id="budget" v-model="store.budget">
+        <span class="unit-text">원</span>
+      </div>
     </div>
     <Button class="next-btn" @click="toNextPage" label="다음"></Button>
   </div>
@@ -135,6 +145,10 @@ onMounted(()=>{
   width: 100%;
   display: flex;
   justify-content: center;
+}
+
+.input-area{
+  margin-bottom: 25px;
 }
 
 
