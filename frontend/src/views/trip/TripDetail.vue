@@ -45,7 +45,8 @@
     <div v-else-if="isReady">
       <TripEdit
           ref="updateTrip"
-          :isOwner="isOwner"
+          :is-owner="isOwner"
+          :is-closed="isClosed"
       />
     </div>
   </div>
@@ -67,7 +68,7 @@
     </button>
 
     <button
-      v-if="isReady && !isClosed && activeTab && isOwner === '그룹 관리'"
+        v-if="isReady && !isClosed && activeTab  === '그룹 관리' && (isOwner)"
       class="floating-button"
       @click="callChildUpdate"
     >
