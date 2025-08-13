@@ -342,7 +342,7 @@ const goToMyPage = () => router.push('/mypage');
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-bottom: 0px;
+  margin-bottom: 15px;
 }
 
 .footer {
