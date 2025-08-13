@@ -2,11 +2,12 @@
 import memberApi from "@/api/memberApi.js";
 import tripApi from "@/api/tripApi.js";
 import { onMounted, ref} from "vue";
-import {useRoute, useRouter} from "vue-router";
-import {usePaymentListStore} from "@/stores/tripStore.js";
+import {useRouter} from "vue-router";
+import {usePaymentlistStore} from "@/stores/tripStore.js";
 
 defineProps({
-  isOwner: Boolean
+  isOwner: Boolean,
+  isClosed: Boolean
 })
 const tripDetail = ref({
   tripName: '',
@@ -15,13 +16,12 @@ const tripDetail = ref({
   amount: 0,
 });
 const tripStatus = ref('');
-const route = useRoute();
 const router = useRouter();
 const disableDates = ref([]);
 const date = ref({});
 const members = ref([]);
 const newTitle = ref("");
-const store = usePaymentListStore();
+const store = usePaymentlistStore();
 
 const formatDate = (date) => {
   if (!date) return null;
@@ -144,7 +144,7 @@ onMounted(async ()=>{
     <button
         class="to-edit-invite-btn"
         @click="toEditInvite"
-        v-if="isOwner"
+        v-if="isOwner && !isClosed"
     >멤버 추가</button>
   </div>
   <!-- 멤버 목록 추가 -->
