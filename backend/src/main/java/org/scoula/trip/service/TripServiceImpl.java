@@ -10,10 +10,7 @@ import org.scoula.trip.domain.TripMemberStatus;
 import org.scoula.trip.domain.TripMemberVO;
 import org.scoula.trip.domain.TripStatus;
 import org.scoula.trip.domain.TripVO;
-import org.scoula.trip.dto.TripCreateDTO;
-import org.scoula.trip.dto.TripDTO;
-import org.scoula.trip.dto.TripMemberDTO;
-import org.scoula.trip.dto.TripUpdateDTO;
+import org.scoula.trip.dto.*;
 import org.scoula.trip.mapper.TripMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +48,15 @@ public class TripServiceImpl implements TripService {
     public List<TripDTO> getJoinedTrips(int userId) {
         List<TripVO> tripVO = mapper.getJoinedTrips(userId);
         return tripVO.stream().map(TripDTO::of).toList();
+    }
+
+    @Override
+    public List<TripDatesDTO> getJoinedTripDates(int userId) {
+        return
+                mapper.getJoinedTripDates(userId)
+                        .stream()
+                        .map(TripDatesDTO::of)
+                        .toList();
     }
 
     @Override
