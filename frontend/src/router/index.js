@@ -30,6 +30,11 @@ const router = createRouter({
         ...notificationRoutes,
         ...tripRoutes,
         ...reportRoutes,
+        {
+          path: '/:paths(.*)*',
+          name: 'NotFound',
+          component: () => import('@/views/NotFound.vue'),
+        },
       ],
     },
     {

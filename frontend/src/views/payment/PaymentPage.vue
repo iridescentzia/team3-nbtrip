@@ -52,7 +52,6 @@ async function submitPayment() {
       paymentType: 'QR',
       participants: store.selectedParticipants.map((id) => ({ userId: id })),
     };
-    console.log('결제 요청 데이터:', payload);
     store.payment = await paymentApi.create(payload);
     store.modalType = 2;
   } catch (error) {
