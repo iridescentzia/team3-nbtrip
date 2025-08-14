@@ -4,11 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.scoula.trip.domain.TripMemberStatus;
 import org.scoula.trip.domain.TripStatus;
-import org.scoula.trip.dto.TripCreateDTO;
+import org.scoula.trip.dto.*;
 import org.scoula.security.accounting.domain.CustomUser;
-import org.scoula.trip.dto.TripDTO;
-import org.scoula.trip.dto.TripMemberDTO;
-import org.scoula.trip.dto.TripUpdateDTO;
 import org.scoula.trip.service.TripService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -77,6 +74,11 @@ public class TripController {
     public ResponseEntity<List<TripDTO>> getJoinedTripList(@AuthenticationPrincipal CustomUser customUser) {
         return ResponseEntity.ok().body(service.getJoinedTrips(customUser.getUserId()));
     }
+    //
+    @GetMapping("/participate")
+    public ResponseEntity<List<TripDatesDTO>> getJoinedTripDates(@AuthenticationPrincipal CustomUser customUser){
+        return ResponseEntity.ok().body(service.getJoinedTripDates(customUser.getUserId()));
+    }
     //그룹 ID인 그룹에 유저 ID인 유저 초대하기
     @PostMapping("/{tripId}/invite/{userId}")
     public ResponseEntity<TripDTO> joinTripMembers(@PathVariable int userId, @PathVariable int tripId) {
@@ -124,13 +126,13 @@ public class TripController {
         else
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);
     }
-
+    //여행 추가
     @PostMapping("")
     public ResponseEntity<TripDTO> createTrip(@AuthenticationPrincipal CustomUser customUser, @RequestBody TripCreateDTO tripCreateDTO) {
         tripCreateDTO.setOwnerId(customUser.getUserId());
         return ResponseEntity.ok().body(service.createTrip(tripCreateDTO));
     }
-
+    //여행 상태별로 가져오기
     @GetMapping("/status/{status}")
     public ResponseEntity<List<TripDTO>> getTripsByStatus(@PathVariable TripStatus status, @AuthenticationPrincipal CustomUser customUser) {
         int userId = customUser.getUserId();

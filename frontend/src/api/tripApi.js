@@ -18,7 +18,7 @@ export default {
         await api.post(`${BASE_URL}/`, params);
     },
     async getDisabledDates(tripId){
-        const { data } = await api.get(`${BASE_URL}/`);
+        const { data } = await api.get(`${BASE_URL}/participate`);
         console.log("data:" + JSON.stringify(data));
 
         // tripId가 있으면 해당 tripId 제외
@@ -43,28 +43,29 @@ export default {
         ));
         return allDates;
     },
-    async isAvailableDate(startDate, endDate) {
-        const response = await api.get(`${BASE_URL}/`);
-        const data = response.data.filter(item => item.tripStatus !== 'INVITED');
+    async isAvailableDate(inviteStart, inviteEnd) {
+
+        function toDateOnly(date) {
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        }
+
+        const res = await api.get(`${BASE_URL}/participate`);
+        const data = res.data;
+        const inviteStartDate = toDateOnly(new Date(inviteStart));
+        const inviteEndDate = toDateOnly(new Date(inviteEnd));
 
         console.log("data:", data);
-
-        // 기간 배열 만들기
-        const period = data.map(item => [
-            item.startDate,
-            item.endDate
-        ]);
-
-        console.log(`주어진 일정: ${startDate} ~ ${endDate}`);
-        console.log('period:', JSON.stringify(period));
+        console.log(`주어진 일정: ${inviteStartDate} ~ ${inviteEndDate}`);
 
         // 겹치는 날짜 있는지 확인
-        for (const [start, end] of period) {
-            console.log(`내가 가진 일정 시작: ${start}, 끝: ${end}`);
+        for (const trip of data) {
+            const startDate = new Date(trip.startDate[0], trip.startDate[1]-1, trip.startDate[2]);
+            const endDate = new Date(trip.endDate[0], trip.endDate[1]-1, trip.endDate[2]);
+            console.log(`현재 일정 시작: ${startDate}, 끝: ${endDate}`);
             if (
-                (start <= startDate && startDate <= end) ||  // 새 일정 시작이 기존 기간 안에 있음
-                (start <= endDate && endDate <= end) ||      // 새 일정 끝이 기존 기간 안에 있음
-                (startDate <= start && end <= endDate)       // 기존 기간이 새 일정에 완전히 포함됨
+                (startDate <= inviteStartDate && inviteStartDate <= endDate) ||  // 새 일정 시작이 기존 기간 안에 포함될 떄
+                (startDate <= inviteEndDate && inviteEndDate <= endDate) ||      // 새 일정 끝이 기존 기간 안에 포함될 때
+                (inviteStartDate <= startDate && endDate <= inviteEndDate)       // 기존 기간이 새 일정에 완전히 겹칠 때
             ) {
                 return false;  // 겹치는 기간 발견
             }
