@@ -17,20 +17,8 @@ const canSubmit = computed(() => {
   return store.amount > 0 && store.amount <= INT_MAX;
 });
 
-// 마운트 시 사용자 정보 불러오기
 onMounted(async () => {
   try {
-    console.log('마이페이지 마운트 시작');
-
-    // ✅ getMyInfo() 사용 (userId 파라미터 불필요)
-    const res = await getMyInfo();
-    console.log('응답 결과:', res);
-
-    // ✅ 응답 구조에 맞게 수정
-    if (!res?.success && !res?.data) {
-      console.error('유저 정보 조회 실패:', res?.message || '데이터 없음');
-    }
-
     const tripId = await tripApi.getCurrentTripId();
     if (tripId == 0) {
       console.error('현재 여행 ID를 가져오지 못했습니다.');
@@ -40,12 +28,7 @@ onMounted(async () => {
       router.push('/');
     }
   } catch (err) {
-    console.error('마이페이지 API 에러:', err);
-
-    if (err.message?.includes('인증') || err.message?.includes('토큰')) {
-      console.log('인증 오류로 로그인 페이지로 이동');
-      router.push('/login');
-    }
+    console.error('마운트 중 에러 발생:', err);
   }
 });
 
