@@ -59,6 +59,7 @@ const getSplitAmount = (userId) => {
 
 const manuallyEditedUserIds = ref([]); // 사용자 직접 수정한 userId 추적
 
+
 const updateSplitAmount = (userId, value) => {
   // 콤마 제거 후 숫자 변환
   const totalAmount = parseInt(form.value.amount.replace(/,/g, ''), 10) || 0;
@@ -245,6 +246,7 @@ const handleSave = async () => {
   const tripId = tripStore.currentTrip?.tripId;
 
   if (!tripId || !form.value.content || !amount || !form.value.category || !form.value.payerUserId || selectedMembers.value.length === 0) {
+    alert('모든 항목을 입력해주세요.')
     console.error('모든 항목을 입력해주세요.');
     return;
   }
@@ -318,7 +320,7 @@ const handleDelete = async () => {
   <main class="content-container">
     <!-- 내용 입력 -->
     <div class="form-section">
-      <label class="form-label">내용</label>
+      <label class="form-label required">내용</label>
       <div class="input-box">
         <input 
         v-if="paymentType === 'QR'"
@@ -340,11 +342,11 @@ const handleDelete = async () => {
 
     <!-- 금액 입력 -->
     <div class="form-section">
-      <label class="form-label">금액</label>
-      <div class="input-box">
+      <label class="form-label required">금액</label>
+      <div class="input-box amount-box">
         <input
           v-model="form.amount"
-          class="input-text"
+          class="input-text"          
           placeholder="금액을 입력하세요"
           pattern="[0-9]*"
           :disabled="paymentType == 'QR'"
@@ -356,7 +358,7 @@ const handleDelete = async () => {
 
     <!-- 날짜 입력 -->
     <div class="form-section">
-      <label class="form-label">날짜</label>
+      <label class="form-label required">날짜</label>
       <div class="input-box date-picker">
         <VueDatePicker
           v-model="date"
@@ -370,7 +372,7 @@ const handleDelete = async () => {
 
     <!-- 카테고리 선택 -->
     <div class="form-section">
-      <label class="form-label">카테고리</label>
+      <label class="form-label required">카테고리</label>
       <select v-model="form.category" class="select-box" :disabled="paymentType === 'QR'">
         <option
           v-for="category in tripStore.merchantCategories"
@@ -384,7 +386,7 @@ const handleDelete = async () => {
 
     <!-- 결제자 선택 -->
     <div class="form-section" v-if="isMembersReady">
-      <label class="form-label">결제자</label>
+      <label class="form-label required">결제자</label>
       <select v-model="form.payerUserId" class="select-box" :disabled="paymentType === 'QR'">
         <option
           v-for="member in tripStore.currentTripMembers"
@@ -518,12 +520,29 @@ const handleDelete = async () => {
   margin-bottom: 16px;
 }
 
+/* 금액 입력칸 간격 줄이기 */
+.form-section.amount-section .input-box {
+  gap: 0px;           /* 숫자와 원 사이 간격 제거 */
+  padding: 8px 12px;  /* 좌우 여백도 조금 줄이기 */
+}
+
+.form-section.amount-section .input-text {
+  text-align: right;  /* 금액 오른쪽 정렬 (분배 금액처럼) */
+}
+
 .form-label {
   font-size: 14px;
   font-weight: bold;
   color: #4a4a4a;
   margin-bottom: 6px;
   display: block;
+}
+
+.form-label.required::after {
+  content: "*";
+  color: #FFD966; /* 노란색 */
+  margin-left: 4px;
+  font-weight: bold;
 }
 
 .input-box {
@@ -536,6 +555,17 @@ const handleDelete = async () => {
   align-items: center;
   gap: 8px;
    margin-left: auto; /* 오른쪽 정렬 */
+}
+
+/* 금액 입력칸 전용 스타일 */
+.amount-box {
+  justify-content: flex-end;
+  gap: 0;
+  padding: 8px 15px;
+}
+
+.amount-box .input-text {
+  text-align: right;
 }
 
 .input-text,
@@ -560,7 +590,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 ::v-deep(.date-picker input) {
-  font-size: 18px;
+  font-size: 17px;
 }
 
 ::v-deep(.dp__theme_light) {
@@ -576,10 +606,28 @@ input[type="number"]::-webkit-outer-spin-button {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 10px 16px;
-  font-size: 18px;
+  font-size: 17px;
   width: 100%;
   text-align: center;
   cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>');
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.25rem;
+}
+
+.select-box option {
+  font-size: 25px;       /* 글자 크기 */
+  font-weight: 500;      /* 굵기 */
+  color: #0F172A;        /* 텍스트 색 */
+  background-color: #fff; /* 일부 브라우저에서만 적용 */
+}
+
+/* 첫 옵션을 플레이스홀더처럼 쓸 때 색 다운(선택값이 빈 문자열일 때) */
+.select-box[data-placeholder="true"] {
+  color: var(--muted);
 }
 
 .participant-list {
