@@ -16,15 +16,61 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+function mapUrlFromData(data = {}) {
+  const type = data.type;
+  const tripId = data.tripId;
+  const paymentId = data.paymentId;
+
+  switch (type) {
+    case 'TRANSACTION':
+      if (paymentId) return `/trip/${tripId}`;
+      return `/trip/${tripId}`;
+    case 'SETTLEMENT':
+      return `/settlement/${tripId}/detail`;
+    case 'COMPLETED':
+      return `/settlement/${tripId}/completed`;
+    case 'REMINDER':
+      return `/settlement/${tripId}/detail`;
+    case 'INVITE':
+      return `/trip/join/${tripId}`;
+    case 'JOIN':
+    case 'LEFT':
+      return `/trip/${tripId}`;
+    default:
+      return '/';
+  }
+}
+
 // Background push notification
 messaging.onBackgroundMessage(function (payload) {
   console.log('Background push notification:', payload);
+  console.log('[APP] onMessage payload.data:', payload?.data);
 
+  const url = mapUrlFromData(payload.data || {});
   const notificationTitle = payload.notification?.title || 'NbbangTrip';
   const notificationOptions = {
-    body: payload.notification?.body || 'Push notification received.'
+    body: payload.notification?.body || 'Push notification received.',
+    data: {url}
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
+// 알림 클릭 → 해당 URL로 이동
+self.addEventListener('notificationclick', function (event) {
+  event.notification.close();
+  const targetUrl = event.notification?.data?.url || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      for (const client of windowClients) {
+        if (client.url.startsWith(self.location.origin)) {
+          client.focus();
+          client.navigate(targetUrl);
+          return;
+        }
+      }
+      return clients.openWindow(targetUrl);
+    })
+  );
+});

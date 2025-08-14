@@ -2,9 +2,13 @@
 import memberApi from "@/api/memberApi.js";
 import tripApi from "@/api/tripApi.js";
 import { onMounted, ref} from "vue";
-import {useRoute} from "vue-router";
-import {usePaymentListStore} from "@/stores/tripStore.js";
+import {useRouter} from "vue-router";
+import {usePaymentlistStore} from "@/stores/tripStore.js";
 
+defineProps({
+  isOwner: Boolean,
+  isClosed: Boolean
+})
 const tripDetail = ref({
   tripName: '',
   startDate: '',
@@ -12,16 +16,18 @@ const tripDetail = ref({
   amount: 0,
 });
 const tripStatus = ref('');
-const route = useRoute();
+const router = useRouter();
 const disableDates = ref([]);
 const date = ref({});
 const members = ref([]);
 const newTitle = ref("");
-const store = usePaymentListStore();
-const emit = defineEmits(["saveSuccess"]);
+const store = usePaymentlistStore();
 
 const formatDate = (date) => {
   if (!date) return null;
+  if (!(date instanceof Date)) {
+    date = new Date(date);
+  }
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -31,6 +37,7 @@ const formatDate = (date) => {
 
 const handleUpdate = async () => {
   // VueDatePicker에서 start/end 날짜 추출
+  console.log("exposed clicked");
   const [startDate, endDate] = date.value && Array.isArray(date.value)
       ? date.value.map(formatDate)
       : [tripDetail.value.startDate, tripDetail.value.endDate];
@@ -57,7 +64,6 @@ const handleUpdate = async () => {
   try {
     await tripApi.updateTrip(params);
     alert("여행 정보가 성공적으로 업데이트되었습니다.");
-    emit("saveSuccess");
   } catch (error) {
     console.error("업데이트 실패:", error);
     alert("업데이트 중 오류가 발생했습니다.");
@@ -78,6 +84,7 @@ const load = async () => {
   } catch (e) {
     console.error('비활성화 날짜 불러오기 실패:', e);
   }
+  newTitle.value = data.tripName;
   tripStatus.value = data.tripStatus;
 
   // MemberResponseDTO 정보 + 현재 회원상태 적용
@@ -93,9 +100,17 @@ const load = async () => {
       })
   );
 
-  console.log(data.members);
-  console.log(members.value);
+  date.value = [store.currentTrip.startDate, store.currentTrip.endDate];
+
 };
+
+function toEditInvite(){
+  router.push(`/trip/${store.currentTrip.tripId}/invite`);
+}
+
+defineExpose({
+  handleUpdate
+});
 
 onMounted(async ()=>{
   await load();
@@ -106,6 +121,7 @@ onMounted(async ()=>{
 <template>
   <label for="editName">여행 이름 수정</label><br>
   <input
+      :disabled="!isOwner"
       type="text"
       name="editName"
       id="editName"
@@ -118,22 +134,30 @@ onMounted(async ()=>{
       :range="{ noDisabledRange: true }"
       :enable-time-picker="false"
       :disabled-dates="disableDates"
+      :min-date="new Date()"
       locale="ko"
       cancelText="취소"
       selectText="선택"
   />
-  <p>멤버 목록</p>
+  <div class="list-title">
+    <p>멤버 목록</p>
+    <button
+        class="to-edit-invite-btn"
+        @click="toEditInvite"
+        v-if="isOwner && !isClosed"
+    >멤버 추가</button>
+  </div>
   <!-- 멤버 목록 추가 -->
   <div class="member-list">
     <div class="member-list-item" v-for="member in members" :key="member.userId">
       <div class="avatar-and-name">
-        <div class="avatar avatar-lg">{{member.name.charAt(0)}}</div>
-        {{ member.name }}
+        <div class="avatar avatar-lg">{{member.nickname.charAt(0)}}</div>
+        {{ member.nickname }}
       </div>
       <select
           class="status_selector"
           :value="member.status"
-          :disabled="member.status === 'INVITED'"
+          :disabled="member.status === 'INVITED' || member.userId === store.currentTrip.ownerId || !isOwner "
           v-model="member.status"
       >
         <option v-if="member.status === 'INVITED'" value="INVITED">Invited</option>
@@ -142,10 +166,26 @@ onMounted(async ()=>{
       </select>
     </div>
   </div>
-  <button class="floating-pill-button" @click="handleUpdate">저장</button>
 </template>
 
 <style scoped>
+.list-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.to-edit-invite-btn {
+  background: var(--theme-primary);
+  color: var(--theme-text);
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  height: 50%;
+  cursor: pointer;
+}
+.to-edit-invite-btn:hover {
+  background: #ffd166;
+}
 .member-list-item {
   display: flex;
   justify-content: space-between;
@@ -194,7 +234,11 @@ onMounted(async ()=>{
   color: var(--theme-text-light);
 }
 
-div{
-  color: var(--theme-text);
+</style>
+
+<!--scoped에선 datepicker에 대한 커스터마이징이 먹히지 않아서 관련 내용 style에 정의-->
+<style>
+.dp__theme_light {
+  --dp-primary-color: var(--theme-primary);
 }
 </style>

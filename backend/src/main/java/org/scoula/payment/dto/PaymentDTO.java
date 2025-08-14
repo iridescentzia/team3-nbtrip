@@ -15,10 +15,12 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class PaymentDTO {
+    private int tripId;
     private int merchantId;
     private int amount;
     private String memo;
     private PaymentType paymentType;
+    private int payerId;
 
     // 결제 참여자
     private List<ParticipantDTO> participants;

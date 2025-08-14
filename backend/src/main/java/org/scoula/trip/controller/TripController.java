@@ -4,11 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.scoula.trip.domain.TripMemberStatus;
 import org.scoula.trip.domain.TripStatus;
-import org.scoula.trip.dto.TripCreateDTO;
+import org.scoula.trip.dto.*;
 import org.scoula.security.accounting.domain.CustomUser;
-import org.scoula.trip.dto.TripDTO;
-import org.scoula.trip.dto.TripMemberDTO;
-import org.scoula.trip.dto.TripUpdateDTO;
 import org.scoula.trip.service.TripService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,15 +64,20 @@ public class TripController {
         return ResponseEntity.ok().body(service.getTripMembers(tripId));
     }
 
-    //Security 구현 전이라 로그인한 유저는 1번이라 가정
+    //자신이 여행을 생성한 사람인지 체크
     @GetMapping("/{tripId}/isOwner")
-    public ResponseEntity<Boolean> isOwner(@AuthenticationPrincipal CustomUser customUser ,@PathVariable int tripId) {
+    public ResponseEntity<Boolean> isOwner(@AuthenticationPrincipal CustomUser customUser, @PathVariable int tripId) {
         return ResponseEntity.ok().body(service.isOwner(tripId, customUser.getUserId()));
     }
     //유저가 참여중인 여행 리스트 유저 ID로 찾아 가져오기
     @GetMapping("")
     public ResponseEntity<List<TripDTO>> getJoinedTripList(@AuthenticationPrincipal CustomUser customUser) {
         return ResponseEntity.ok().body(service.getJoinedTrips(customUser.getUserId()));
+    }
+    //
+    @GetMapping("/participate")
+    public ResponseEntity<List<TripDatesDTO>> getJoinedTripDates(@AuthenticationPrincipal CustomUser customUser){
+        return ResponseEntity.ok().body(service.getJoinedTripDates(customUser.getUserId()));
     }
     //그룹 ID인 그룹에 유저 ID인 유저 초대하기
     @PostMapping("/{tripId}/invite/{userId}")
@@ -116,13 +118,21 @@ public class TripController {
         tripUpdateDTO.setTripId(tripId); // URL값 우선
         return ResponseEntity.ok().body(service.updateTrip(tripUpdateDTO));
     }
-
+    @DeleteMapping("/{tripId}/delete")
+    public ResponseEntity<Integer> deleteTrip(@AuthenticationPrincipal CustomUser customUser, @PathVariable int tripId){
+        if(service.isOwner(tripId, customUser.getUserId())){
+            return ResponseEntity.ok().body(service.deleteTrip(tripId));
+        }
+        else
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);
+    }
+    //여행 추가
     @PostMapping("")
     public ResponseEntity<TripDTO> createTrip(@AuthenticationPrincipal CustomUser customUser, @RequestBody TripCreateDTO tripCreateDTO) {
         tripCreateDTO.setOwnerId(customUser.getUserId());
         return ResponseEntity.ok().body(service.createTrip(tripCreateDTO));
     }
-
+    //여행 상태별로 가져오기
     @GetMapping("/status/{status}")
     public ResponseEntity<List<TripDTO>> getTripsByStatus(@PathVariable TripStatus status, @AuthenticationPrincipal CustomUser customUser) {
         int userId = customUser.getUserId();

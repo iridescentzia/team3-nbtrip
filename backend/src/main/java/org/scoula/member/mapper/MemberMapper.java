@@ -19,6 +19,9 @@ public interface MemberMapper {
     // userId로 회원 조회
     MemberVO findById(@Param("userId") int userId);
 
+    // userId로 nickname 조회
+    String findNicknameById(@Param("userId") int userId);
+
     // nickname으로 userId 조회
     int findUserIdByNickname(@Param("nickname") String nickname);
 
@@ -46,4 +49,8 @@ public interface MemberMapper {
     void updateFcmToken(@Param("userId") int userId,
                         @Param("fcmToken") String fcmToken,
                         @Param("updatedAt")LocalDateTime updatedAt);
+
+    // 이메일 인증 상태 업데이트
+    void updateEmailVerified(@Param("email") String email,
+                             @Param("emailVerified") boolean emailVerified);
 }

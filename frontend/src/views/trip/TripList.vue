@@ -1,6 +1,6 @@
 
 <script setup>
-import Header from "@/components/layout/Header.vue";
+import Header2 from "@/components/layout/Header2.vue";
 import Footer from "@/components/layout/Footer.vue";
 import TravelListCard from "@/components/mypage/TravelListCard.vue";
 import tripApi from "@/api/tripApi.js";
@@ -24,7 +24,7 @@ load();
 </script>
 
 <template>
-  <Header title="전체 여행 목록" />
+  <Header2 title="전체 여행 목록" />
   <div class="content-container">
     <TravelListCard
         v-for="trip in joinedTripList"

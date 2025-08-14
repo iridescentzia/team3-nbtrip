@@ -1,10 +1,15 @@
 <script setup>
-import { onMounted, computed } from 'vue';
+import { onMounted, computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import Header from '../../components/layout/Header3.vue';
 import { useSettlementStore } from '@/stores/settlementStore';
 import { useRoute, useRouter } from 'vue-router';
 import { SquareCheckBig } from 'lucide-vue-next';
+import {
+  getMySettlementDetails,
+  getSettlementBreakdown,
+} from '@/api/settlementApi';
+import SettlementReceiptModal from './SettlementReceiptModal.vue'; // 새로 만든 모달 컴포넌트
 
 // ✅ Pinia Store 사용
 const settlementStore = useSettlementStore();
@@ -22,6 +27,11 @@ const route = useRoute();
 const router = useRouter();
 const tripId = route.params.tripId;
 
+// 모달 상태 관리
+const isModalVisible = ref(false);
+const breakdownData = ref(null);
+const isBreakdownLoading = ref(false);
+
 // 데이터 로딩
 onMounted(async () => {
   try {
@@ -30,6 +40,32 @@ onMounted(async () => {
     // 에러 처리는 store에서 담당
   }
 });
+
+// '정산 영수증' 모달을 여는 함수
+const openReceiptModal = async (otherUserId) => {
+  isBreakdownLoading.value = true;
+  isModalVisible.value = true; // 로딩 상태를 먼저 보여주기 위해 모달을 바로 엽니다.
+  lockScroll();
+
+  try {
+    const response = await getSettlementBreakdown(tripId, otherUserId);
+    breakdownData.value = response.data;
+  } catch (err) {
+    console.error('정산 과정 상세 내역 로딩 실패:', err);
+    // 에러 발생 시 모달을 닫고 알림을 띄울 수 있습니다.
+    closeReceiptModal();
+    alert('상세 내역을 불러오는 데 실패했습니다.');
+  } finally {
+    isBreakdownLoading.value = false;
+  }
+};
+
+// 모달을 닫는 함수
+const closeReceiptModal = () => {
+  isModalVisible.value = false;
+  breakdownData.value = null; // 데이터를 초기화하여 다음 열릴 때를 대비합니다.
+  unlockScroll();
+};
 
 // 버튼 상태를 위한 계산된 속성 추가
 const buttonState = computed(() => {
@@ -60,12 +96,28 @@ const buttonState = computed(() => {
   }
 });
 
+const lockScroll = () => {
+  const container = document.querySelector('.content-container');
+  if (container) {
+    container.scrollTop = 0;
+    container.style.overflow = 'hidden';
+  }
+};
+
+const unlockScroll = () => {
+  const container = document.querySelector('.content-container');
+  if (container) {
+    container.style.overflow = 'auto';
+  }
+};
+
 // ✅ 송금하기 버튼 클릭
 const handleButtonClick = () => {
   if (buttonState.value.action === 'transfer') {
     // 송금하기 버튼 동작 (기존 로직)
     try {
       settlementStore.openTransferModal();
+      lockScroll();
     } catch (err) {
       alert(err.message);
     }
@@ -85,11 +137,13 @@ const goHome = () => {
 // ✅ 모달 취소
 const cancelTransfer = () => {
   settlementStore.closeTransferModal();
+  unlockScroll();
 };
 
 // ✅ 실제 송금 실행
 const confirmTransfer = async () => {
   settlementStore.closeTransferModal();
+  unlockScroll();
 
   try {
     const transferResult = await settlementStore.executeTransfer();
@@ -122,154 +176,193 @@ const confirmTransfer = async () => {
 </script>
 
 <template>
-  <div class="settlement-view">
-    <Header title="정산하기" />
+  <Header title="정산하기" :showInfo="true" />
 
-    <main v-if="isLoading" class="content-container loading">
-      <p>내 정산 내역을 불러오는 중...</p>
-    </main>
-    <main v-else-if="error" class="content-container error">
-      <p>{{ error }}</p>
-    </main>
+  <main v-if="isLoading" class="content-container loading">
+    <p>내 정산 내역을 불러오는 중...</p>
+  </main>
+  <main v-else-if="error" class="content-container error">
+    <p>{{ error }}</p>
+  </main>
 
-    <main v-else-if="mySettlementData" class="content-container">
-      <div class="summary-header">
-        <p class="trip-name">{{ mySettlementData.tripName }}</p>
-        <h2 class="total-amount">
-          총 {{ mySettlementData.totalAmount?.toLocaleString() || 0 }}원 사용
-        </h2>
-      </div>
+  <main v-else-if="mySettlementData" class="content-container">
+    <div class="summary-header">
+      <p class="trip-name">{{ mySettlementData.tripName }}</p>
+      <h2 class="total-amount">
+        총 {{ mySettlementData.totalAmount?.toLocaleString() || 0 }}원 사용
+      </h2>
+    </div>
 
-      <!-- 받을 돈 카드 -->
-      <div class="settlement-card">
-        <p class="card-title text-theme-text">받을 돈</p>
-        <div class="transaction-list">
+    <!-- 받을 돈 카드 -->
+    <div class="settlement-card">
+      <p class="card-title text-theme-text">받을 돈</p>
+      <div class="transaction-list">
+        <div
+          v-if="
+            mySettlementData.toReceive && mySettlementData.toReceive.length > 0
+          "
+        >
           <div
-            v-if="
-              mySettlementData.toReceive &&
-              mySettlementData.toReceive.length > 0
-            "
+            v-for="tx in mySettlementData.toReceive"
+            :key="tx.settlementId"
+            class="transaction-item"
           >
-            <div
-              v-for="tx in mySettlementData.toReceive"
-              :key="tx.settlementId"
-              class="transaction-item"
-            >
-              <div class="member-info">
-                <div class="avatar">
-                  <span>{{ tx.senderNickname?.substring(0, 1) || '?' }}</span>
-                </div>
-                <div class="member-text">
-                  <div class="name-with-badge">
-                    <span class="font-semibold text-sm text-theme-text">
-                      {{ tx.senderNickname || '알 수 없음' }}
-                    </span>
-                    <div v-if="tx.status === 'COMPLETED'" class="status-badge completed">
-                      <SquareCheckBig class="status-icon" />
-                      <span class="status-text">받음</span>
-                    </div>
+            <div class="member-info">
+              <div class="avatar">
+                <span>{{ tx.senderNickname?.substring(0, 1) || '?' }}</span>
+              </div>
+              <div class="member-text" @click="openReceiptModal(tx.senderId)">
+                <div class="name-with-badge">
+                  <span class="font-semibold text-sm text-theme-text">
+                    {{ tx.senderNickname || '알 수 없음' }}
+                  </span>
+                  <div
+                    v-if="tx.status === 'COMPLETED'"
+                    class="status-badge completed"
+                  >
+                    <SquareCheckBig class="status-icon" />
+                    <span class="status-text">받음</span>
                   </div>
                 </div>
               </div>
-              <span class="amount text-theme-text">
-                {{ tx.amount?.toLocaleString() || 0 }}원
-              </span>
             </div>
+            <span class="amount text-theme-text">
+              {{ tx.amount?.toLocaleString() || 0 }}원
+            </span>
           </div>
-          <p v-else class="empty-message text-theme-text">
-            받을 돈이 없습니다.
-          </p>
         </div>
+        <p v-else class="empty-message text-theme-text">받을 돈이 없습니다.</p>
       </div>
+    </div>
 
-      <!-- 보낼 돈 카드 -->
-      <div class="settlement-card">
-        <p class="card-title">보낼 돈</p>
-        <div class="transaction-list">
+    <!-- 보낼 돈 카드 -->
+    <div class="settlement-card">
+      <p class="card-title">보낼 돈</p>
+      <div class="transaction-list">
+        <div
+          v-if="mySettlementData.toSend && mySettlementData.toSend.length > 0"
+        >
           <div
-            v-if="mySettlementData.toSend && mySettlementData.toSend.length > 0"
+            v-for="tx in mySettlementData.toSend"
+            :key="tx.settlementId"
+            class="transaction-item"
           >
-            <div
-              v-for="tx in mySettlementData.toSend"
-              :key="tx.settlementId"
-              class="transaction-item"
-            >
-              <div class="member-info">
-                <div class="avatar">
-                  <span>{{ tx.receiverNickname?.substring(0, 1) || '?' }}</span>
-                </div>
-                <div class="member-text">
-                  <div class="name-with-badge">
-                    <span class="font-semibold text-sm">
-                      {{ tx.receiverNickname || '알 수 없음' }}
-                    </span>
-                    <div v-if="tx.status === 'COMPLETED'" class="status-badge completed">
-                      <SquareCheckBig class="status-icon" />
-                      <span class="status-text">보냄</span>
-                    </div>
+            <div class="member-info">
+              <div class="avatar">
+                <span>{{ tx.receiverNickname?.substring(0, 1) || '?' }}</span>
+              </div>
+              <div class="member-text" @click="openReceiptModal(tx.receiverId)">
+                <div class="name-with-badge">
+                  <span class="font-semibold text-sm">
+                    {{ tx.receiverNickname || '알 수 없음' }}
+                  </span>
+                  <div
+                    v-if="tx.status === 'COMPLETED'"
+                    class="status-badge completed"
+                  >
+                    <SquareCheckBig class="status-icon" />
+                    <span class="status-text">보냄</span>
                   </div>
                 </div>
               </div>
-              <span class="amount">
-                {{ tx.amount?.toLocaleString() || 0 }}원
-              </span>
             </div>
+            <span class="amount">
+              {{ tx.amount?.toLocaleString() || 0 }}원
+            </span>
           </div>
-          <p v-else class="empty-message">보낼 돈이 없습니다.</p>
         </div>
+        <p v-else class="empty-message">보낼 돈이 없습니다.</p>
       </div>
-    </main>
+    </div>
+  </main>
 
-    <footer class="footer">
-      <button
-        @click="handleButtonClick"
-        class="next-button"
-        :disabled="buttonState.disabled"
-      >
-        {{ buttonState.text }}
-      </button>
-    </footer>
+  <footer class="footer">
+    <button
+      @click="handleButtonClick"
+      class="next-button"
+      :disabled="buttonState.disabled"
+    >
+      {{ buttonState.text }}
+    </button>
+  </footer>
+
+  <SettlementReceiptModal
+    :breakdownData="breakdownData"
+    :onClose="closeReceiptModal"
+  />
+  <!-- 모달 로딩 오버레이 -->
+  <div
+    v-if="isModalVisible && isBreakdownLoading"
+    class="modal-loading-overlay"
+  >
+    <p>상세 내역을 계산 중입니다...</p>
   </div>
 
-  <!-- ✅ 송금하기 모달 -->
+  <!-- 송금하기 모달 -->
   <div
     v-if="showTransferModal && buttonState.action === 'transfer'"
     class="modal-overlay"
     @click="cancelTransfer"
+  ></div>
+
+  <div
+    v-if="showTransferModal && buttonState.action === 'transfer'"
+    class="modal"
   >
-    <div class="transfer-modal" @click.stop>
-      <!-- 아이콘 -->
-      <div class="modal-icon"></div>
-
-      <!-- 메인 메시지 -->
-      <h3 class="modal-title">송금하시겠습니까?</h3>
-
-      <!-- 설명 텍스트 -->
-      <p class="modal-description">
+    <!-- 메인 콘텐츠 -->
+    <div
+      style="
+        width: calc(100% - 32px);
+        text-align: center;
+        margin: 0 auto 24px auto;
+      "
+    >
+      <h3
+        style="
+          font-size: 22px;
+          font-weight: bold;
+          color: #34495e;
+          margin: 0 0 12px 0;
+        "
+      >
+        송금하시겠습니까?
+      </h3>
+      <p style="color: #6b7280; font-size: 14px; margin: 0">
         송금 버튼을 누르면 정산이 완료되며,<br />
         되돌릴 수 없습니다.
       </p>
+    </div>
 
-      <!-- 버튼들 -->
-      <div class="modal-buttons">
-        <button @click="cancelTransfer" class="modal-cancel-btn">취소</button>
-        <button @click="confirmTransfer" class="modal-confirm-btn">송금</button>
-      </div>
+    <!-- 버튼들 -->
+    <div
+      style="
+        width: calc(100% - 32px);
+        height: 48px;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin: 0 auto;
+      "
+    >
+      <button
+        @click="cancelTransfer"
+        class="modal-cancel-btn"
+        style="margin-right: 8px; flex: 1"
+      >
+        취소
+      </button>
+      <button
+        @click="confirmTransfer"
+        class="modal-confirm-btn"
+        style="flex: 1"
+      >
+        송금
+      </button>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* 전체 레이아웃 */
-.settlement-view {
-  width: 100%;
-  height: 100%;
-  background-color: var(--theme-bg);
-  display: flex;
-  flex-direction: column;
-  position: relative; /* Header의 absolute 포지션 기준점 */
-}
-
 /* 메인 콘텐츠 */
 .content-container {
   flex-grow: 1;
@@ -314,7 +407,8 @@ const confirmTransfer = async () => {
 }
 .card-title {
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+  margin-top: auto;
 }
 
 /* 거래 내역 리스트 */
@@ -345,6 +439,11 @@ const confirmTransfer = async () => {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  cursor: pointer;
+}
+
+.member-text:hover .font-semibold {
+  color: #ffd166;
 }
 
 .name-with-badge {
@@ -475,75 +574,57 @@ const confirmTransfer = async () => {
   color: var(--theme-blue);
 }
 
-/* ✅ 모달 오버레이 - 하단 정렬 */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: flex-end; /* ✅ 하단 정렬 */
-  z-index: 1000;
+  z-index: 1099;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   animation: fadeIn 0.3s ease-out;
 }
 
-/* ✅ 모달 - 전체 너비, 하단에서 올라옴 */
-.transfer-modal {
-  width: 100%; /* ✅ 전체 너비 */
-  max-width: 325px;
-  height: auto;
-  min-height: 230px;
-  background: white;
-  border-radius: 1.5rem;
-  box-shadow: 0px -4px 32px rgba(0, 0, 0, 0.24); /* ✅ 위쪽 그림자 */
-  padding: 28px 40px 36px 40px; /* 하단 패딩 추가 */
-  position: relative;
-  animation: slideUpFromBottom 0.3s ease-out;
-}
-
-.modal-icon {
-  width: 40px;
-  height: 40px;
-  font-size: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px auto;
-}
-
-.modal-title {
-  text-align: center;
-  color: #1f2937;
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 28px;
-  margin: 0 0 16px 0;
-}
-
-.modal-description {
-  text-align: center;
-  color: #6b7280;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  margin: 0 0 28px 0;
-}
-
-.modal-buttons {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
+.modal {
+  position: absolute;
+  left: 0;
+  bottom: 0;
   width: 100%;
-  max-width: 400px; /* 버튼 최대 너비 제한 */
-  margin: 0 auto;
+  max-width: 352px;
+  background-color: #ffffff;
+  border-radius: 16px 16px 0 0;
+  padding: 16px 16px 24px 16px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1100;
+  animation: modalUp 0.25s ease;
 }
 
+/* 애니메이션  */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalUp {
+  from {
+    bottom: -300px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0;
+    opacity: 1;
+  }
+}
+
+/* 버튼 스타일 */
 .modal-cancel-btn,
 .modal-confirm-btn {
-  flex: 1;
   height: 48px;
   background: rgba(255, 209, 102, 0.65);
   border-radius: 12px;
@@ -569,61 +650,20 @@ const confirmTransfer = async () => {
   transform: translateY(0);
 }
 
-/* ✅ 하단에서 올라오는 애니메이션 */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUpFromBottom {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* ✅ 반응형 대응 */
-@media (max-width: 480px) {
-  .transfer-modal {
-    padding: 24px 20px 32px 20px;
-    margin: 0 auto;
-    border-radius: 16px;
-    margin-bottom: 2rem;
-  }
-
-  .modal-buttons {
-    gap: 8px;
-    max-width: none;
-  }
-
-  .modal-cancel-btn,
-  .modal-confirm-btn {
-    height: 44px;
-    font-size: 15px;
-  }
-}
-
-/* ✅ 큰 화면에서도 적절한 크기 유지 */
-@media (min-width: 768px) {
-  .transfer-modal {
-    max-width: 325px; /* 태블릿/데스크톱에서는 최대 너비 제한 */
-    margin: 0 auto;
-    border-radius: 16px; /* 큰 화면에서는 모든 모서리 둥글게 */
-    margin-bottom: 2rem; /* 하단 여백 */
-  }
-}
-
-/* ✅ 배경 블러 효과 */
-.modal-overlay {
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+/* 모달 로딩 오버레이 스타일 */
+.modal-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
 }
 </style>

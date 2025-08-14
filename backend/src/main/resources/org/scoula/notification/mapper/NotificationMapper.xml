@@ -19,11 +19,26 @@
                p.payment_type AS paymentType,
                n.notification_type AS notificationType,
                CASE
-                WHEN n.notification_type = 'TRANSACTION_CREATE' THEN 'CREATE'
-                WHEN n.notification_type = 'TRANSACTION_UPDATE' THEN 'UPDATE'
-                WHEN n.notification_type = 'TRANSACTION' THEN 'CREATE'
-                ELSE NULL
-               END AS actionType,
+                WHEN n.notification_type = 'TRANSACTION' AND n.payment_id IS NOT NULL
+                    AND EXISTS (
+                        SELECT 1 FROM notification n2
+                        WHERE n2.payment_id = n.payment_id
+                        AND n2.user_id   = n.user_id
+                        AND n2.trip_id   = n.trip_id
+                        AND n2.notification_type = 'TRANSACTION'
+                        AND n2.notification_id &lt; n.notification_id
+                    ) THEN 'UPDATE'
+                   WHEN n.notification_type = 'TRANSACTION' THEN 'CREATE'
+                   WHEN n.notification_type = 'SETTLEMENT'
+                       AND EXISTS (
+                           SELECT 1
+                           FROM settlement s2
+                           WHERE s2.trip_id = n.trip_id
+                             AND s2.sender_id = n.from_user_id
+                             AND s2.settlement_status = 'COMPLETED'
+                       ) THEN 'SEND'
+                   ELSE NULL
+                   END AS actionType,
                n.is_read AS isRead,
                n.send_at AS sendAt
         FROM notification n
@@ -32,8 +47,12 @@
                  LEFT JOIN trip_member tm ON n.trip_id = tm.trip_id AND tm.user_id = #{userId}
                  LEFT JOIN payment p ON n.payment_id = p.payment_id
                  LEFT JOIN merchant m ON p.merchant_id = m.merchant_id
+                 LEFT JOIN settlement s
+                           ON s.trip_id = n.trip_id
+                               AND s.sender_id = n.from_user_id
+                               AND s.receiver_id = n.user_id
         WHERE
-            (n.notification_type IN ('INVITE', 'SETTLEMENT', 'REMINDER', 'TRANSACTION') AND n.user_id = #{userId})
+            (n.notification_type IN ('INVITE', 'LEFT', 'JOIN', 'SETTLEMENT', 'REMINDER', 'TRANSACTION') AND n.user_id = #{userId})
            OR
             (n.notification_type IN ('TRANSACTION_CREATE', 'TRANSACTION_UPDATE') AND n.trip_id IN (
                 SELECT trip_id FROM trip_member WHERE user_id = #{userId}
@@ -59,11 +78,18 @@
                p.payment_type AS paymentType,
                n.notification_type AS notificationType,
                case
-                WHEN n.notification_type = 'TRANSACTION_CREATE' THEN 'CREATE'
-                WHEN n.notification_type = 'TRANSACTION_UPDATE' THEN 'UPDATE'
-                WHEN n.notification_type = 'TRANSACTION' THEN 'CREATE'
-                ELSE NULL
-               END AS actionType,
+                    WHEN n.notification_type = 'TRANSACTION' AND n.payment_id IS NOT NULL
+                        AND EXISTS (
+                            SELECT 1 FROM notification n2
+                            WHERE n2.payment_id = n.payment_id
+                                AND n2.user_id   = n.user_id
+                                AND n2.trip_id   = n.trip_id
+                                AND n2.notification_type = 'TRANSACTION'
+                                AND n2.notification_id &lt; n.notification_id
+                        ) THEN 'UPDATE'
+                   WHEN n.notification_type = 'TRANSACTION' THEN 'CREATE'
+                   ELSE NULL
+                   END AS actionType,
                n.is_read AS isRead,
                n.send_at AS sendAt
         FROM notification n
@@ -94,11 +120,25 @@
                         t.trip_name AS tripName,
                         n.payment_id AS paymentId,
                         n.notification_type AS notificationType,
+                        CASE
+                            WHEN n.notification_type = 'SETTLEMENT'
+                                AND EXISTS (
+                                    SELECT 1
+                                    FROM settlement s2
+                                    WHERE s2.trip_id = n.trip_id
+                                      AND s2.sender_id = n.from_user_id
+                                      AND s2.settlement_status = 'COMPLETED'
+                                ) THEN 'SEND'
+                            ELSE NULL
+                            END AS actionType,
                         n.is_read AS isRead,
                         n.send_at AS sendAt
         FROM notification n
                  LEFT JOIN users u ON n.from_user_id = u.user_id
                  LEFT JOIN trip t ON n.trip_id = t.trip_id
+                 LEFT JOIN settlement s ON s.trip_id = n.trip_id
+                                        AND s.sender_id = n.from_user_id
+                                        AND s.receiver_id = n.user_id
         WHERE
             (n.notification_type IN ('SETTLEMENT', 'REMINDER') AND n.user_id = #{userId})
            OR
@@ -122,7 +162,7 @@
         LEFT JOIN users u ON n.from_user_id = u.user_id
         LEFT JOIN trip t ON n.trip_id = t.trip_id
         LEFT JOIN trip_member tm ON n.trip_id = tm.trip_id AND tm.user_id = n.from_user_id
-        WHERE n.notification_type IN ('INVITE', 'GROUP_EVENT')   <!-- JOINED/LEFT 없음 -->
+        WHERE n.notification_type IN ('INVITE', 'LEFT', 'JOIN')
         AND n.user_id = #{userId}
         ORDER BY n.send_at DESC
     </select>
@@ -134,21 +174,43 @@
         WHERE trip_id = #{tripId}
     </select>
 
-    <!-- 리마인더 알림 대상 조회 -->
+    <!-- 리마인더 알림 대상 조회: 송금 남은 사람, 종료 7일 이내, 미정산 -->
     <select id="findUsersNeedingReminder" resultType="int">
-        SELECT DISTINCT sender_id
-        FROM settlement
-        WHERE settlement_status != 'COMPLETED'
-        AND amount > 0
+        SELECT DISTINCT s.sender_id
+        FROM settlement s
+        JOIN trip t ON t.trip_id = s.trip_id
+        WHERE s.settlement_status IN ('PENDING','PROCESSING')
+            AND s.amount > 0
+            AND t.trip_status = 'CLOSED'
+            AND DATEDIFF(CURDATE(), t.end_date) BETWEEN 0 AND 7
+            AND NOT EXISTS (
+                SELECT 1 FROM notification n
+                WHERE n.user_id = s.sender_id
+                    AND n.trip_id = s.trip_id
+                    AND n.notification_type = 'REMINDER'
+                    AND n.send_at >= CURDATE()
+                    AND n.send_at &lt;  CURDATE() + INTERVAL 1 DAY
+            )
     </select>
 
     <!-- 리마인더 대상의 trip_id 하나 가져오기 -->
     <select id="findTripIdForUserPendingSettlement" parameterType="int" resultType="int">
         SELECT s.trip_id
         FROM settlement s
-        WHERE (s.sender_id = #{userId} OR s.receiver_id = #{userId})
-        AND s.settlement_status != 'COMPLETED'
-        AND s.amount > 0
+        JOIN trip t ON t.trip_id = s.trip_id
+        WHERE s.sender_id = #{userId}
+            AND s.settlement_status IN ('PENDING','PROCESSING')
+            AND s.amount > 0
+            AND t.trip_status = 'CLOSED'
+            AND DATEDIFF(CURDATE(), t.end_date) BETWEEN 0 AND 7
+            AND NOT EXISTS (
+                SELECT 1 FROM notification n
+                WHERE n.user_id = s.sender_id
+                    AND n.trip_id = s.trip_id
+                    AND n.notification_type = 'REMINDER'
+                    AND n.send_at >= CURDATE()
+                    AND n.send_at &lt; CURDATE() + INTERVAL 1 DAY
+                )
         ORDER BY s.settlement_id DESC
         LIMIT 1
     </select>
@@ -160,7 +222,7 @@
         WHERE s.trip_id = #{tripId}
           AND s.settlement_status != 'COMPLETED'
         ORDER BY s.settlement_id DESC
-        LIMIT 1
+            LIMIT 1
     </select>
 
     <!-- 알림 생성 -->
@@ -184,6 +246,14 @@
         FROM trip_member tm
         WHERE tm.trip_id = #{tripId}
           AND tm.user_id != #{fromUserId};
+    </insert>
+
+    <!-- 송금 완료 알림(SEND) trip 멤버 전체에게 insert (본인 포함) -->
+    <insert id="createSendNotificationForAll" parameterType="org.scoula.notification.domain.NotificationVO">
+        INSERT INTO notification (user_id, from_user_id, trip_id, notification_type, send_at)
+        SELECT tm.user_id, #{fromUserId}, #{tripId}, #{notificationType}, NOW()
+        FROM trip_member tm
+        WHERE tm.trip_id = #{tripId};
     </insert>
 
     <!-- COMPLETED 알림 trip의 모든 멤버에게 알림 생성 -->
@@ -227,4 +297,9 @@
         WHERE user_id = #{userId}
     </select>
 
+    <!--  알림 삭제  -->
+    <delete id="deleteByPaymentId">
+        DELETE FROM notification
+        WHERE payment_id = #{paymentId}
+    </delete>
 </mapper>

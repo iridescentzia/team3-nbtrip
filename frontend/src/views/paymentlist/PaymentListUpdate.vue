@@ -1,16 +1,18 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Header from '@/components/layout/Header.vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css'
 import paymentlistApi from '@/api/paymentlistApi';
 import paymentApi from '@/api/paymentApi';
-import {usePaymentListStore} from "@/stores/tripStore.js";
+import { usePaymentlistStore } from "@/stores/tripStore.js";
+import { Trash2 } from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
 const paymentId = route.params.paymentId;
-const tripStore = usePaymentListStore();
+const tripStore = usePaymentlistStore();
 
 const paymentType = ref('');
 const date = ref(new Date());
@@ -21,7 +23,12 @@ const form = ref({
   payerUserId: '',
   memo: ''
 });
-const selectedMembers = ref([]);
+
+const selectedMembers = ref([]); // 결제 참여자 목록
+const splitAmounts = ref({}); // 결제 참여자별 분배 금액 저장
+const isDeleteModalVisible = ref(false);
+const isLoading = ref(true); // 로딩 여부
+const isMembersReady = ref(false)
 
 // 선택 여부 확인
 const isSelected = (userId) => {
@@ -30,12 +37,18 @@ const isSelected = (userId) => {
 
 // 토글 ON/OFF
 const toggleMember = (userId) => {
+  if (userId === form.value.payerUserId){
+    alert('결제자는 항상 포함되어야 합니다.')
+    return;
+  }
+
   const index = selectedMembers.value.findIndex(p => p.userId === userId);
   if (index === -1) {
     selectedMembers.value.push({ userId, splitAmount: 0 }); // 새로 추가
   } else {
     selectedMembers.value.splice(index, 1); // 제거
   }
+  distributeAmountEqually();
 };
 
 // 현재 금액 가져오기
@@ -44,38 +57,156 @@ const getSplitAmount = (userId) => {
   return member ? member.splitAmount : 0;
 };
 
-// 금액 수정 처리
+const manuallyEditedUserIds = ref([]); // 사용자 직접 수정한 userId 추적
+
+
 const updateSplitAmount = (userId, value) => {
-  const member = selectedMembers.value.find(p => p.userId === userId);
-  if (member) {
-    member.splitAmount = Number(value);
+  // 콤마 제거 후 숫자 변환
+  const totalAmount = parseInt(form.value.amount.replace(/,/g, ''), 10) || 0;
+ 
+  // 이벤트/문자 모두 대응 + 숫자만 추출, 빈 문자열 허용
+  const raw = value && value.target ? value.target.value : value;
+  const digits = String(raw).replace(/[^0-9]/g, ''); // 숫자만 남기고 나머지 문자는 제거
+  let newAmount = digits === '' ? 0 : parseInt(digits, 10);
+
+  if (newAmount > totalAmount) {
+    alert('분배 금액은 총 결제 금액을 초과할 수 없습니다.');
+    newAmount = totalAmount // 초과 시 최대값으로 고정
   }
+
+  // 직접 수정한 유저 목록에 등록
+  if (!manuallyEditedUserIds.value.includes(userId)) {
+    manuallyEditedUserIds.value.push(userId); // 수동 편집자들은 고정, 나머지에게만 자동으로 1/N 재분배 적용
+  }
+
+  // 현재 유저 splitAmount 업데이트
+  const target = selectedMembers.value.find(p => p.userId === userId);
+  if (target) {
+    target.splitAmount = newAmount;
+  }
+
+  // (자동 재분배해야 할 잔액) = (총 금액) - (직접 입력된 유저들의 합)
+  const manuallyEnteredTotal = selectedMembers.value
+    .filter(p => manuallyEditedUserIds.value.includes(p.userId))
+    .reduce((sum, p) => sum + p.splitAmount, 0);
+
+  const remainingAmount = totalAmount - manuallyEnteredTotal;
+
+  // 재분배 대상
+  const toDistribute = selectedMembers.value.filter(
+    p => !manuallyEditedUserIds.value.includes(p.userId)
+  );
+  const count = toDistribute.length;
+
+  if (count === 0) return;
+
+  const base = Math.floor(remainingAmount / count);
+  let remainder = remainingAmount % count;
+
+  toDistribute.forEach(p => {
+    p.splitAmount = base;
+  });
+
+  // 결제자가 재분배 대상이면 그에게 나머지 몰아주기
+  const payer = toDistribute.find(p => p.userId === form.value.payerUserId);
+  if (payer) {
+    payer.splitAmount += remainder;
+  } else {
+    toDistribute[0].splitAmount += remainder;
+  }
+
+  // 입력창 표시값을 콤마로 갱신
+  if (value && value.target) value.target.value = newAmount.toLocaleString();
 };
 
+// 금액 입력 시 콤마 포맷 적용
 const formatAmountInput = () => {
   const numberOnly = form.value.amount.replace(/[^0-9]/g, '');
+  if (numberOnly.length !== form.value.amount.replace(/,/g, '').length) {
+    alert('숫자만 입력할 수 있습니다.');
+  }
   form.value.amount = Number(numberOnly).toLocaleString();
 };
 
+// 날짜 포맷
 const formatDateTime = (date) => {
   const pad = (n) => n.toString().padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 };
 
-onMounted(async () => {
-  //어차피 거래내역 클릭해서 들어가니까 필요 없을 듯?
-  //await tripStore.fetchTrip(route.params.tripId);
-  await tripStore.fetchCurrentTripMemberNicknames();
-  await tripStore.fetchMerchantCategories();
+// 자동 1/N 분배 함수
+const distributeAmountEqually = () => {
+  const totalAmount = parseInt(String(form.value.amount).replace(/,/g, ''), 10) || 0;
+  const participantUserIds = selectedMembers.value.map(p => p.userId);
+  const participantCount = participantUserIds.length;
 
+  if (participantCount === 0 || totalAmount === 0) {
+    participantUserIds.forEach(userId => {
+      const member = selectedMembers.value.find(p => p.userId === userId);
+      if (member) member.splitAmount = 0;
+    });
+    return;
+  }
+
+  const baseAmount = Math.floor(totalAmount / participantCount);
+  let remainder = totalAmount % participantCount;
+
+  participantUserIds.forEach(userId => {
+    const member = selectedMembers.value.find(p => p.userId === userId);
+    if (member) member.splitAmount = baseAmount;
+  });
+
+  // 결제자에게 나머지 금액 더하기
+  if (remainder > 0 && form.value.payerUserId) {
+    const payer = selectedMembers.value.find(p => p.userId === form.value.payerUserId);
+    if (payer) payer.splitAmount += remainder;
+  }
+};
+
+// 금액 또는 결제자 변경 시 자동 분배
+watch(() => form.value.amount, distributeAmountEqually);
+watch(() => form.value.payerUserId, () => {
+  if (form.value.payerUserId && !isSelected(form.value.payerUserId)) {
+    splitAmounts.value[form.value.payerUserId] = 0;
+  }
+  distributeAmountEqually();
+});
+
+
+onMounted(async () => {
   try {
+    console.log("tripstore.currentTrip", tripStore.currentTrip)
+    console.log("tripStore.currentTripMembers.length", tripStore.currentTripMembers.length)
+    
+    // 1. 결제 상세 -> tripId 확보
     const data = await paymentlistApi.getPaymentListById(paymentId);
     const p = data.payment;
     paymentType.value = p.paymentType;
     console.log("paymentType: ", paymentType.value)
 
-    console.log("tripStore.merchantCategories: ", tripStore.merchantCategories)
+    // 2) tripId 결정: 응답 → 스토어 → 로컬스토리지까지 폴백
+    const fallbackLocal = Number(localStorage.getItem('currentTripId') || NaN);
+    const tripId =
+      p?.tripId ??
+      data?.tripId ??
+      tripStore.currentTripId ??
+      (Number.isFinite(fallbackLocal) ? fallbackLocal : null);
 
+    if (!tripId) {
+      console.error('payment detail:', data);
+      alert('여행 정보를 찾을 수 없습니다. (tripId 없음)');
+      return; // throw 대신 return으로 페이지가 망가지지 않게
+    }
+
+    // 3) trip 복구(스토어 채움) → 멤버/카테고리
+    await tripStore.fetchTrip(tripId);
+    await Promise.all([
+      tripStore.fetchCurrentTripMemberNicknames(),
+      tripStore.fetchMerchantCategories(),
+    ]);
+    isMembersReady.value = true;
+
+    // 4) 결제 참여자 목록
     const res = await paymentApi.getParticipantsByPaymentId(paymentId);
     selectedMembers.value = res.map(p => ({
       userId: p.userId,
@@ -83,6 +214,12 @@ onMounted(async () => {
     }));
     console.log("selectedMembers: ", selectedMembers.value)
 
+    // splitAmount 초기값을 splitAmounts 객체({ [userId]: splitAmount })에 저장
+    res.forEach(p => {
+      splitAmounts.value[p.userId] = p.splitAmount;
+    })
+
+    // 5) 폼 채우기
     form.value = {
       content: p.merchantName,
       amount: Number(p.amount).toLocaleString(),
@@ -92,17 +229,24 @@ onMounted(async () => {
     };
     date.value = new Date(p.payAt);
 
+    // 6) 초기 진입 시에도 자동 분배 적용
+    distributeAmountEqually(); 
 
   } catch (e) {
     console.error('결제 내역 불러오기 실패:', e);
+  } finally {
+    isLoading.value = false;
   }
 });
 
+
+// 저장 버튼 클릭 시 api 호출
 const handleSave = async () => {
   const amount = parseInt(form.value.amount.replace(/,/g, ''), 10);
   const tripId = tripStore.currentTrip?.tripId;
 
   if (!tripId || !form.value.content || !amount || !form.value.category || !form.value.payerUserId || selectedMembers.value.length === 0) {
+    alert('모든 항목을 입력해주세요.')
     console.error('모든 항목을 입력해주세요.');
     return;
   }
@@ -116,7 +260,6 @@ const handleSave = async () => {
       splitAmount: 0
     });
   }
-
 
   const payAt = formatDateTime(date.value);
   const payload = {
@@ -133,10 +276,9 @@ const handleSave = async () => {
   };
 
   console.log("payload", payload);
-  console.log("<< 참여자 userId 타입 체크 >>");
-  selectedMembers.value.forEach(p =>
-    console.log("userId:", p.userId, "typeof:", typeof p.userId)
-  );
+  console.log("payerUserId", form.value.payerUserId);
+  console.log("participants", selectedMembers.value);
+  
 
   try {
     if (paymentType.value === 'OTHER') {
@@ -150,11 +292,25 @@ const handleSave = async () => {
     }
 
     console.log('결제 내역 수정 완료!');
+    alert('결제 내역이 수정되었습니다.')
     router.go(-1)
   } catch (e) {
     console.error('수정 실패:', e.response?.data || e);
+     alert('결제 내역 수정에 실패했습니다.')
   }
 };
+
+// 결제 내역 삭제
+const handleDelete = async () => {
+  try {
+    await paymentApi.deletePayment(paymentId)
+    alert('결제 내역이 삭제되었습니다.')
+    router.go(-1)
+  }catch (error) {
+    console.error('결제 내역 삭제 실패: ', error)
+    alert('결제 삭제에 실패했습니다.')
+  }
+}
 </script>
 
 <template>
@@ -164,25 +320,35 @@ const handleSave = async () => {
   <main class="content-container">
     <!-- 내용 입력 -->
     <div class="form-section">
-      <label class="form-label">내용</label>
+      <label class="form-label required">내용</label>
       <div class="input-box">
         <input 
+        v-if="paymentType === 'QR'"
         class="input-text"
         v-model="form.content" 
         placeholder="지출 내용을 입력하세요" 
         :disabled="paymentType == 'QR'"
         />
+
+        <input
+          v-else
+          class="input-text"
+          v-model="form.memo"
+          placeholder="지출 내용을 입력하세요"
+        >
+
       </div>
     </div>
 
     <!-- 금액 입력 -->
     <div class="form-section">
-      <label class="form-label">금액</label>
-      <div class="input-box">
+      <label class="form-label required">금액</label>
+      <div class="input-box amount-box">
         <input
           v-model="form.amount"
-          class="input-text"
+          class="input-text"          
           placeholder="금액을 입력하세요"
+          pattern="[0-9]*"
           :disabled="paymentType == 'QR'"
           @input="formatAmountInput"
         />
@@ -192,7 +358,7 @@ const handleSave = async () => {
 
     <!-- 날짜 입력 -->
     <div class="form-section">
-      <label class="form-label">날짜</label>
+      <label class="form-label required">날짜</label>
       <div class="input-box date-picker">
         <VueDatePicker
           v-model="date"
@@ -206,7 +372,7 @@ const handleSave = async () => {
 
     <!-- 카테고리 선택 -->
     <div class="form-section">
-      <label class="form-label">카테고리</label>
+      <label class="form-label required">카테고리</label>
       <select v-model="form.category" class="select-box" :disabled="paymentType === 'QR'">
         <option
           v-for="category in tripStore.merchantCategories"
@@ -219,8 +385,8 @@ const handleSave = async () => {
     </div>
 
     <!-- 결제자 선택 -->
-    <div class="form-section">
-      <label class="form-label">결제자</label>
+    <div class="form-section" v-if="isMembersReady">
+      <label class="form-label required">결제자</label>
       <select v-model="form.payerUserId" class="select-box" :disabled="paymentType === 'QR'">
         <option
           v-for="member in tripStore.currentTripMembers"
@@ -233,7 +399,7 @@ const handleSave = async () => {
     </div>
 
     <!-- 결제 참여자 선택 및 분배 금액 -->
-    <div class="form-section">
+    <div class="form-section" v-if="isMembersReady">
       <label class="form-label">결제 참여자</label>
       <div class="participant-list">
         <div
@@ -246,7 +412,10 @@ const handleSave = async () => {
 
           <!-- 참여자 토글 -->
           <div class="toggle-wrapper" @click="toggleMember(member.userId)">
-            <div class="toggle" :class="{ on: isSelected(member.userId) }">
+            <div class="toggle" :class="{ 
+              on: isSelected(member.userId),
+              disabled: member.userId === form.payerUserId 
+              }">
               <div class="circle"></div>
             </div>
           </div>
@@ -254,11 +423,10 @@ const handleSave = async () => {
           <!-- 분배 금액 입력 -->
           <div v-if="isSelected(member.userId)" class="input-box" style="margin-top: 8px;">
             <input
-              type="number"
-              :value="getSplitAmount(member.userId)"
-              @input="updateSplitAmount(member.userId, $event.target.value)"
-              class="input-text"
-              style="width: 100px;"
+              type="text"
+              :value="getSplitAmount(member.userId).toLocaleString()"
+              @input="updateSplitAmount(member.userId, $event)"
+              class="input-text split-input"
             />
             <span class="input-suffix">원</span>
           </div>
@@ -267,10 +435,10 @@ const handleSave = async () => {
     </div>
 
     <!-- 메모 -->
-    <div class="form-section">
+    <div class="form-section" v-if="paymentType ==='QR'">
       <label class="form-label">메모</label>
-      <div class="textarea-box">
-        <textarea
+      <div class="textarea-box" >
+        <textarea          
           v-model="form.memo"
           class="input-text"
           placeholder="상세 내용을 입력하세요..."
@@ -281,11 +449,31 @@ const handleSave = async () => {
     </div>
   </main>
 
-  <!-- 하단 저장 버튼 -->
   <footer class="footer">
-    <button class="delete-button">삭제</button>
+    <button 
+      class="delete-button" 
+      @click="isDeleteModalVisible = true" 
+      v-if="!isLoading && paymentType !== 'QR'">
+      <Trash2 class="icon trash-icon" />
+    </button>
+
     <button class="save-button" @click="handleSave">저장</button>    
   </footer>
+  
+  <Transition name="slide-up">
+    <div v-if="isDeleteModalVisible" class="modal">
+      <div style="margin-bottom: 16px; text-align: center">
+        <p style="font-size: 20px; font-weight: bold;">⚠️ 결제 내역을 삭제하시겠어요?</p>
+        <p style="font-size: 16px; color: gray; padding-bottom:25px;">삭제된 결제는 복구할 수 없어요.</p>
+      </div>
+
+      <div style="display: flex; justify-content: space-between;">
+        <button class="cancle-button" @click="isDeleteModalVisible = false">취소</button>
+        <button class="ok-button" @click="handleDelete">삭제</button>
+      </div>
+    </div>
+  </Transition>
+
 </template>
 
 <style scoped>
@@ -317,6 +505,8 @@ const handleSave = async () => {
   height: 20px;
 }
 
+
+
 .content-container {
   padding: 0 16px;
   overflow-y: auto;
@@ -330,6 +520,16 @@ const handleSave = async () => {
   margin-bottom: 16px;
 }
 
+/* 금액 입력칸 간격 줄이기 */
+.form-section.amount-section .input-box {
+  gap: 0px;           /* 숫자와 원 사이 간격 제거 */
+  padding: 8px 12px;  /* 좌우 여백도 조금 줄이기 */
+}
+
+.form-section.amount-section .input-text {
+  text-align: right;  /* 금액 오른쪽 정렬 (분배 금액처럼) */
+}
+
 .form-label {
   font-size: 14px;
   font-weight: bold;
@@ -338,20 +538,39 @@ const handleSave = async () => {
   display: block;
 }
 
+.form-label.required::after {
+  content: "*";
+  color: #FFD966; /* 노란색 */
+  margin-left: 4px;
+  font-weight: bold;
+}
+
 .input-box {
   background: #fff;
   border: 2px solid #e2e8f0;
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 8px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
+   margin-left: auto; /* 오른쪽 정렬 */
+}
+
+/* 금액 입력칸 전용 스타일 */
+.amount-box {
+  justify-content: flex-end;
+  gap: 0;
+  padding: 8px 15px;
+}
+
+.amount-box .input-text {
+  text-align: right;
 }
 
 .input-text,
 .input-suffix {
-  font-size: 18px;
+  font-size: 17px;
   color: #000;
   border: none;
   outline: none;
@@ -371,8 +590,15 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 ::v-deep(.date-picker input) {
-  font-size: 16px;
-  color: #000;
+  font-size: 17px;
+}
+
+::v-deep(.dp__theme_light) {
+  --dp-primary-color:rgba(255, 209, 102, 0.65); /* 메인 노랑 */
+  --dp-primary-text-color: #fff; /* 선택 날짜 글자색 */
+  --dp-hover-color: rgba(255, 209, 102, 0.65); /* hover 시 밝은 노랑 */
+  --dp-secondary-color: #c0c4cc; /* 보조 배경 */
+  /* --dp-border-color: #fff; */  
 }
 
 .select-box {
@@ -380,10 +606,28 @@ input[type="number"]::-webkit-outer-spin-button {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 10px 16px;
-  font-size: 18px;
+  font-size: 17px;
   width: 100%;
   text-align: center;
   cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>');
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.25rem;
+}
+
+.select-box option {
+  font-size: 25px;       /* 글자 크기 */
+  font-weight: 500;      /* 굵기 */
+  color: #0F172A;        /* 텍스트 색 */
+  background-color: #fff; /* 일부 브라우저에서만 적용 */
+}
+
+/* 첫 옵션을 플레이스홀더처럼 쓸 때 색 다운(선택값이 빈 문자열일 때) */
+.select-box[data-placeholder="true"] {
+  color: var(--muted);
 }
 
 .participant-list {
@@ -402,18 +646,32 @@ input[type="number"]::-webkit-outer-spin-button {
   position: relative;
   flex-wrap: wrap;
   gap: 10px;
+  justify-content: space-between; /* 왼쪽/오른쪽 정렬 */
+  
+}
+
+/* 결제 참여자 분배 입력칸 gap 최소화 */
+.participant-item .input-box {
+  gap: 0px;
+}
+
+.split-input{
+  width: 90px; 
+  text-align:right
 }
 
 .badge {
   background: rgba(255, 209, 102, 0.65);
   border-radius: 9999px;
   color: white;
-  font-weight: bold;
+  font-weight:600;
   width: 40px;
   height: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 20px;
+  
 }
 
 .name {
@@ -421,6 +679,9 @@ input[type="number"]::-webkit-outer-spin-button {
   font-weight: 600;
   color: #4a4a4a;
   min-width: 70px;
+  padding-left:3px;
+  font-size: 18px;
+  transform: translateY(-1px); /* 아래로 2px 이동 */  
 }
 
 .toggle-wrapper {
@@ -474,6 +735,12 @@ input[type="number"]::-webkit-outer-spin-button {
   background: #f8f9fa;
 }
 
+.trash-icon{
+  stroke-width: 2.3;
+  width: 26px;
+  transform: translateY(2px); /* 아래로 2px 이동 */
+}
+
 .delete-button{
   background-color:rgba(255, 29, 12, 0.20);
   border-radius: 12px;
@@ -484,18 +751,21 @@ input[type="number"]::-webkit-outer-spin-button {
   margin-left: 8px;
   font-size: 16px;
   color: #4A4A4A;
+  cursor:pointer;
 
 }
 .save-button {
-  background-color:rgba(255, 209, 102, 0.65);
+  /* background-color:rgba(255, 209, 102, 0.65); */
+  background-color: #FFE499;
   border-radius: 12px;
   padding: 16px 24px;
   font-weight: 1000;
   border: none;
-  flex: 1;
+  flex: 9;
   margin-left: 8px;
-  font-size: 16px;
+  font-size: 17px;
   color: #4A4A4A;
+  cursor: pointer;
 }
 
 /* 스크롤바 */
@@ -518,5 +788,58 @@ input[type="number"]::-webkit-outer-spin-button {
 .content-container::-webkit-scrollbar-thumb:hover {
   background-color: #888;
 }
+
+.modal {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 352px;
+  background-color: #ffffff;
+  border-radius: 16px 16px 0 0;
+  padding: 16px 16px 24px 16px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  animation: modalUp 0.25s ease;
+}
+
+@keyframes modalUp {
+  from {
+    bottom: -300px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0;
+    opacity: 1;
+  }
+}
+
+.cancle-button,
+.ok-button {
+  background-color: #FFE499;
+  border-radius: 12px;
+  padding: 16px 24px;
+  font-weight: 1000;
+  border: none;
+  flex: 9;
+  margin-left: 8px;
+  font-size: 17px;
+  color: #4A4A4A;
+  cursor: pointer;
+
+}
+
+/* transition 이름은 "slide-up" */
+.slide-up-enter-active, .slide-up-leave-active {
+  transition: all 0.5s ease;
+}
+.slide-up-enter-from, .slide-up-leave-to {
+  transform: translateY(100%);
+  opacity: 0;
+}
+.slide-up-enter-to, .slide-up-leave-from {
+  transform: translateY(0%);
+  opacity: 1;
+}
+
 </style>
 

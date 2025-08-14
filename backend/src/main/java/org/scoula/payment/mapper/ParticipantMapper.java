@@ -21,4 +21,7 @@ public interface ParticipantMapper {
 
     // 결제 참여자 삭제 (paymentId 기준)
     int deleteParticipant(@Param("paymentId") int paymentId, @Param("userId") int userId);
+
+    // 특정 결제에 참여한 모든 참여자 삭제
+    int deleteParticipantsByPaymentId(@Param("paymentId") int paymentId);
 }

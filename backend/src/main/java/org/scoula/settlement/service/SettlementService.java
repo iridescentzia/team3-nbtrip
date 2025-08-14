@@ -110,10 +110,24 @@ public interface SettlementService {
      */
     boolean isAllSettlementCompleted(Integer tripId);
 
+    // ==================== 아직 안한 정산 탭 ====================
+
     /**
      * 특정 사용자의 미정산 여행 목록을 조회하는 비즈니스 로직.
      * @param userId 사용자의 ID
      * @return 미정산 여행 정보 DTO 리스트
      */
     List<SettlementDTO.UnsettledTripInfo> getUnsettledTrips(int userId);
+
+    // ==================== 정산 영수증 ====================
+
+    /**
+     * [NEW] 두 사용자 간의 정산 과정 상세 내역을 조회함.
+     *
+     * @param tripId      조회할 여행의 ID
+     * @param myUserId    현재 로그인한 사용자의 ID
+     * @param otherUserId 상대방 사용자의 ID
+     * @return 멤버별 정산 영수증 DTO
+     */
+    SettlementDTO.SettlementBreakdownResponseDto getSettlementBreakdown(int tripId, int myUserId, int otherUserId);
 }

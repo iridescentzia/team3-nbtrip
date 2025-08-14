@@ -20,23 +20,6 @@ public class NotificationController {
     private final NotificationService notificationService;
     private final FCMService fcmService;
 
-    // 푸시 알림 테스트용
-    @GetMapping("/fcm/test")
-    public ResponseEntity<String> testPush(@RequestParam String token) {
-        try {
-            fcmService.sendPushNotification(
-                    token,
-                    "테스트 알림",
-                    "푸시 알림이 정상 동작하는지 확인 중입니다"
-            );
-            return ResponseEntity.ok("푸시 발송 시도 성공");
-        } catch (Exception e) {
-            log.error("푸시 발송 실패", e);
-            return ResponseEntity.status(500).body("푸시 발송 실패: " + e.getMessage());
-        }
-    }
-    
-
     // 로그인 사용자 알림 조회
     @GetMapping
     public ResponseEntity<List<NotificationDTO>> getNotifications(

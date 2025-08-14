@@ -1,13 +1,18 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { FileChartColumn, Trash2 } from 'lucide-vue-next';
-import { useRouter } from 'vue-router';
+import { FileChartColumn, Trash2, TriangleAlert } from 'lucide-vue-next';
+import { useRouter, useRoute } from 'vue-router';
+import apiClient from '@/api/index.js';
 
 const props = defineProps({
+  tripId: Number,
   tripName: String,
   startDate: String,
   endDate: String,
-  activeTab: String 
+  activeTab: String,
+  tripStatus: String,
+  isOwner: Boolean,
+  onDelete: Function,
 });
 
 const emit = defineEmits(['update:activeTab']);
@@ -25,13 +30,67 @@ function selectTab(tab) {
   emit('update:activeTab', tab);
 }
 
+const router = useRouter();
+const route = useRoute();
+
 // 아이콘 클릭 시 차트 페이지로 이동
-function goToChart() {
-  router.push({
-    name: 'report',
-    params: { tripId },
-  });
+async function goToChart() {
+  try {
+    const tripId = route.params.tripId;
+    const res = await apiClient.get(`/report/${tripId}/is-member`);
+    const isMember = res.data;
+    console.log(isMember);
+
+    if (isMember) {
+      router.push({ name: 'report', params: { tripId } });
+    } else {
+      alert('현재 여행에 포함된 회원이 아닙니다');
+    }
+  } catch (error) {
+    console.error('멤버 확인 중 오류 발생:', error);
+    alert('서버 오류가 발생했습니다. 다시 시도해주세요.');
+  }
 }
+
+// 상태: 여행 삭제 모달
+const showDeleteModal = ref(false)
+
+const lockScroll = () => {
+  const container = document.querySelector('.content-container');
+  if (container) {
+    container.scrollTop = 0;
+    container.style.overflow = 'hidden';
+  }
+};
+
+const unlockScroll = () => {
+  const container = document.querySelector('.content-container');
+  if (container) {
+    container.style.overflow = 'auto';
+  }
+};
+
+// 여행 삭제 모달 열기
+const openDeleteModal = () => {
+  showDeleteModal.value = true
+  lockScroll();
+}
+
+// 여행 삭제 모달 취소
+const cancelDelete = () => {
+  showDeleteModal.value = false
+  unlockScroll();
+}
+
+// 여행 삭제 확인
+const confirmDelete = () => {
+  showDeleteModal.value = false
+  unlockScroll();
+  if (props.onDelete) {
+    props.onDelete()
+  }
+}
+
 </script>
 
 <template>
@@ -42,13 +101,20 @@ function goToChart() {
       <div class="title-date">
         <div class="title-row">
           <div class="trip-name">{{ props.tripName }}</div>
-          <FileChartColumn class="icon" @click="goToChart" />
+          <div v-if="props.tripStatus === 'CLOSED'" class="icon-wrapper">
+            <FileChartColumn class="icon" @click="goToChart" />
+            <span class="red-dot"></span>
+          </div>
         </div>
         <div class="trip-date">{{ formattedDate }}</div>
       </div>
 
       <!-- 오른쪽: 휴지통 아이콘 -->
-      <Trash2 class="icon trash-icon" />
+      <Trash2
+          class="icon trash-icon"
+          @click="openDeleteModal"
+          v-if="tripStatus === 'READY' && isOwner === true"
+      />
     </div>
 
     <!-- 카드 구분선 -->
@@ -66,7 +132,29 @@ function goToChart() {
         {{ tab }}
       </div>
     </div>
-  </div>
+    <div v-if="showDeleteModal" class="modal-overlay" @click="cancelDelete"></div>
+
+    <div v-if="showDeleteModal" class="delete-modal">
+      <!-- 아이콘 -->
+      <div class="modal-icon"></div>
+
+      <!-- 메인 메시지 -->
+      <h3 class="modal-title">
+        <TriangleAlert />  정말로 여행을 삭제하시겠습니까?
+      </h3>
+
+      <!-- 설명 텍스트 -->
+      <p class="modal-description">
+        지금까지의 모든 내역이 사라집니다.
+      </p>
+
+      <!-- 버튼들 -->
+      <div class="modal-buttons">
+        <button @click="cancelDelete" class="modal-cancel-btn">취소하기</button>
+        <button @click="confirmDelete" class="modal-confirm-btn">삭제하기</button>
+      </div>
+    </div>
+    </div>
 </template>
 
 <style scoped>
@@ -172,5 +260,150 @@ function goToChart() {
 
 .tab-item.active {
   color: #fdb100;
+}
+
+.icon-wrapper {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+/* 빨간 알림 점 */
+.red-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 7px;
+  height: 7px;
+  background-color: #ff6b6b; /* 연한 빨간색 */
+  border-radius: 50%;
+  border: 2px solid white; /* 외곽 경계 */
+}
+
+/* 모달 오버레이 */
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1099;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 삭제 모달 */
+.delete-modal {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 352px;
+  background-color: #ffffff;
+  border-radius: 16px 16px 0 0;
+  padding: 16px 16px 24px 16px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1100;
+  animation: modalUp 0.25s ease;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalUp {
+  from {
+    bottom: -300px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0;
+    opacity: 1;
+  }
+}
+
+/* 모달 내용 스타일 */
+.modal-icon {
+  width: 40px;
+  height: 40px;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1f2937;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  margin: 0 0 16px 0;
+}
+
+.modal-description {
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  margin: 0 0 28px 0;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* 버튼 스타일 */
+.modal-cancel-btn,
+.modal-confirm-btn {
+  flex: 1;
+  height: 48px;
+  background: rgba(255, 209, 102, 0.65);
+  border-radius: 12px;
+  border: none;
+  color: #374151;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-cancel-btn:hover,
+.modal-confirm-btn:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+.modal-cancel-btn:active,
+.modal-confirm-btn:active {
+  transform: translateY(0);
 }
 </style>

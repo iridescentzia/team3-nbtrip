@@ -13,6 +13,7 @@
             name,
             phone_number AS phoneNumber,
             fcm_token AS fcmToken,
+            email_verified AS emailVerified,
             created_at AS createdAt,
             updated_at AS updatedAt
         FROM users
@@ -29,6 +30,7 @@
             name,
             phone_number AS phoneNumber,
             fcm_token AS fcmToken,
+            email_verified AS emailVerified,
             created_at AS createdAt,
             updated_at AS updatedAt
         FROM users
@@ -45,6 +47,7 @@
             name,
             phone_number AS phoneNumber,
             fcm_token AS fcmToken,
+            email_verified AS emailVerified,
             created_at AS createdAt,
             updated_at AS updatedAt
         FROM users

@@ -21,11 +21,10 @@ const goToPage = (n) => {
 
   switch (n.notificationType) {
     case 'TRANSACTION':
-      // 결제 상세 페이지로 이동
       if (n.paymentId) {
-        router.push(`/paymentlist/${n.tripId}`);
+        router.push(`/trip/${n.tripId}`);
       }
-      break;
+      break; 
     case 'SETTLEMENT':
       router.push(`/settlement/${n.tripId}/detail`);
       break;
@@ -36,15 +35,10 @@ const goToPage = (n) => {
       router.push(`/settlement/${n.tripId}/detail`);
       break;
     case 'INVITE':
-      if (!n.memberStatus) {
-        router.push(`/trip/join/${n.tripId}`)
-      } else {
-        router.push(`/trip/${n.tripId}`)
-      }
+      router.push(`/trip/join/${n.tripId}`)
       break;
-
-    case 'GROUP_EVENT':
-      // 그룹 상세 페이지
+    case 'JOIN':
+    case 'LEFT':
       router.push(`/trip/${n.tripId}`);
       break;
     default:
@@ -56,7 +50,7 @@ const tabs = [
   { label: '전체', value: 'ALL' },
   { label: '결제', value: 'TRANSACTION' },
   { label: '정산', value: 'SETTLEMENT' },
-  { label: '그룹', value: 'GROUP_EVENT' }
+  { label: '여행 그룹', value: 'TRIP' },
 ];
 
 const toggleDropdown = () => {
@@ -90,34 +84,39 @@ onMounted(() => {
 const getMessage = (n) => {
   const user = n.fromUserNickname || '누군가';
   const place = n.merchantName || '알 수 없는 장소';
-
+  const action = (n.actionType || '').toUpperCase();
+  console.log("``````````````````"+JSON.stringify(n.notificationType));
   switch (n.notificationType) {
     case 'TRANSACTION':
-      const isUpdate = n.actionType === 'UPDATE';
-      return isUpdate
-          ? `${user}님이 '${place}'결제 내역을 수정했습니다.`
-          : `${user}님이 '${place}'에서 \n${formatAmount(n.amount)}원을 결제했습니다.`;
+      if(action === 'DELETE'){
+        return `${user}님이 '${place}' 결제 내역을를 삭제했습니다.`;
+      }
+      if(action === 'UPDATE') {
+        return `${user}님이 '${place}' 결제 내역을 수정했습니다.`
+      }
+      return `${user}님이 '${place}에서' \n${formatAmount(n.amount)}원을 결제했습니다.`
 
     case 'SETTLEMENT':
-      return `${user}님이 정산 요청을 보냈습니다.\n정산을 확인하시겠습니까?`;
+      if (action === 'SEND'){
+        return `'${user}'님이 모든 송금을 완료했습니다.`;
+      }else{
+        return `${user}님이 정산 요청을 보냈습니다.\n정산을 확인하시겠습니까?`;
+      }
 
     case 'INVITE':
       return `${user}님이 "${n.tripName}" 그룹에 초대하셨습니다.\n여행에 참여하시겠습니까?`;
 
-    case 'GROUP_EVENT':
-      if (n.memberStatus === 'JOINED') {
-        return `${user}님이 "${n.tripName}" 그룹에 참여했어요.`;
-      } else if (n.memberStatus === 'LEFT') {
-        return `${user}님이 "${n.tripName}" 그룹에서 나갔어요.`;
-      } else {
-        return `${user}님이 그룹 관련 활동을 했습니다.`;
-      }
+    case 'LEFT':
+      return `${user}님이 "${n.tripName}" 그룹에서 나갔어요.`;
+
+    case 'JOIN':
+      return `${user}님이 "${n.tripName}" 그룹에 참여했어요.`;
 
     case 'REMINDER':
-      return `${user}님이 정산 알림을 보냈습니다.`;
+      return `"${n.tripName}"그룹에 미송금 내역이 있습니다.\n송금을 완료하여 유종의 미를 거두시길 바랍니다.`;
 
     case 'COMPLETED':
-      return `${user}님이 정산을 완료했습니다.`;
+      return `"${n.tripName}"그룹의 정산이 완료되었습니다. \n여행 리포트가 생성되었어요 확인해 보세요.`;
 
     default:
       return `${user}님이 새로운 알림을 보냈습니다.`;
@@ -154,8 +153,9 @@ const getMessage = (n) => {
              :class="{'read': n.isRead}"
              @click="handleCardClick(n)">
           <div class="card-content">
-            <p class="card-title" v-if="n.notificationType !== 'INVITE' || n.memberStatus === 'JOINED' || n.memberStatus === 'LEFT'">
+            <p class="card-title" v-if="n.notificationType !== 'INVITE'">
               [{{ n.tripName }}]
+              <span v-if="n.isRead" class="badge-read">읽음</span>
             </p>
             <p class="card-body">{{ getMessage(n) }}</p>
             <p class="card-time">{{ n.sendAt.split('.')[0].substring(0, 16) }}</p>
@@ -183,7 +183,6 @@ const getMessage = (n) => {
 .header-section{
   margin-right: 14px;
   margin-left: 14px;
-  margin-bottom: 20%;
 }
 
 .dropdown-wrapper {
@@ -260,6 +259,18 @@ const getMessage = (n) => {
   transition: background-color 0.2s ease;
 }
 
+.badge-read {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 6px;
+  font-size: 11px;
+  line-height: 1;
+  border-radius: 8px;
+  background: #e5e7eb;
+  color: #6b7280;
+  vertical-align: middle;
+}
+
 .notification-card.read {
   background: #E5E7EB;
   opacity: 0.7;
@@ -276,6 +287,9 @@ const getMessage = (n) => {
   height: 20px;
   color: #555;
 }
+.card-arrow:hover {
+  transform: translateX(2px);
+}
 
 .notification-card p {
   margin: 3px;
@@ -283,10 +297,11 @@ const getMessage = (n) => {
 
 .card-title {
   font-size: 13px;
+  font-weight: bold;
 }
 
 .card-body {
-  font-size: 13px;
+  font-size: 14px;
   white-space: pre-line;
 }
 

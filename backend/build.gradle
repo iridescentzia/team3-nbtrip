@@ -113,6 +113,11 @@ dependencies {
     // Quartz 스케줄러
     implementation 'org.quartz-scheduler:quartz:2.3.2'
 
+    // 이메일 발송 관련
+    implementation 'org.springframework:spring-context-support:5.3.37'
+    implementation 'javax.mail:javax.mail-api:1.6.2'
+    implementation 'com.sun.mail:javax.mail:1.6.2'
+    implementation 'org.apache.commons:commons-pool2:2.11.1'
 }
 
 test {

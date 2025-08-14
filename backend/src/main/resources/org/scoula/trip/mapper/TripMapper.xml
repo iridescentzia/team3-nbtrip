@@ -95,6 +95,26 @@
           AND tm.member_status = 'JOINED'
           AND t.trip_status = #{status}
     </select>
+    <select id="getMemberStatus" resultType="org.scoula.trip.domain.TripMemberStatus">
+        SELECT member_status
+        FROM trip_member
+        WHERE trip_id = #{tripId}
+        AND user_id = #{userId}
+    </select>
+    <select id="getJoinedTripDates" resultType="org.scoula.trip.domain.TripVO">
+        SELECT
+            t.*
+        FROM trip_member tm
+                 JOIN trip t
+                      ON tm.trip_id = t.trip_id
+        WHERE tm.user_id = #{userId}
+          AND t.trip_status IN ('READY', 'ACTIVE')
+          AND tm.member_status = 'JOINED';
+    </select>
+    <delete id="deleteTrip">
+        DELETE FROM trip
+        WHERE trip_id = #{tripId}
+    </delete>
 
     <resultMap id="tripMap" type="org.scoula.trip.domain.TripVO">
         <id property="tripId" column="trip_id" />

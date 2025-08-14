@@ -2,6 +2,7 @@
 // Firebase 초기화 및 FCM 토큰 발급 로직.
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import router from "@/router";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDdGlnwurgQGdbDfPRbx0Gh2ZZ2G8AUBag",
@@ -19,6 +20,31 @@ const app = initializeApp(firebaseConfig);
 // FCM 메시징 객체
 const messaging = getMessaging(app);
 
+// SW와 동일 규칙의 매핑 함수
+function mapUrlFromData(data = {}) {
+  const type = data.type;
+  const tripId = data.tripId;
+  const paymentId = data.paymentId;
+
+  switch (type) {
+    case 'TRANSACTION':
+      if (paymentId) return `/trip/${tripId}`;
+      return `/trip/${tripId}`;
+    case 'SETTLEMENT':
+      return `/settlement/${tripId}/detail`;
+    case 'COMPLETED':
+      return `/settlement/${tripId}/completed`;
+    case 'REMINDER':
+      return `/settlement/${tripId}/detail`;
+    case 'INVITE':
+      return `/trip/join/${tripId}`;
+    case 'JOIN':
+    case 'LEFT':
+      return `/trip/${tripId}`;
+    default:
+      return '/';
+  }
+}
 
 // 브라우저에서 FCM 토큰 발급
 export const requestPermissionAndGetToken = async (registration) => {
@@ -39,7 +65,6 @@ export const requestPermissionAndGetToken = async (registration) => {
     });
 
     if (token) {
-      console.log("FCM Token:", token);
       return token;
     } else {
       console.warn("토큰을 받을 수 없습니다. 권한을 허용했는지 확인하세요.");
@@ -53,13 +78,20 @@ export const requestPermissionAndGetToken = async (registration) => {
 // Foreground 메시지 수신 리스너
 onMessage(messaging, (payload) => {
   console.log("푸시 알림 수신:", payload);
+  const url = mapUrlFromData(payload.data || {});
+  if(!url) return;
 
   // 알림 직접 표시
   if (Notification.permission === 'granted' && payload.notification) {
     const { title, body } = payload.notification;
-    new Notification(title, {
+    const n = new Notification(title, {
       body, 
     });
+    n.onclick = () => {
+      window.focus();
+      router.push(url);
+      n.close();
+    };
   }
 });
 

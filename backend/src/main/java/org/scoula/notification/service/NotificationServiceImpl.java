@@ -7,7 +7,9 @@ import org.scoula.notification.dto.NotificationDTO;
 import org.scoula.notification.mapper.NotificationMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -69,18 +71,53 @@ public class NotificationServiceImpl implements NotificationService {
     // 그룹 참여/탈퇴 알림 생성 (joined, left)
     @Override
     public void createGroupEventNotification(Integer fromUserId, Integer tripId, String type) {
+
+        final String eventType = (type == null ? "JOIN" : type.trim().toUpperCase());
+
+        // 1) 알림 대상 조회 => 같은 여행 멤버 (본인 제외)
         List<Integer> memberIds = mapper.findUserIdsByTripId(tripId);
+
         for(Integer userId : memberIds) {
+            if(userId.equals(fromUserId)) continue;
+            // 2) db 저장
             NotificationVO vo = NotificationVO.builder()
                     .userId(userId)
                     .fromUserId(fromUserId)
                     .tripId(tripId)
-                    .notificationType(type) // JOINED or LEFT
+                    .notificationType(eventType)
                     .build();
             mapper.createNotification(vo);
-        }
 
+            // 3) 토큰 조회 및 검증
+            String fcmToken = mapper.findFcmTokenByUserId(userId);
+            if(fcmToken == null || fcmToken.isBlank()) continue;
+
+            Map<String, String> data = new HashMap<>();
+            data.put("type", eventType);
+            data.put("tripId", String.valueOf(tripId));
+            data.put("fromUserId", String.valueOf(fromUserId));
+
+            String title = "여행 멤버 상태 알림";
+            String body  = eventType.equals("JOIN")
+                    ? "여행에 들어온 멤버가 있습니다."
+                    : "여행에서 나간 멤버가 있습니다.";
+
+            // 4) 푸시 전송
+            try {
+                fcmService.sendPushNotification(
+                        fcmToken,
+                        title,
+                        body,
+                        data
+                );
+            } catch (Exception e) {
+                log.error("GROUP_EVENT 푸시 실패: userId={}, tripId={}, type={}",
+                        userId, tripId, eventType, e);
+            }
+
+        }
     }
+
     // 알림 생성 및 fcm 푸시 전송
     @Override
     public void createNotification(NotificationDTO dto) {
@@ -93,7 +130,11 @@ public class NotificationServiceImpl implements NotificationService {
                 dto.setActionType("CREATE"); // 기본값 생성
             }
             // 한글 메시지용 actionKor 세팅
-            String actionKor = dto.getActionType().equalsIgnoreCase("UPDATE") ? "수정" : "등록";
+            String actionKor = switch (dto.getActionType().toUpperCase()) {
+                case "UPDATE" -> "수정";
+                case "DELETE" -> "삭제";
+                default -> "등록";
+            };
 
             // DB insert (여행 멤버 모두에게)
             mapper.createTransactionNotificationForAll(dto.toVO());
@@ -104,10 +145,17 @@ public class NotificationServiceImpl implements NotificationService {
                 String fcmToken = mapper.findFcmTokenByUserId(userId);
                 if (fcmToken != null && !fcmToken.isBlank()) {
                     try {
+                        Map<String, String> data = new HashMap<>();
+                        data.put("type", "TRANSACTION");
+                        data.put("tripId", String.valueOf(dto.getTripId()));
+                        data.put("paymentId", dto.getPaymentId() == null ? "" : String.valueOf(dto.getPaymentId()));
+                        data.put("action", dto.getActionType() == null ? "" : dto.getActionType().toUpperCase());
+
                         fcmService.sendPushNotification(
                                 fcmToken,
                                 "결제 알림이 도착했습니다.",
-                                dto.getFromUserNickname() + "님이 '" + dto.getMerchantName() + "' 결제를 " + actionKor + "했습니다."
+                                dto.getFromUserNickname() + "님이 '" + dto.getMerchantName() + "' 결제를 " + actionKor + "했습니다.",
+                                data
                         );
                     } catch (Exception e) {
                         log.error("TRANSACTION 푸시 실패: userId={}, tripId={}", userId, dto.getTripId(), e);
@@ -116,7 +164,9 @@ public class NotificationServiceImpl implements NotificationService {
                 }
 
             }
+            return;
         }
+
         // 정산 요청 알림 trip 멤버 전원에게 알림 insert + 푸시 전송
         if (type.equals("SETTLEMENT")) {
             mapper.createSettlementNotificationForAll(dto.toVO());
@@ -125,10 +175,16 @@ public class NotificationServiceImpl implements NotificationService {
                 String fcmToken = mapper.findFcmTokenByUserId(userId);
                 if (fcmToken != null && !fcmToken.isBlank()) {
                     try {
+                        Map<String, String> data = new HashMap<>();
+                        data.put("type", "SETTLEMENT");
+                        data.put("tripId", String.valueOf(dto.getTripId()));
+                        data.put("action", dto.getActionType() == null ? "" : dto.getActionType().toUpperCase());
+
                         fcmService.sendPushNotification(
                                 fcmToken,
                                 "정산 요청이 도착했어요",
-                                "여행 정산을 확인해 주세요"
+                                "여행 정산을 확인해 주세요",
+                                data
                         );
                     } catch (Exception e) {
                         log.error("SETTLEMENT 푸시 실패: userId={}, tripId={}", userId, dto.getTripId(), e);
@@ -147,13 +203,53 @@ public class NotificationServiceImpl implements NotificationService {
                 String fcmToken = mapper.findFcmTokenByUserId(userId);
                 if (fcmToken != null && !fcmToken.isBlank()) {
                     try {
+                        Map<String, String> data = new HashMap<>();
+                        data.put("type", "COMPLETED");
+                        data.put("tripId", String.valueOf(dto.getTripId()));
+
                         fcmService.sendPushNotification(
                                 fcmToken,
                                 "정산이 완료되었어요",
-                                "정산이 모두 완료되었습니다."
+                                "정산이 모두 완료되었습니다.",
+                                data
                         );
                     } catch (Exception e) {
                         log.error("COMPLETED 푸시 실패: userId={}, tripId={}", userId, dto.getTripId(), e);
+                    }
+                }
+            }
+            return;
+        }
+
+        // 송금 완료 알림 (SEND)
+        if (type.equals("SEND")) {
+            // DB에 저장할 notificationType은 ENUM 값인 'SETTLEMENT'로 고정
+            dto.setNotificationType("SETTLEMENT");   // ENUM 값 (DB용)
+            dto.setActionType("SEND");               // 프론트 표시용
+            // 1. 알림 insert (여행 멤버 전체, 본인 포함)
+            mapper.createSendNotificationForAll(dto.toVO());
+
+            // 2. 푸시 전송 (여행 멤버 전체, 본인 포함)
+            List<Integer> memberIds = mapper.findUserIdsByTripId(dto.getTripId());
+
+            for (Integer userId : memberIds) {
+                String fcmToken = mapper.findFcmTokenByUserId(userId);
+
+                if (fcmToken != null && !fcmToken.isBlank()) {
+                    try {
+                        Map<String, String> data = new HashMap<>();
+                        data.put("type", "SETTLEMENT"); // 클라 매핑은 SETTLEMENT 타입으로 처리
+                        data.put("action", "SEND");
+                        data.put("tripId", String.valueOf(dto.getTripId()));
+
+                        fcmService.sendPushNotification(
+                                fcmToken,
+                                "송금 완료 알림",
+                                dto.getFromUserNickname() + "님이 송금을 완료했습니다.",
+                                data
+                        );
+                    } catch (Exception e) {
+                        log.error("SEND 푸시 실패: userId={}, tripId={}", userId, dto.getTripId(), e);
                     }
                 }
             }
@@ -166,10 +262,15 @@ public class NotificationServiceImpl implements NotificationService {
             mapper.createNotification(dto.toVO());
             if (fcmToken != null && !fcmToken.isBlank()) {
                 try {
+                    Map<String, String> data = new HashMap<>();
+                    data.put("type", "INVITE");
+                    data.put("tripId", String.valueOf(dto.getTripId()));
+
                     fcmService.sendPushNotification(
                             fcmToken,
                             "여행 초대가 도착했어요",
-                            "새로운 여행에 초대받았어요. 확인해보세요"
+                            "새로운 여행에 초대받았어요. 확인해보세요",
+                            data
                     );
                 } catch (Exception e) {
                     log.error("INVITE 푸시 실패: userId={}", dto.getUserId(), e);
@@ -177,6 +278,7 @@ public class NotificationServiceImpl implements NotificationService {
             }
             return;
         }
+
     }
 
     // 알림 읽음 처리
@@ -192,20 +294,24 @@ public class NotificationServiceImpl implements NotificationService {
 
         // 1. 정산 미완료 사용자 조회
         List<Integer> userIds = mapper.findUsersNeedingReminder();
+        log.info("리마인더 대상 유저 수={}", userIds.size());
 
         for (Integer userId : userIds) {
             Integer tripId = mapper.findTripIdForUserPendingSettlement(userId);
-            Integer fromUserId = tripId != null ? mapper.findSettlementRequester(tripId) : null;
+            if (tripId == null) {
+                log.debug("리마인더 스킵: userId={} (보낼 trip 없음)", userId);
+                continue;
+            }
+
             // 2. 알림 DB 저장
             NotificationDTO dto = NotificationDTO.builder()
                     .userId(userId)
                     .tripId(tripId)
-                    .fromUserId(fromUserId)
                     .notificationType("REMINDER")
                     .build();
 
 
-            log.info("리마인더 생성 대상: userId={}, tripId={}, fromUserId={}", userId, tripId, fromUserId);
+            log.info("리마인더 생성 대상: userId={}, tripId={}", userId, tripId);
             mapper.createNotification(dto.toVO());
 
             // 3. FCM 토큰 조회
@@ -213,10 +319,15 @@ public class NotificationServiceImpl implements NotificationService {
             log.info("리마인더 전송 대상 userId={}, fcmToken={}", userId, fcmToken);
             if (fcmToken != null && !fcmToken.isBlank()) {
                 try {
+                    Map<String, String> data = new HashMap<>();
+                    data.put("type", "REMINDER");
+                    data.put("tripId", String.valueOf(tripId));
+
                     fcmService.sendPushNotification(
                             fcmToken,
                             "정산 알림이에요",
-                            "정산하지 않은 내역이 있어요. 확인 부탁드립니다."
+                            "송금하지 않은 내역이 있어요. 확인 부탁드립니다.",
+                            data
                     );
                 } catch (Exception e) {
                     log.error("REMINDER 푸시 실패: userId={}", userId, e);

@@ -201,4 +201,47 @@ public class SettlementDTO {
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private Date endDate;;
     }
+
+    /**
+     * [NEW] 멤버 간 정산 과정 상세 내역 DTO
+     * '나'와 '상대방' 사이의 모든 거래 내역과 최종 상계 결과를 담음.
+     */
+    @Data
+    public static class SettlementBreakdownResponseDto {
+        private String myNickname;
+        private String otherUserNickname;
+        private int finalAmount; // 최종 상계 후 금액 (양수: 내가 받음, 음수: 내가 보냄)
+        private List<BreakdownItem> items;
+    }
+
+    /**
+     * [NEW] 멤버 간 정산 영수증에 표시될 개별 거래 항목 DTO
+     */
+    @Data
+    public static class BreakdownItem {
+        private String title; // payment_type에 따라 memo 또는 merchant_name
+        private int totalAmount;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
+        private Date payAt;
+        private String payerNickname;
+        private int mySplitAmount; // 이 거래에서 나의 부담액
+        private boolean isMyPayment; // 내가 결제했는지 여부
+    }
+
+    /**
+     * [NEW] 정산 과정 계산에 필요한 원본 데이터를 담는 DTO.
+     * findBreakdownDetails 쿼리의 결과와 직접 매핑됨.
+     */
+    @Data
+    public static class BreakdownDetailDTO {
+        private int paymentId;
+        private String title;
+        private int totalAmount;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
+        private Date payAt;
+        private String payerNickname;
+        private int payerId;
+        private int participantId;
+        private int mySplitAmount;
+    }
 }

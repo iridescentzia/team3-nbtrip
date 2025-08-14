@@ -1,17 +1,19 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import tripApi from '@/api/tripApi.js';
-import paymentlistApi from '@/api/paymentlistApi.js'
+import paymentlistApi from '@/api/paymentlistApi.js';
 import { ChevronRight } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const goTripDetail = () => {
-  router.push(`/trip/${trip.value.tripId}`)
-}
+  if (props.empty || !trip.value) return;
+  router.push(`/trip/${trip.value.tripId}`);
+};
 
 const props = defineProps({
-  trip: Object
+  trip: { type: Object, default: null },
+  empty: { type: Boolean, default: false },
 });
 
 const trip = ref(props.trip);
@@ -20,12 +22,12 @@ const paymentList = ref([]);
 // tripName
 const tripName = computed(() => trip.value?.tripName || '');
 
-
-// 날짜 포맷 (2025.08.01 - 2025.08.04)
+// 날짜 포맷 (2025.08.01 ~ 2025.08.04)
+const toDot = (s) => String(s).replaceAll('-', '.');
 const date = computed(() => {
   if (!trip.value) return '';
   const { startDate, endDate } = trip.value;
-  return `${startDate} - ${endDate}`;
+  return `${toDot(startDate)} ~ ${toDot(endDate)}`;
 });
 
 // 사용 금액
@@ -37,7 +39,9 @@ const usedAmount = computed(() => {
 const budget = computed(() => trip.value?.budget || 0);
 
 // 포맷팅
-const formattedAmount = computed(() => usedAmount.value.toLocaleString() + '원');
+const formattedAmount = computed(
+  () => usedAmount.value.toLocaleString() + '원'
+);
 const formattedBudget = computed(() => budget.value.toLocaleString() + '원');
 
 // 진행률
@@ -49,6 +53,7 @@ const progressPercentage = computed(() => {
 const isOverBudget = computed(() => usedAmount.value >= budget.value);
 
 onMounted(async () => {
+  if (props.empty || !trip.value) return;
   const res = await paymentlistApi.getPaymentList(trip.value.tripId);
   console.log('res:', res);
 
@@ -59,39 +64,37 @@ onMounted(async () => {
     console.warn('❌ 결제 데이터 형식이 예상과 다름:', res);
   }
 });
-
 </script>
 
 <template>
-  <div class="travel-card" @click="goTripDetail">
+  <div class="travel-card" :class="{ empty }" @click="goTripDetail">
     <div class="trip-header">
       <div>
-        <h3 class="trip-name">{{ tripName }}</h3>
-        <p class="trip-date">{{ date }}</p>
+        <h3 class="trip-name">
+          <template v-if="!empty">{{ tripName }}</template>
+          <template v-else>진행 중인 여행이 없어요!</template>
+        </h3>
+        <p v-if="!empty" class="trip-date">{{ date }}</p>
       </div>
-      <ChevronRight class="arrow-icon" />
+      <ChevronRight v-if="!empty" class="arrow-icon" />
     </div>
 
-    
-    <div class="amount-row">
-        <span class="amount-text">현재 사용 금액</span>
-        <div class="amount"> 
-          {{formattedAmount}}
-        </div>
-        
+    <div v-if="!empty" class="amount-row">
+      <span class="amount-text">현재 사용 금액</span>
+      <div class="amount">
+        {{ formattedAmount }}
+      </div>
     </div>
 
-    <div class="progress-bar">
+    <div v-if="!empty" class="progress-bar">
       <div
-          class="progress"
-          :class="{over: isOverBudget}"
-          :style="{width: progressPercentage + '%'}"
+        class="progress"
+        :class="{ over: isOverBudget }"
+        :style="{ width: progressPercentage + '%' }"
       ></div>
     </div>
   </div>
 </template>
-
-
 
 <style scoped>
 .travel-card {
@@ -100,14 +103,52 @@ onMounted(async () => {
   border-radius: 12px;
   box-sizing: border-box;
   padding: 16px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   font-family: 'IBM Plex Sans KR', sans-serif;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
+  margin-bottom: 0px;
 }
 
+.travel-card:hover {
+  /* background-color: #ffe58a; */
+  /* background-color: #008cff; */
+  background-color: #ffe262;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.travel-card:hover .trip-name,
+.travel-card:hover .amount {
+  /* color: #000000; */
+  color: #fff;
+  font-weight: 600;
+}
+
+.travel-card:hover .trip-date,
+.travel-card:hover .amount-text,
+.travel-card:hover .arrow-icon {
+  /* color: #5f5f5f; */
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.travel-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.travel-card.empty {
+  cursor: default;
+}
+.travel-card.empty .arrow-icon {
+  opacity: 0.4;
+}
+.travel-card.empty .trip-name {
+  color: #6b7280; /* 회색 톤 */
+}
 
 .trip-name {
   font-size: 20px;
@@ -119,7 +160,7 @@ onMounted(async () => {
   font-size: 15px;
   color: #666;
   margin: 0%;
-  
+  font-weight: 600;
 }
 
 .amount-row {
@@ -129,17 +170,18 @@ onMounted(async () => {
   margin-top: 10%;
 }
 
-.amount-text{
-    font-size: 15px;
-    color: #666;
+.amount-text {
+  font-size: 15px;
+  color: #666;
+  font-weight: 600;
 }
-.amount{
-    font-size: 30px;
-    font-weight: bold;
+.amount {
+  font-size: 30px;
+  font-weight: bold;
 
-    display: flex;
-    align-items: center;
-    gap: 30px; 
+  display: flex;
+  align-items: center;
+  gap: 30px;
 }
 
 .trip-header {
@@ -153,6 +195,7 @@ onMounted(async () => {
   width: 24px;
   height: 24px;
   color: #888;
+  font-weight: 600;
 }
 
 .progress-bar {
@@ -161,16 +204,28 @@ onMounted(async () => {
   background-color: #eee;
   border-radius: 4px;
   overflow: hidden;
+  transition: background-color 0.3s ease;
 }
 
 .progress {
   height: 100%;
-  background-color: #5C8EF6;
-  transition: width 0.3s ease;
+  background-color: #3071fd;
+  transition: width 0.3s ease, background-color 0.3s ease;
 }
 
 .progress.over {
   background-color: #ff6666;
 }
 
+/* Hover effects for progress bar */
+.travel-card:hover .progress-bar {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+.travel-card:hover .progress {
+  /* background-color: #3071fd; */
+  background-color: #ffffff;
+}
+.travel-card:hover .progress.over {
+  background-color: #ff8c8c; /* Lighter red for over budget on hover */
+}
 </style>

@@ -1,6 +1,6 @@
 <script setup>
 import tripApi from "@/api/tripApi.js";
-import {onMounted, ref} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import { useTravelCreateStore } from "@/stores/tripStore.js"
@@ -10,6 +10,8 @@ import Header from "@/components/layout/Header.vue";
 const router=useRouter();
 const rawDate = ref(null);
 const disableDates = ref();
+const budgetInput = ref("");
+const budgetError = ref("");
 const store = useTravelCreateStore();
 const load = async () => {
   try {
@@ -33,45 +35,96 @@ const handleDate = (modelData) => {
   console.log('저장된 날짜:', store.startDate, store.endDate);
 }
 
-onMounted(()=>{
-  load();
-})
+// 천 단위 콤마 포맷 적용 & 숫자 검증
+const formatBudget = (e) => {
+  let value = e.target.value.replace(/,/g, ''); // 기존 콤마 제거
+  if (!/^\d*$/.test(value)) {
+    budgetError.value = "숫자만 입력해주세요.";
+    return;
+  } else {
+    budgetError.value = "";
+  }
+  if (value) {
+    budgetInput.value = Number(value).toLocaleString();
+    store.budget = Number(value);
+  } else {
+    budgetInput.value = "";
+    store.budget = null;
+  }
+};
+
+// 모든 필수 입력이 완료됐는지 확인
+const isFormValid = computed(() => {
+  return store.tripName?.trim() &&
+      store.startDate &&
+      store.endDate &&
+      store.budget &&
+      !budgetError.value;
+});
+
+onMounted(() => {
+  load(); // 비활성화 날짜 불러오기
+  store.tripName = '';
+  store.startDate = null;
+  store.endDate = null;
+  store.budget = null;
+});
 
 </script>
 
 <template>
-  <Header title="새로운 여행 만들기"/>
+  <Header title="새로운 여행 만들기" @back="router.back"/>
   <div class="content-container">
-    <label for="trip_name" class="label-text">어떤 여행인가요?</label><br>
-    <input
-        type="text"
-        name="trip_name"
-        id="trip_name"
-        placeholder="예) 서울 우정 여행"
-        v-model="store.tripName"
-        class="input-box"
-    />
-    <p class="label-text">언제 떠나시나요?</p>
-    <div class="datepicker-wrapper">
-      <VueDatePicker
-          inline auto-apply
-          v-model="rawDate"
-          model-type="yyyy-MM-dd"
-          :range="{ noDisabledRange: true }"
-          :enable-time-picker="false"
-          :disabled-dates="disableDates"
-          locale="ko"
-          cancelText="취소"
-          selectText="선택"
-          @update:model-value="handleDate"
-      ></VueDatePicker>
+    <div class="input-area">
+      <p class="label-text">어떤 여행인가요?</p>
+      <input
+          type="text"
+          name="trip_name"
+          id="trip_name"
+          placeholder="예) 서울 우정 여행"
+          v-model="store.tripName"
+          class="input-box"
+      />
     </div>
-    <label for="budget" class="label-text">예산을 입력해주세요</label><br>
-    <div class="input-wrapper">
-      <input type="number" class="input-box" name="budget" id="budget" v-model="store.budget">
-      <span class="unit-text">원</span>
+    <div class="input-area">
+      <p class="label-text">언제 떠나시나요?</p>
+      <div class="datepicker-wrapper">
+        <VueDatePicker
+            inline auto-apply
+            v-model="rawDate"
+            model-type="yyyy-MM-dd"
+            :min-date="new Date()"
+            :range="{ noDisabledRange: true }"
+            :enable-time-picker="false"
+            :disabled-dates="disableDates"
+            locale="ko"
+            cancelText="취소"
+            selectText="선택"
+            @update:model-value="handleDate"
+        ></VueDatePicker>
+      </div>
     </div>
-    <Button class="next-btn" @click="toNextPage" label="다음"></Button>
+    <p class="label-text">예산을 입력해주세요.</p>
+    <div class="input-area">
+      <div class="input-wrapper">
+        <input
+            type="text"
+            class="input-box"
+            name="budget"
+            id="budget"
+            :value="budgetInput"
+            @input="formatBudget"
+        >
+        <span class="unit-text">원</span>
+      </div>
+      <p v-if="budgetError" class="error-text">{{ budgetError }}</p>
+    </div>
+    <Button
+        class="next-btn"
+        :disabled="!isFormValid"
+        @click="toNextPage"
+        label="다음"
+    ></Button>
   </div>
 </template>
 
@@ -129,6 +182,28 @@ onMounted(()=>{
   left: 50%;
   transform: translateX(-50%);
 }
+
+.datepicker-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.input-area{
+  margin-bottom: 25px;
+}
+
+.error-text {
+  color: var(--theme-red);
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+
+:deep(.dp__calendar) {
+  width: 324px;
+}
+
 </style>
 <!--scoped에선 datepicker에 대한 커스터마이징이 먹히지 않아서 관련 내용 style에 정의-->
 <style>

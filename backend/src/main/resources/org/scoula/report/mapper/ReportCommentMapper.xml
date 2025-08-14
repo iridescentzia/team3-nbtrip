@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.scoula.report.mapper.ReportCommentMapper">
+
+    <resultMap id="ReportCommentMap" type="org.scoula.report.domain.ReportCommentVO">
+        <result column="trip_id" property="tripId"/>
+        <result column="comment_type" property="commentType"/>
+        <result column="content" property="content"/>
+        <result column="generated_at" property="generatedAt"/>
+    </resultMap>
+
+    <!-- 최신 1건 조회 (generated_at DESC) -->
+    <select id="findLatest" parameterType="map" resultMap="ReportCommentMap">
+        SELECT trip_id, comment_type, content, generated_at
+        FROM report_comment
+        WHERE trip_id = #{tripId}
+          AND comment_type = #{type}
+        ORDER BY generated_at DESC
+            LIMIT 1
+    </select>
+
+    <!-- 새 코멘트 저장 -->
+    <insert id="insert" parameterType="map">
+        INSERT INTO report_comment (trip_id, comment_type, content, generated_at)
+        VALUES (#{tripId}, #{type}, #{content}, NOW())
+    </insert>
+</mapper>

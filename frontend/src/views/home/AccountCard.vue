@@ -10,14 +10,15 @@ const router = useRouter();
 const props = defineProps({
   userId: {
     type: Number,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const getBankLogo = (bankName) => {
   const safeName = bankName?.replace(/\s/g, '').trim();
   try {
-    return new URL(`../../assets/bank-logos/${safeName}.png`, import.meta.url).href;
+    return new URL(`../../assets/bank-logos/${safeName}.png`, import.meta.url)
+      .href;
   } catch (e) {
     return new URL(`../../assets/bank-logos/default.png`, import.meta.url).href;
   }
@@ -26,7 +27,6 @@ const getBankLogo = (bankName) => {
 const goToAccountDetail = () => {
   router.push(`/mypage/payment`);
 };
-
 
 const bankName = computed(() => {
   if (!account.value) return '';
@@ -70,16 +70,41 @@ const bankCodeMap = {
   '092': 'tossbank',
 };
 
+const bankColorMap = {
+  gieobbank: '#0064AF',
+  kbbank: '#FFCC00',
+  nhbank: '#35B559',
+  ulibank: '#0078D2',
+  scbank: '#38d200',
+  kcitibank: '#004A99',
+  hanabank: '#008485',
+  sinhanbank: '#0046FF',
+  kakaobank: '#FEE500',
+  tossbank: '#0064FF',
+  default: '#A2D2FF',
+};
+
+const bankHoverStyle = computed(() => {
+  const color = bankColorMap[bankName.value] || bankColorMap.default;
+  return {
+    '--hover-bg-color': color,
+  };
+});
 </script>
 
 <template>
-  <div class="account-card" v-if="account" @click="goToAccountDetail">
+  <div
+    class="account-card"
+    v-if="account"
+    @click="goToAccountDetail"
+    :style="bankHoverStyle"
+  >
     <div class="top-row">
       <div class="left">
         <img :src="getBankLogo(bankName)" class="bank-logo" />
         <span class="account-number">{{ account.accountNumber }}</span>
       </div>
-      <ChevronRight class="chevron-icon"/>
+      <ChevronRight class="chevron-icon" />
     </div>
     <div class="bottom-row">
       <span class="balance">{{ formattedBalance }}</span>
@@ -87,12 +112,7 @@ const bankCodeMap = {
   </div>
 </template>
 
-
-
-
-
 <style scoped>
-
 .account-card {
   width: 100%;
   background-color: #fff;
@@ -103,9 +123,20 @@ const bankCodeMap = {
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
 }
 
+.account-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  background-color: var(--hover-bg-color);
+}
+
+.account-card:hover .account-number,
+.account-card:hover .balance,
+.account-card:hover .chevron-icon {
+  color: white;
+}
 
 .top-row {
   display: flex;
@@ -120,8 +151,8 @@ const bankCodeMap = {
 }
 
 .bank-logo {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -130,6 +161,7 @@ const bankCodeMap = {
   font-size: 15px;
   font-weight: 500;
   color: #333;
+  transition: color 0.3s ease;
 }
 
 .chevron {
@@ -148,14 +180,13 @@ const bankCodeMap = {
   font-weight: bold;
   color: #000;
   margin-left: 5px;
+  transition: color 0.3s ease;
 }
 
 .chevron-icon {
   width: 38px;
   height: 20px;
   color: #888;
+  transition: color 0.3s ease;
 }
-
-
-
 </style>

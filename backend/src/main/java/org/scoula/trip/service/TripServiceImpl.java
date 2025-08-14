@@ -3,20 +3,22 @@ package org.scoula.trip.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.scoula.member.dto.MemberSearchResponseDTO;
+import org.scoula.member.service.MemberService;
+import org.scoula.notification.dto.NotificationDTO;
+import org.scoula.notification.service.NotificationService;
 import org.scoula.trip.domain.TripMemberStatus;
 import org.scoula.trip.domain.TripMemberVO;
 import org.scoula.trip.domain.TripStatus;
 import org.scoula.trip.domain.TripVO;
-import org.scoula.trip.dto.TripCreateDTO;
-import org.scoula.trip.dto.TripDTO;
-import org.scoula.trip.dto.TripMemberDTO;
-import org.scoula.trip.dto.TripUpdateDTO;
+import org.scoula.trip.dto.*;
 import org.scoula.trip.mapper.TripMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -25,6 +27,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TripServiceImpl implements TripService {
     final TripMapper mapper;
+    final NotificationService notificationService;
+    final MemberService memberService;
 
     @Override
     public TripDTO get(int tripId) {
@@ -47,19 +51,56 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
+    public List<TripDatesDTO> getJoinedTripDates(int userId) {
+        return
+                mapper.getJoinedTripDates(userId)
+                        .stream()
+                        .map(TripDatesDTO::of)
+                        .toList();
+    }
+
+    @Override
     public int joinTrip(int tripId, int userId) {
-        return mapper.joinTrip(tripId, userId);
+        int result = mapper.joinTrip(tripId, userId);
+        notificationService.createGroupEventNotification(userId, tripId, "JOIN");
+        return result;
     }
 
     @Override
     public TripDTO inviteMember(int tripId, int userId, TripMemberStatus status) {
         mapper.inviteTrip(tripId, userId, status);
-        return get(tripId);
+        TripDTO result = get(tripId);
+        if(status == TripMemberStatus.INVITED) {
+            NotificationDTO notificationDTO = NotificationDTO.builder()
+                    .userId(userId)
+                    .fromUserId(result.getOwnerId())
+                    .tripId(result.getTripId())
+                    .notificationType("INVITE")
+                    .fromUserNickname(memberService.getMemberInfo(result.getOwnerId()).getNickname())
+                    .build();
+            notificationService.createNotification(notificationDTO);
+        }
+        return result;
+    }
+
+    @Override
+    public TripMemberStatus getMemberStatus(int tripId, int userId) {
+        return mapper.getMemberStatus(tripId, userId);
     }
 
     @Override
     public int changeMemberStatus(int tripId, int userId, TripMemberStatus status) {
-        return mapper.changeMemberStatus(tripId, userId, status);
+        TripMemberStatus statusBefore = getMemberStatus(tripId, userId);
+        int result = mapper.changeMemberStatus(tripId, userId, status);
+        if(statusBefore != status) {
+            if (status.name().equals("LEFT")) {
+                notificationService.createGroupEventNotification(userId, tripId, "LEFT");
+            }
+            else{
+                notificationService.createGroupEventNotification(userId, tripId, "JOIN");
+            }
+        }
+        return result;
     }
 
     @Override
@@ -76,6 +117,9 @@ public class TripServiceImpl implements TripService {
     @Override
     public TripDTO createTrip(TripCreateDTO tripCreateDTO) {
         TripVO tripVO = TripCreateDTO.toVO(tripCreateDTO);
+        if(Objects.equals(tripCreateDTO.getStartDate(), LocalDate.now())){
+            tripVO.setTripStatus(TripStatus.ACTIVE);
+        }
         mapper.createTrip(tripVO);
         inviteMember(tripVO.getTripId(),tripVO.getOwnerId(),TripMemberStatus.JOINED);
         for (MemberSearchResponseDTO memberSearchResponseDTO : tripCreateDTO.getMembers()) {
@@ -114,4 +158,8 @@ public class TripServiceImpl implements TripService {
         return get(tripUpdateDTO.getTripId());
     }
 
+    @Override
+    public int deleteTrip(int tripId) {
+        return mapper.deleteTrip(tripId);
+    }
 }

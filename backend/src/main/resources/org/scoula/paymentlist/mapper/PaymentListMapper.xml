@@ -7,7 +7,7 @@
 
     <!-- VO 필드 매핑 -->
     <resultMap id="PaymentListResultMap" type="org.scoula.paymentlist.domain.PaymentListVO">
-        <result property="paymentId" column="paymentId"/>
+        <id property="paymentId" column="paymentId"/>
         <result property="merchantId" column="merchantId"/>
         <result property="merchantName" column="merchantName"/>
         <result property="categoryId" column="categoryId"/>
@@ -18,6 +18,13 @@
         <result property="amount" column="amount"/>
         <result property="paymentType" column="paymentType"/>
         <result property="memo" column="memo"/>
+
+        <!--    결제 참여자 리스트    -->
+        <collection property="participants" ofType="org.scoula.payment.dto.ParticipantDTO">
+            <result property="userId" column="participantUserId"></result>
+            <result property="splitAmount" column="splitAmount"></result>
+            <result property="paymentId" column="paymentId"></result>
+        </collection>
     </resultMap>
 
     <!-- 결제 내역 불러오기: 사용자가 해당 trip에 속한 경우에만 -->
@@ -35,12 +42,17 @@
             p.pay_at AS payAt,
             p.amount,
             p.payment_type AS paymentType,
-            p.memo
+            p.memo,
+
+            pp.user_id AS participantUserId,
+            pp.split_amount AS splitAmount
+
         FROM payment p
                 JOIN users u ON p.user_id = u.user_id
                 JOIN merchant m ON p.merchant_id = m.merchant_id
                 JOIN merchant_category mc ON m.category_id = mc.category_id
                 JOIN trip_member tm ON p.trip_id = tm.trip_id
+                LEFT JOIN payment_participant pp ON p.payment_id = pp.payment_id
         WHERE p.trip_id = #{tripId}
           AND tm.user_id = #{userId}
         ORDER BY p.pay_at desc;

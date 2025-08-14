@@ -27,7 +27,12 @@ async function getOptions(query) {
   }
   try {
     console.log("검색 요청:", query);
-    options.value = await tripApi.searchNickname(query);
+    const results = await tripApi.searchNickname(query);
+    options.value = results.filter(
+        (item) =>
+            !addedItems.value.some((added) => added.userId === item.userId) &&
+            item.userId !== userId.value
+    );
   } catch (error) {
     console.error("검색어 불러오기 실패:", error);
   }
@@ -46,12 +51,7 @@ function onInput(e) {
 
 function onButtonClick(option) {
   console.log(option);
-  const alreadyAdded = addedItems.value.some(
-      (item) => item.userId === option.userId
-  );
-  if (!alreadyAdded && option.userId !== userId.value) {
-    addedItems.value.push(option);
-  }
+  addedItems.value.push(option);
   inputValue.value = '';
   showList.value = false;
   options.value = [];
@@ -70,6 +70,7 @@ function handleClickOutside(e) {
 }
 
 async function createTrip() {
+  const createButton = document.querySelector('.round-next-btn');
   try {
     console.log(store.tripName);
     const payload = {
@@ -81,12 +82,18 @@ async function createTrip() {
       members: addedItems.value     // [{id, nickname}, ...] 배열 형태로 전달
     };
 
+    createButton.disabled = true;
     const response = await tripApi.createTrip(payload);
     console.log('여행 생성 성공:', response);
+    store.tripName = '';
+    store.startDate = null;
+    store.endDate = null;
+    store.budget = null;
     alert('여행이 생성되었습니다!');
     router.replace('/');
   } catch (error) {
     console.error('여행 생성 실패:', error);
+    createButton.disabled = false;
   }
 }
 
@@ -101,7 +108,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <Header title="멤버 초대하기"/>
+  <Header title="멤버 초대하기" @back="router.back"/>
   <div class="content-container">
     <div class="info-box">
       <p class="trip_title">{{store.tripName}}</p>
@@ -121,6 +128,7 @@ onBeforeUnmount(() => {
         <input
             class="input-box"
             v-bind:value="inputValue"
+            :disabled = "addedItems.length >= 10"
             @input="onInput"
             @focus="showList = true"
             type="text"
@@ -173,7 +181,6 @@ p{
   margin: 0;
 }
 
-/* 메인 콘텐츠 */
 .content-container {
   flex-grow: 1;
   overflow-y: auto;
@@ -213,7 +220,7 @@ p{
 }
 
 .autocomplete-btn:hover {
-  background-color: var(--theme-primary-dark);
+  background-color: #ffd166;
 }
 
 .autocomplete-name{
@@ -331,13 +338,25 @@ p{
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 45px;
-  width: 45px;
+  height: 50px;
+  width: 50px;
   position: absolute;
-  bottom : 5%;
+  bottom : 8%;
   left: 50%;
   transform: translateX(-50%);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
+
+.round-next-btn:hover{
+  background-color: #ffd166;
+}
+
+.round-next-btn:active {
+  transform: translateX(-50%) scale(0.95);
+}
+
+
 
 .input-wrapper {
   position: relative;

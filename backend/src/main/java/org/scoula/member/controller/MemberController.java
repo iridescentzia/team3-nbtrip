@@ -3,8 +3,6 @@ package org.scoula.member.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.scoula.member.dto.*;
-import org.scoula.member.exception.DuplicateEmailException;
-import org.scoula.member.exception.DuplicateNicknameException;
 import org.scoula.member.exception.InvalidTokenException;
 import org.scoula.member.exception.UserNotFoundException;
 import org.scoula.member.service.MemberService;
@@ -27,7 +25,7 @@ public class MemberController {
     private final MemberService memberService;
     private final JwtProcessor jwtProcessor;
 
-    // 🔥 새로 추가: Firebase 서비스 워커 파일 서빙 (MIME 타입 문제 해결)
+    // Firebase 서비스 워커 파일 서빙
     @GetMapping({"/firebase-messaging-sw.js", "/api/firebase-messaging-sw.js"})
     public ResponseEntity<String> getFirebaseServiceWorker() {
         try {
@@ -102,7 +100,7 @@ public class MemberController {
         }
     }
 
-    // 1. 닉네임 중복 확인(POST /api/users/check-nickname)
+    // 닉네임 중복 확인(POST /api/users/check-nickname)
     @PostMapping("/users/check-nickname")
     public ResponseEntity<ApiResponse> checkNickname(@Valid @RequestBody MemberNicknameCheckDTO dto) {
         log.info("닉네임 중복 확인 요청 - 닉네임: {}", dto.getNickname());
@@ -117,42 +115,7 @@ public class MemberController {
         }
     }
 
-    // 2. 회원가입(POST /api/auth/register) - FCM 토큰 선택사항 처리
-    @PostMapping("/auth/register")
-    public ResponseEntity<ApiResponse> register(@Valid @RequestBody MemberDTO memberDTO, BindingResult bindingResult) {
-        log.info("🔐 NbbangTrip 회원가입 요청 - 이메일: {}", memberDTO.getEmail());
-
-        // 요청 파라미터 유효성 검사
-        if(bindingResult.hasErrors()) {
-            String errorMessage = bindingResult.getFieldErrors().get(0).getDefaultMessage();
-            log.warn("회원가입 유효성 검사 실패: {}", errorMessage);
-            return ResponseEntity.badRequest().body(new ApiResponse(false, errorMessage));
-        }
-
-        try {
-            // FCM 토큰이 있는지 로그로 확인 (디버깅용)
-            String fcmToken = memberDTO.getFcmToken();
-            if (fcmToken != null && !fcmToken.trim().isEmpty()) {
-                log.info("회원가입 시 FCM 토큰 포함: {}...", fcmToken.substring(0, Math.min(20, fcmToken.length())));
-            } else {
-                log.info("회원가입 시 FCM 토큰 없음 (로그인 시 설정 예정)");
-            }
-
-            ApiResponse response = memberService.registerMember(memberDTO);
-            log.info("✅ 회원가입 성공 - 이메일: {}", memberDTO.getEmail());
-
-            return ResponseEntity.ok(response);
-        } catch (DuplicateEmailException | DuplicateNicknameException e) {
-            log.warn("회원가입 실패 - 중복 데이터: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(false, e.getMessage()));
-        } catch (Exception e) {
-            log.error("❌ 회원가입 서버 오류 - 이메일: {}, 오류: {}", memberDTO.getEmail(), e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(false, "서버 오류가 발생했습니다"));
-        }
-    }
-
-    // 3. 정보 조회(GET /api/users/{userId})
+    // 정보 조회(GET /api/users/{userId})
     @GetMapping("/users/{userId}")
     public ResponseEntity<?> getUserInfo(@PathVariable("userId") int userId) {
         log.info("회원 정보 조회 요청 - userId: {}", userId);
@@ -168,7 +131,7 @@ public class MemberController {
         }
     }
 
-    // 4. FCM 토큰 갱신(PUT /api/users/fcm-token) - 여행 그룹 알림용
+    // FCM 토큰 갱신(PUT /api/users/fcm-token) - 여행 그룹 알림용
     @PutMapping("/users/fcm-token")
     public ResponseEntity<ApiResponse> updateFcmToken(
             @Valid @RequestBody MemberFcmTokenDTO memberFcmTokenDTO,
@@ -218,6 +181,8 @@ public class MemberController {
                     .body(new ApiResponse(false, "FCM 토큰 저장 중 오류가 발생했습니다"));
         }
     }
+
+    // 사용자 검색(닉네임) (POST /api/users/search/{nickname})
     @GetMapping("/users/search/{nickname}")
     public ResponseEntity<List<MemberSearchResponseDTO>> searchUsersByNickname(@PathVariable("nickname") String nickname) {
         return ResponseEntity.ok(memberService.searchMembersByNickname(nickname));
@@ -245,7 +210,7 @@ public class MemberController {
         return userId;
     }
 
-    // 5. 비밀번호 검증(POST /api/users/verify-password)
+    // 비밀번호 검증(POST /api/users/verify-password)
     @PostMapping("/users/verify-password")
     public ResponseEntity<ApiResponse> verifyPassword(
             @RequestHeader("Authorization") String authHeader,

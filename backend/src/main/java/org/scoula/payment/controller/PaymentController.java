@@ -55,20 +55,13 @@ public class PaymentController {
     // 선결제 등록
     @PostMapping("/prepaid")
     public ResponseEntity<String> registerPrepaidPayment(@RequestBody PaymentDTO paymentDTO, @AuthenticationPrincipal CustomUser customUser) {
-        Integer userId = customUser.getUserId();
+        int userId = paymentDTO.getPayerId();
         try {
-            List<TripDTO> trips = tripService.getJoinedTrips(userId);
-            TripDTO currentTrip = new TripDTO();
-            for(TripDTO trip : trips) {
-                if ((trip.getStartDate().isBefore(LocalDate.now()) || trip.getStartDate().isEqual(LocalDate.now())) &&
-                        (trip.getEndDate().isAfter(LocalDate.now()) || trip.getEndDate().isEqual(LocalDate.now())) &&
-                        trip.getTripStatus() == TripStatus.ACTIVE) {
-                    currentTrip = trip;
-                }
-            }
-            int tripId = currentTrip.getTripId();
+            int tripId = paymentDTO.getTripId();
+
             paymentDTO.setPaymentType(org.scoula.payment.domain.PaymentType.PREPAID);
             paymentService.registerManualPayment(paymentDTO, userId, tripId);
+
             return ResponseEntity.ok("선결제 등록 완료");
         } catch(RuntimeException e) {
             log.error("선결제 등록 실패: {}", e.getMessage());
@@ -81,7 +74,7 @@ public class PaymentController {
     // 기타 결제 등록
     @PostMapping("/other")
     public ResponseEntity<String> registerOtherPayment(@RequestBody PaymentDTO paymentDTO, @AuthenticationPrincipal CustomUser customUser) {
-        Integer userId = customUser.getUserId();
+        int userId = paymentDTO.getPayerId();
         try {
             List<TripDTO> trips = tripService.getJoinedTrips(userId);
             TripDTO currentTrip = new TripDTO();
@@ -163,4 +156,23 @@ public class PaymentController {
         List<ParticipantVO> participants = paymentService.getParticipantsByPaymentId(paymentId);
         return ResponseEntity.ok(participants);
     }
+
+    // 결제 내역 삭제
+    @DeleteMapping("/{paymentId}")
+    public ResponseEntity<String> deletePayment(
+            @PathVariable int paymentId,
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        try {
+            Integer userId = customUser.getUserId();
+            paymentService.deletePayment(paymentId, userId);
+            return ResponseEntity.ok("결제 삭제 완료");
+        } catch (RuntimeException e) {
+            log.error("결제 삭제 실패: {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("결제 삭제 실패: " + e.getMessage());
+        }
+    }
+
 }
