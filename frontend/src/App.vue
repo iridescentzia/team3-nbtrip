@@ -14,8 +14,6 @@ const userInfo = ref({ nickname: '', name: '' });
 
 onMounted(async () => {
   try {
-    console.log('마이페이지 마운트 시작');
-
     // ✅ getMyInfo() 사용 (userId 파라미터 불필요)
     const res = await getMyInfo();
     console.log('응답 결과:', res);
@@ -28,7 +26,7 @@ onMounted(async () => {
       console.error('유저 정보 조회 실패:', res?.message || '데이터 없음');
     }
   } catch (err) {
-    console.error('마이페이지 API 에러:', err);
+    console.error('로그인 에러:', err);
 
     if (
       err.message?.includes('인증') ||
