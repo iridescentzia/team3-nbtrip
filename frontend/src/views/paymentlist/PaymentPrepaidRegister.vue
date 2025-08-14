@@ -1,45 +1,55 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { useTripStore } from '@/stores/trip';
+import paymentApi from '@/api/paymentApi';
 import Header from '@/components/layout/Header.vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
-import { useTripStore } from '@/stores/trip';
-import paymentApi from '@/api/paymentApi';
-import { useRouter, useRoute } from 'vue-router';
 
+// --- 1. Imports & Setup ---
 const router = useRouter();
 const route = useRoute();
 const tripStore = useTripStore();
-const date = ref(new Date());
 
+// --- 2. State Management (ref, computed) ---
+
+// 폼 입력 데이터
 const form = ref({
-  content: '',
+  memo: '',
   amount: '',
   category: '',
   payerUserId: null,
-  memo: '',
 });
+const date = ref(new Date());
 
-// { [userId]: amount } 형태로 각 멤버의 분담액을 관리
+// 멤버별 분담금액 데이터 { [userId]: amount }
 const splitAmounts = ref({});
 
-// --- 로직 ---
+// 남은 분담액 계산
+const remainingAmount = computed(() => {
+  const totalAmount =
+    parseInt(String(form.value.amount).replace(/,/g, ''), 10) || 0;
+  const calculatedTotal = Object.values(splitAmounts.value).reduce(
+    (sum, val) => sum + (val || 0),
+    0
+  );
+  return totalAmount - calculatedTotal;
+});
 
-// 1. 컴포넌트가 마운트될 때 실행될 로직
+// --- 3. Lifecycle Hooks ---
+
+/**
+ * 컴포넌트가 마운트될 때 실행됩니다.
+ * 여행 정보를 불러오고, 참여자 목록을 초기화합니다.
+ */
 onMounted(async () => {
-  // 1. 라우트 파라미터에서 tripId를 가져옴
   const tripId = route.params.tripId;
-
   if (tripId) {
-    // tripStore의 기존 fetchTrip 함수를 호출하여 현재 여행 정보를 설정합니다.
     await tripStore.fetchTrip(tripId);
-
-    // 현재 여행 데이터가 설정된 것을 확인하고
-    // 나머지 데이터를 불러옵니다.
     if (tripStore.currentTrip) {
       await tripStore.fetchCurrentTripMemberNicknames();
       await tripStore.fetchMerchantCategories();
-
       if (tripStore.currentTripMembers.length > 0) {
         form.value.payerUserId = tripStore.currentTripMembers[0].userId;
         initializeParticipants();
@@ -48,7 +58,39 @@ onMounted(async () => {
   }
 });
 
-// 2. 참여자 목록을 초기화하고 1/N 금액을 분배하는 함수
+// --- 4. Watchers ---
+
+/**
+ * 총 금액이 변경될 때마다 분담금을 자동으로 재계산합니다.
+ */
+watch(
+  () => form.value.amount,
+  () => {
+    distributeAmountEqually();
+  }
+);
+
+/**
+ * 결제자가 변경될 때마다 분담금을 자동으로 재계산합니다.
+ * 결제자는 항상 참여자에 포함됩니다.
+ */
+watch(
+  () => form.value.payerUserId,
+  () => {
+    if (form.value.payerUserId && !isSelected(form.value.payerUserId)) {
+      const newSplits = { ...splitAmounts.value };
+      newSplits[form.value.payerUserId] = 0;
+      splitAmounts.value = newSplits;
+    }
+    distributeAmountEqually();
+  }
+);
+
+// --- 5. Core Logic (Amount Distribution) ---
+
+/**
+ * 결제 참여자 목록을 여행 멤버 전체로 초기화합니다.
+ */
 function initializeParticipants() {
   const newSplits = {};
   tripStore.currentTripMembers.forEach((member) => {
@@ -58,19 +100,10 @@ function initializeParticipants() {
   distributeAmountEqually();
 }
 
-// 3. 금액 또는 결제자가 변경되면, 1/N을 다시 계산
-watch(() => form.value.amount, distributeAmountEqually);
-watch(
-  () => form.value.payerUserId,
-  () => {
-    if (form.value.payerUserId && !isSelected(form.value.payerUserId)) {
-      splitAmounts.value[form.value.payerUserId] = 0;
-    }
-    distributeAmountEqually();
-  }
-);
-
-// 4. 1/N로 금액을 균등하게 분배하는 함수
+/**
+ * 선택된 참여자들에게 1/N로 금액을 균등하게 분배합니다.
+ * 남은 금액은 결제자에게 더해집니다.
+ */
 function distributeAmountEqually() {
   const totalAmount =
     parseInt(String(form.value.amount).replace(/,/g, ''), 10) || 0;
@@ -100,36 +133,37 @@ function distributeAmountEqually() {
   }
 }
 
-// 5. 특정 멤버의 분담액을 수동으로 업데이트하는 함수
+/**
+ * 사용자가 분담금을 수동으로 수정할 때 호출됩니다.
+ * @param {number} userId - 수정할 멤버의 ID
+ * @param {Event} event - 입력 이벤트 객체
+ */
 function updateSplitAmount(userId, event) {
   const totalAmount =
     parseInt(String(form.value.amount).replace(/,/g, ''), 10) || 0;
   let newAmount =
     parseInt(String(event.target.value).replace(/,/g, ''), 10) || 0;
 
-  // 입력값이 총액을 넘지 않도록 제한
+  const sumOfOtherAmounts = Object.entries(splitAmounts.value)
+    .filter(([key, _]) => Number(key) !== userId)
+    .reduce((sum, [_, amount]) => sum + (amount || 0), 0);
+
+  const maxAmountForThisUser = totalAmount - sumOfOtherAmounts;
+
   if (newAmount > totalAmount) {
-    alert('분배 금액은 총 결제 금액을 초과할 수 없습니다.');
-    newAmount = totalAmount; // 최대값으로 강제 설정
+    alert(`분배 금액은 총 금액을 넘을 수 없습니다.`);
+    newAmount = maxAmountForThisUser < 0 ? 0 : maxAmountForThisUser;
   }
 
   splitAmounts.value[userId] = newAmount;
-  // 입력창의 값을 포맷팅하여 다시 보여줌 (사용자 경험 향상)
   event.target.value = newAmount.toLocaleString();
 }
 
-// 6. 남은 금액을 계산하여 사용자에게 보여주는 computed 속성
-const remainingAmount = computed(() => {
-  const totalAmount =
-    parseInt(String(form.value.amount).replace(/,/g, ''), 10) || 0;
-  const calculatedTotal = Object.values(splitAmounts.value).reduce(
-    (sum, val) => sum + (val || 0),
-    0
-  );
-  return totalAmount - calculatedTotal;
-});
-
-// 참여자 토글 함수 (결제자는 해제 불가)
+/**
+ * 결제 참여자 목록에서 멤버를 추가하거나 제거합니다.
+ * 결제자는 제거할 수 없습니다.
+ * @param {number} userId - 토글할 멤버의 ID
+ */
 const toggleMember = (userId) => {
   if (userId === form.value.payerUserId) {
     alert('결제자는 항상 포함되어야 합니다.');
@@ -144,21 +178,17 @@ const toggleMember = (userId) => {
   distributeAmountEqually();
 };
 
-const isSelected = (userId) => splitAmounts.value.hasOwnProperty(userId);
+// --- 6. API Calls ---
 
-// 최종 저장 함수
+/**
+ * '저장' 버튼 클릭 시, 입력된 결제 정보를 서버로 전송합니다.
+ */
 const handleSave = async () => {
-  const tripId = tripStore.currentTrip?.tripId;
+  const tripId = route.params.tripId;
   const totalAmount = parseInt(String(form.value.amount).replace(/,/g, ''), 10);
   const payerUserId = Number(form.value.payerUserId);
 
-  if (
-    !tripId ||
-    !form.value.content ||
-    !totalAmount ||
-    !form.value.category ||
-    !payerUserId
-  ) {
+  if (!tripId || !totalAmount || !form.value.category || !payerUserId) {
     alert('모든 필수 항목을 입력해주세요.');
     return;
   }
@@ -175,22 +205,20 @@ const handleSave = async () => {
     })
   );
 
-  // '기타 결제'용 merchantId를 찾는 로직
   const selectedCategory = tripStore.merchantCategories.find(
     (c) => c.categoryId === Number(form.value.category)
   );
   const categoryName = selectedCategory
     ? selectedCategory.categoryName
     : '기타';
-  const merchantNameForOther = `${categoryName} 선결제`;
-  // To-do: 이 부분은 실제 가맹점 목록을 가져오는 로직으로 대체해야 합니다.
+  const merchantNameForOther = `${categoryName} 선결제/기타결제`;
   const mockMerchants = [
-    { merchantId: 1, merchantName: '식음료 선결제' },
-    { merchantId: 2, merchantName: '교통 선결제' },
-    { merchantId: 3, merchantName: '숙박 선결제' },
-    { merchantId: 4, merchantName: '관광 선결제' },
-    { merchantId: 5, merchantName: '쇼핑 선결제' },
-    { merchantId: 6, merchantName: '기타 선결제' },
+    { merchantId: 1, merchantName: '식음료 선결제/기타결제' },
+    { merchantId: 2, merchantName: '교통 선결제/기타결제' },
+    { merchantId: 3, merchantName: '숙박 선결제/기타결제' },
+    { merchantId: 4, merchantName: '관광 선결제/기타결제' },
+    { merchantId: 5, merchantName: '쇼핑 선결제/기타결제' },
+    { merchantId: 6, merchantName: '기타 선결제/기타결제' },
   ];
   const targetMerchant = mockMerchants.find(
     (m) => m.merchantName === merchantNameForOther
@@ -199,10 +227,10 @@ const handleSave = async () => {
 
   const paymentDTO = {
     tripId: tripId,
-    memo: form.value.content,
+    memo: form.value.memo,
     amount: totalAmount,
     payAt: formatDateTime(date.value),
-    paymentType: 'OTHER',
+    paymentType: 'PREPAID',
     payerId: payerUserId,
     participants: participantsPayload,
     merchantId: merchantId,
@@ -210,21 +238,37 @@ const handleSave = async () => {
 
   try {
     await paymentApi.createPrepaid(paymentDTO);
-    alert('결제 내역이 성공적으로 등록되었습니다.');
-    router.go(-1)
+    alert('선결제 내역이 성공적으로 등록되었습니다.');
+    router.go(-1);
   } catch (e) {
     console.error('결제 등록 실패:', e.response?.data || e.message);
-    alert('결제 등록에 실패했습니다.');
+    alert('선결제 등록에 실패했습니다.');
   }
 };
 
-// 금액 입력 시 콤마 추가
+// --- 7. Utilities ---
+
+/**
+ * 특정 멤버가 현재 참여자로 선택되었는지 확인합니다.
+ * @param {number} userId - 확인할 멤버의 ID
+ * @returns {boolean}
+ */
+const isSelected = (userId) => splitAmounts.value.hasOwnProperty(userId);
+
+/**
+ * 금액 입력창에 3자리마다 콤마를 추가합니다.
+ * @param {Event} event - 입력 이벤트 객체
+ */
 const formatAmountInput = (event) => {
   const numberOnly = event.target.value.replace(/[^0-9]/g, '');
   form.value.amount = Number(numberOnly).toLocaleString();
 };
 
-// 날짜 포맷팅 함수
+/**
+ * Date 객체를 'YYYY-MM-DDTHH:mm' 형식의 문자열로 변환합니다.
+ * @param {Date} date - 변환할 Date 객체
+ * @returns {string}
+ */
 const formatDateTime = (date) => {
   const pad = (n) => n.toString().padStart(2, '0');
   const yyyy = date.getFullYear();
@@ -241,10 +285,10 @@ const formatDateTime = (date) => {
   <main class="content-container">
     <div class="form-section">
       <label class="form-label">내용</label>
-      <div class="input-box">
+      <div class="textarea-box">
         <input
           class="input-text"
-          v-model="form.content"
+          v-model="form.memo"
           placeholder="지출 내용을 입력하세요"
         />
       </div>
@@ -311,10 +355,9 @@ const formatDateTime = (date) => {
           :key="member.userId"
           class="participant-item"
         >
-          <div class="badge">{{ member.nickname.charAt(0) }}</div>
-          <span class="name">{{ member.nickname }}</span>
-
-          <div class="split-amount-wrapper">
+          <div class="participant-info">
+            <div class="badge">{{ member.nickname.charAt(0) }}</div>
+            <span class="name">{{ member.nickname }}</span>
             <div class="toggle-wrapper" @click="toggleMember(member.userId)">
               <div
                 class="toggle"
@@ -326,8 +369,10 @@ const formatDateTime = (date) => {
                 <div class="circle"></div>
               </div>
             </div>
+          </div>
 
-            <div v-if="isSelected(member.userId)" class="input-box split-box">
+          <div v-if="isSelected(member.userId)" class="split-amount-wrapper">
+            <div class="input-box split-box">
               <input
                 type="text"
                 :value="splitAmounts[member.userId]?.toLocaleString()"
@@ -349,18 +394,6 @@ const formatDateTime = (date) => {
               : `${Math.abs(remainingAmount).toLocaleString()}원 초과`
           }}
         </div>
-      </div>
-    </div>
-
-    <div class="form-section">
-      <label class="form-label">메모</label>
-      <div class="textarea-box">
-        <textarea
-          v-model="form.memo"
-          class="input-text"
-          placeholder="상세 내용을 입력하세요..."
-          rows="4"
-        ></textarea>
       </div>
     </div>
   </main>
@@ -434,9 +467,15 @@ const formatDateTime = (date) => {
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   padding: 12px;
   gap: 10px;
+}
+.participant-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-grow: 1;
 }
 .badge {
   background: #ffd166;
@@ -456,7 +495,9 @@ const formatDateTime = (date) => {
   color: #4a4a4a;
 }
 .split-amount-wrapper {
+  flex-basis: 100%;
   display: flex;
+  justify-content: flex-end; /* Align to the right */
   align-items: center;
   gap: 10px;
 }
