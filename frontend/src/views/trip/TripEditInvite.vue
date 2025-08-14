@@ -105,6 +105,13 @@ async function inviteMembers() {
     await router.replace(`/trip/${tripData.value.tripId}`);
   } catch (error) {
     console.error('여행 초대 실패:', error);
+    if(error.status === 403) {
+      alert("여행 그룹장이 아닙니다.");
+      await router.replace(`/trip/${tripData.value.tripId}`);
+    }
+    else{
+      alert('오류가 발생했습니다... 다시 시도해주세요');
+    }
     inviteButton.disabled = true;
   }
 }

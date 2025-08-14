@@ -1,6 +1,6 @@
 <template>
   <div class="content-container">
-    <Header3 v-if="isReady && tripStore.currentTrip.tripStatus === 'READY'" :title="title"/>
+    <Header3 v-if="!isHeader1" :title="title"/>
     <Header v-else :title="title" @back="router.back"/>
 
     <TravelCard
@@ -109,6 +109,7 @@ const updateTrip = ref(null);
 const isOwner = ref(false);
 const title = ref('');
 const isClosed = ref(false);
+const isHeader1 = ref(true);
 
 const isReady = computed(() => !!tripStore.currentTrip); // 데이터 준비 여부
 
@@ -217,7 +218,7 @@ const handleTripTerminate = async () => {
     if (needsSettlement) {
       // 2-A. 정산이 필요한 경우: 정산 요청 생성 후 정산 페이지로 이동
       await requestSettlement({ tripId: parseInt(tripId) });
-      router.push(`/settlement/${tripId}`);
+      await router.push(`/settlement/${tripId}`);
     } else {
       // 2-B. 정산이 불필요한 경우: 홈으로 이동
       alert(
@@ -233,9 +234,14 @@ const handleTripTerminate = async () => {
 
 //삭제 버튼 클릭 처리하는 함수
 const handleDelete = async () => {
-  const tripId = route.params.tripId;
-  await tripApi.deleteTrip(Number(tripId));
-  console.log('id: ' + tripId + ' 여행 삭제');
+  try {
+    const tripId = route.params.tripId;
+    await tripApi.deleteTrip(Number(tripId));
+    console.log('id: ' + tripId + ' 여행 삭제');
+  }
+  catch (error) {
+    console.error(error);
+  }
   alert('여행이 삭제되었습니다.');
   await router.replace(`/`);
 };
@@ -283,8 +289,15 @@ const checkIfSettlementNeeded = async () => {
 };
 
 onMounted(async () => {
-  await tripStore.fetchTrip(route.params.tripId);
-  console.log('currenttrip: ', tripStore.currentTrip);
+  isHeader1.value = window.history.state?.isHeader1 ?? true;
+  try{
+    await tripStore.fetchTrip(route.params.tripId);
+    console.log('current trip: ', tripStore.currentTrip);
+  }
+  catch(error){
+    alert('잘못된 접근입니다.');
+    await router.replace('/');
+  }
   if (tripStore.currentTrip) {
     await tripStore.fetchCurrentTripMemberNicknames();
     await checkIsOwner();
