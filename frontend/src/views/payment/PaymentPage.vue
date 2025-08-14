@@ -34,7 +34,9 @@ onMounted(async () => {
     const tripId = await tripApi.getCurrentTripId();
     if (tripId == 0) {
       console.error('현재 여행 ID를 가져오지 못했습니다.');
-      alert('진행 중인 여행이 없습니다. 여행을 생성하거나 참여해주세요.');
+      alert(
+        '현재 날짜에 진행 중인 여행이 없습니다. 여행을 생성하거나 참여해주세요.'
+      );
       router.push('/');
     }
   } catch (err) {
