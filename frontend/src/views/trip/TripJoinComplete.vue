@@ -20,9 +20,13 @@ const load = async () => {
   }
 }
 
-const toNextPage=() => {
-  router.push(`/trip/${tripId.value}`);
-}
+const toNextPage = () => {
+  router.push({
+    name: 'tripDetail',
+    params: { tripId: tripId.value },
+    state: { isHeader1: false }
+  });
+};
 
 load();
 </script>
