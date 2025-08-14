@@ -54,11 +54,14 @@ public class TripController {
     }
     //그룹 1개의 정보(멤버 리스트 포함)를 그룹 ID로 찾아 가져오기
     @GetMapping("/{tripId}")
-    public ResponseEntity<TripDTO> getTripByID(@PathVariable int tripId) {
-        return ResponseEntity.ok().body(service.get(tripId));
+    public ResponseEntity<TripDTO> getTripByID(@AuthenticationPrincipal CustomUser customUser, @PathVariable int tripId) {
+        if(service.isMember(tripId, customUser.getUserId(), false)) {
+            return ResponseEntity.ok().body(service.get(tripId));
+        }
+        return ResponseEntity.status(403).body(null);
     }
 
-    //그룹 멤버 데려오기
+    //그룹 멤버 가져오기
     @GetMapping("/{tripId}/members")
     public ResponseEntity<List<TripMemberDTO>> getTripMembers(@PathVariable int tripId) {
         return ResponseEntity.ok().body(service.getTripMembers(tripId));
@@ -81,13 +84,19 @@ public class TripController {
     }
     //그룹 ID인 그룹에 유저 ID인 유저 초대하기
     @PostMapping("/{tripId}/invite/{userId}")
-    public ResponseEntity<TripDTO> joinTripMembers(@PathVariable int userId, @PathVariable int tripId) {
-        return ResponseEntity.ok().body(service.inviteMember(tripId, userId, TripMemberStatus.INVITED));
+    public ResponseEntity<TripDTO> joinTripMembers(@AuthenticationPrincipal CustomUser customUser, @PathVariable int userId, @PathVariable int tripId) {
+        if(service.isOwner(tripId, customUser.getUserId())) {
+            return ResponseEntity.ok().body(service.inviteMember(tripId, userId, TripMemberStatus.INVITED));
+        }
+        return ResponseEntity.status(403).body(null);
     }
     //그룹 ID인 그룹에 참여하기
     @PutMapping("/{tripId}/join")
     public ResponseEntity<Integer> joinTrip(@AuthenticationPrincipal CustomUser customUser,@PathVariable int tripId){
-        return ResponseEntity.ok().body(service.joinTrip(tripId, customUser.getUserId()));
+        if (!service.isMember(tripId, customUser.getUserId(), true)) {
+            return ResponseEntity.ok().body(service.joinTrip(tripId, customUser.getUserId()));
+        }
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(1);
     }
     //그룹 ID인 그룹에 유저 ID인 유저의 상태 LEFT로 변경하기
     @PutMapping("/{tripId}/members/{userId}/status")
@@ -97,7 +106,7 @@ public class TripController {
             return ResponseEntity.ok().body(service.changeMemberStatus(tripId, userId,TripMemberStatus.LEFT));
         }
         else{
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);
+            return ResponseEntity.status(403).body(null);
         }
     }
     //그룹 ID인 그룹의 상태 CLOSED로 변경하기
@@ -107,7 +116,7 @@ public class TripController {
             return ResponseEntity.ok().body(service.changeTripStatus(tripId));
         }
         else{
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);
+            return ResponseEntity.status(403).body(null);
         }
     }
     //tripId인 여행 수정하기
@@ -115,8 +124,11 @@ public class TripController {
     public ResponseEntity<TripDTO> updateTrip(@AuthenticationPrincipal CustomUser customUser,
                                               @PathVariable int tripId,
                                               @RequestBody TripUpdateDTO tripUpdateDTO){
-        tripUpdateDTO.setTripId(tripId); // URL값 우선
-        return ResponseEntity.ok().body(service.updateTrip(tripUpdateDTO));
+        if(service.isOwner(tripId, customUser.getUserId())){
+            tripUpdateDTO.setTripId(tripId);
+            return ResponseEntity.ok().body(service.updateTrip(tripUpdateDTO));
+        }
+        return ResponseEntity.status(403).body(null);
     }
     @DeleteMapping("/{tripId}/delete")
     public ResponseEntity<Integer> deleteTrip(@AuthenticationPrincipal CustomUser customUser, @PathVariable int tripId){
@@ -124,7 +136,7 @@ public class TripController {
             return ResponseEntity.ok().body(service.deleteTrip(tripId));
         }
         else
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);
+            return ResponseEntity.status(403).body(null);
     }
     //여행 추가
     @PostMapping("")

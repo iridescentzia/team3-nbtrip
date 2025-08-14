@@ -19,6 +19,7 @@ public interface TripService {
     int changeTripStatus(int tripId);
     TripDTO createTrip(TripCreateDTO tripCreateDTO);
     boolean isOwner(int tripId, int userId);
+    boolean isMember(int tripId, int userId, boolean checkJoined);
     List<TripDTO> getTripsByStatus(int userId, TripStatus status);
     TripDTO updateTrip(TripUpdateDTO tripUpdateDTO);
     int deleteTrip(int tripId);

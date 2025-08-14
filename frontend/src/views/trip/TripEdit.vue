@@ -37,7 +37,7 @@ const formatDate = (date) => {
 
 const handleUpdate = async () => {
   // VueDatePicker에서 start/end 날짜 추출
-  console.log("exposed clicked");
+  console.log("업데이트 버튼 클릭됨");
   const [startDate, endDate] = date.value && Array.isArray(date.value)
       ? date.value.map(formatDate)
       : [tripDetail.value.startDate, tripDetail.value.endDate];

@@ -113,6 +113,22 @@ public class TripServiceImpl implements TripService {
         return mapper.isOwner(tripId, userId);
     }
 
+    @Override
+    public boolean isMember(int tripId, int userId, boolean checkJoined) {
+        List<TripMemberDTO> tripMemberDTOList = getTripMembers(tripId);
+        for (TripMemberDTO tripMemberDTO : tripMemberDTOList) {
+            if (tripMemberDTO.getUserId() == userId) {
+                if(checkJoined) {
+                    return tripMemberDTO.getMemberStatus() != TripMemberStatus.INVITED;
+                }
+                else {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @Transactional
     @Override
     public TripDTO createTrip(TripCreateDTO tripCreateDTO) {
