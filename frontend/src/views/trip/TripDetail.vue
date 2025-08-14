@@ -233,9 +233,14 @@ const handleTripTerminate = async () => {
 
 //삭제 버튼 클릭 처리하는 함수
 const handleDelete = async () => {
-  const tripId = route.params.tripId;
-  await tripApi.deleteTrip(Number(tripId));
-  console.log('id: ' + tripId + ' 여행 삭제');
+  try {
+    const tripId = route.params.tripId;
+    await tripApi.deleteTrip(Number(tripId));
+    console.log('id: ' + tripId + ' 여행 삭제');
+  }
+  catch (error) {
+    console.error(error);
+  }
   alert('여행이 삭제되었습니다.');
   await router.replace(`/`);
 };
@@ -283,8 +288,14 @@ const checkIfSettlementNeeded = async () => {
 };
 
 onMounted(async () => {
-  await tripStore.fetchTrip(route.params.tripId);
-  console.log('currenttrip: ', tripStore.currentTrip);
+  try{
+    await tripStore.fetchTrip(route.params.tripId);
+    console.log('current trip: ', tripStore.currentTrip);
+  }
+  catch(error){
+    alert('잘못된 접근입니다.');
+    await router.replace('/');
+  }
   if (tripStore.currentTrip) {
     await tripStore.fetchCurrentTripMemberNicknames();
     await checkIsOwner();
