@@ -4,6 +4,7 @@
     <ExpenseCard
       v-for="(item, index) in filteredPayments"
       :key="index"
+      class="expense-card-item"
       :title="item.paymentType == 'QR' ? item.merchantName : item.memo"
       :sub="formatSub(item.nickname, item.payAt)"
       :amount="item.amount"
@@ -49,19 +50,20 @@ const payments = ref([]); // 서버에서 받아온 전체 결제 내역
 
 // 필터링된 결제 내역
 const filteredPayments = computed(() => {
-
-  const { start, end } = props.dateRange
+  const { start, end } = props.dateRange;
   // console.log('[PaymentListInfo.vue] 현재 dateRange:', start, end)
 
   let result = payments.value;
   console.log('원래 payments 수:', payments.value.length);
 
   // 탭 필터
-   if (props.activeTab === '그룹 지출 내역') {
-    result = result.filter(p => p.paymentType === 'QR' || p.paymentType === 'OTHER');
+  if (props.activeTab === '그룹 지출 내역') {
+    result = result.filter(
+      (p) => p.paymentType === 'QR' || p.paymentType === 'OTHER'
+    );
     console.log('[DEBUG] 탭 필터 후:', result.length);
   } else if (props.activeTab === '선결제 내역') {
-    result = result.filter(p => p.paymentType === 'PREPAID');
+    result = result.filter((p) => p.paymentType === 'PREPAID');
     console.log('[DEBUG] 탭 필터 후:', result.length);
   }
 
@@ -91,22 +93,26 @@ const filteredPayments = computed(() => {
 
   // 결제 참여자 필터
   if (props.selectedParticipants.length > 0) {
-    const selectedIds = props.selectedParticipants.map(String); 
-    
-      // 디버깅 로그
-    result.forEach(p => {
-      const matched = Array.isArray(p.participants) &&
-        p.participants.some(participant =>
+    const selectedIds = props.selectedParticipants.map(String);
+
+    // 디버깅 로그
+    result.forEach((p) => {
+      const matched =
+        Array.isArray(p.participants) &&
+        p.participants.some((participant) =>
           selectedIds.includes(String(participant.userId))
         );
       // console.log(`[FILTER] paymentId=${p.paymentId}, matched=${matched}, participants=`, p.participants);
     });
-    result = result.filter(p =>
-      Array.isArray(p.participants) && // participants가 undefined일 경우 방지
-      p.participants.some(participant => // participants 중 하나라도 해당되면 true
-        selectedIds.includes(String(participant.userId))
-      )
-    )
+    result = result.filter(
+      (p) =>
+        Array.isArray(p.participants) && // participants가 undefined일 경우 방지
+        p.participants.some(
+          (
+            participant // participants 중 하나라도 해당되면 true
+          ) => selectedIds.includes(String(participant.userId))
+        )
+    );
     console.log('결제 참여자 필터링 후 수:', result.length);
   }
 
@@ -145,9 +151,9 @@ watch(
 function formatSub(payer, payAt) {
   const time = new Date(payAt);
 
-  const year = time.getFullYear().toString()
-  const month = (time.getMonth() + 1).toString().padStart(2, '0')
-  const day = time.getDate().toString().padStart(2, '0')
+  const year = time.getFullYear().toString();
+  const month = (time.getMonth() + 1).toString().padStart(2, '0');
+  const day = time.getDate().toString().padStart(2, '0');
 
   const hour = time.getHours().toString().padStart(2, '0');
   const minute = time.getMinutes().toString().padStart(2, '0');
@@ -188,5 +194,12 @@ onMounted(async () => {
 .wrapper {
   padding: 20px 0;
   /* min-height: 100vh; */
+}
+.expense-card-item {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.expense-card-item:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 </style>

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.scoula.payment.domain.PaymentType;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -26,7 +27,8 @@ public class PaymentDTO {
     private List<ParticipantDTO> participants;
 
     // 사용자가 입력한 결제일자 및 시간
-    private LocalDate paymentDate;
-    private LocalTime paymentTime;
+//    private LocalDate paymentDate;
+//    private LocalTime paymentTime;
+    private LocalDateTime payAt;
 
 }

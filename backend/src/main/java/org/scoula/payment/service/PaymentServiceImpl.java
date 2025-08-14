@@ -95,9 +95,11 @@ public class PaymentServiceImpl implements PaymentService {
         validatePayment(paymentDTO, userId);
 
         // 수동 결제 시 사용자가 날짜/시간 입력하면 병합, 아니면 현재 시간
-        LocalDateTime payAt = (paymentDTO.getPaymentDate() != null && paymentDTO.getPaymentTime() != null)
-                ? LocalDateTime.of(paymentDTO.getPaymentDate(), paymentDTO.getPaymentTime())
+        LocalDateTime payAt = (paymentDTO.getPayAt() != null)
+                ? paymentDTO.getPayAt()
                 : LocalDateTime.now();
+        log.info(paymentDTO.getPayAt().toString());
+
 
         // 카테고리(merchantId)
         int merchantId = paymentDTO.getMerchantId();
@@ -252,8 +254,8 @@ public class PaymentServiceImpl implements PaymentService {
     public void updateManualPayment(int paymentId, PaymentDTO paymentDTO, int userId) {
         validatePayment(paymentDTO, userId);
 
-        LocalDateTime payAt = (paymentDTO.getPaymentDate() != null && paymentDTO.getPaymentTime() != null)
-                ? LocalDateTime.of(paymentDTO.getPaymentDate(), paymentDTO.getPaymentTime())
+        LocalDateTime payAt = (paymentDTO.getPayAt() != null)
+                ? paymentDTO.getPayAt()
                 : LocalDateTime.now();
 
         PaymentVO existingPayment = paymentMapper.selectPaymentById(paymentId);
