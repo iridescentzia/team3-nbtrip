@@ -46,7 +46,7 @@ public class QuartzConfig {
     @Bean
     public Trigger tripActivationTrigger(JobDetail tripActivationJobDetail) {
         CronScheduleBuilder scheduleBuilder = CronScheduleBuilder
-                .dailyAtHourAndMinute(0, 0) //20시 00분
+                .dailyAtHourAndMinute(0, 0) //0시 0분
                 .inTimeZone(java.util.TimeZone.getTimeZone("Asia/Seoul"))
                 .withMisfireHandlingInstructionFireAndProceed(); // 미스파이어 시 즉시 실행
 
