@@ -7,6 +7,7 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.spi.JobFactory;
 import org.quartz.spi.TriggerFiredBundle;
 import org.scoula.notification.scheduler.ReminderJob;
+import org.scoula.trip.scheduler.TripActivateJob;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,11 +21,18 @@ public class QuartzConfig {
                 .storeDurably()
                 .build();
     }
+    @Bean
+    JobDetail tripActivationJobDetail() {
+        return JobBuilder.newJob(TripActivateJob.class)
+                .withIdentity("tripActivateJob")
+                .storeDurably()
+                .build();
+    }
 
     @Bean
     public Trigger reminderTrigger(JobDetail reminderJobDetail) {
         CronScheduleBuilder scheduleBuilder = CronScheduleBuilder
-                .dailyAtHourAndMinute(10, 35) //20시 00분
+                .dailyAtHourAndMinute(20, 0) //20시 00분
                 .inTimeZone(java.util.TimeZone.getTimeZone("Asia/Seoul"))
                 .withMisfireHandlingInstructionDoNothing(); // 미스파이어 시 건너뛰기
 
@@ -35,11 +43,27 @@ public class QuartzConfig {
                 .build();
     }
 
+    @Bean
+    public Trigger tripActivationTrigger(JobDetail tripActivationJobDetail) {
+        CronScheduleBuilder scheduleBuilder = CronScheduleBuilder
+                .dailyAtHourAndMinute(0, 0) //0시 0분
+                .inTimeZone(java.util.TimeZone.getTimeZone("Asia/Seoul"))
+                .withMisfireHandlingInstructionFireAndProceed(); // 미스파이어 시 즉시 실행
+
+        return TriggerBuilder.newTrigger()
+                .forJob(tripActivationJobDetail)
+                .withIdentity("tripActivationTrigger")
+                .withSchedule(scheduleBuilder)
+                .build();
+    }
+
     @Bean(destroyMethod = "shutdown")
     public Scheduler scheduler(
             ApplicationContext ctx,
             JobDetail reminderJobDetail,
-            Trigger reminderTrigger
+            Trigger reminderTrigger,
+            JobDetail tripActivationJobDetail,
+            Trigger tripActivationTrigger
     ) throws SchedulerException {
         System.out.println("[Quartz] >>> scheduler() INIT HIT");
         Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
@@ -62,6 +86,13 @@ public class QuartzConfig {
         } else {
             scheduler.addJob(reminderJobDetail, true);
             scheduler.rescheduleJob(reminderTrigger.getKey(), reminderTrigger);
+        }
+
+        if (!scheduler.checkExists(tripActivationJobDetail.getKey())) {
+            scheduler.scheduleJob(tripActivationJobDetail, tripActivationTrigger);
+        } else {
+            scheduler.addJob(tripActivationJobDetail, true);
+            scheduler.rescheduleJob(tripActivationTrigger.getKey(), tripActivationTrigger);
         }
 
         scheduler.start();

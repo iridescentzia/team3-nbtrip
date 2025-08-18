@@ -46,6 +46,14 @@
         </set>
         WHERE trip_id = #{tripId}
     </update>
+    <update id="activateTrip" parameterType="java.time.LocalDate">
+        <![CDATA[
+            UPDATE trip
+            SET trip_status = 'ACTIVE'
+            WHERE trip_status = 'READY'
+            AND start_date <= #{today}
+        ]]>
+    </update>
     <select id="getTripDetail" resultMap="tripMap">
         SELECT *
         FROM trip t

@@ -6,6 +6,7 @@ import org.scoula.trip.domain.TripMemberStatus;
 import org.scoula.trip.domain.TripMemberVO;
 import org.scoula.trip.domain.TripVO;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Mapper
@@ -39,4 +40,5 @@ public interface TripMapper {
     int updateTrip(TripVO tripVO);
     int deleteTrip(int tripId);
     TripMemberStatus getMemberStatus(@Param("tripId") int tripId, @Param("userId") int userId);
+    int activateTrip(@Param("today") LocalDate today);
 }
