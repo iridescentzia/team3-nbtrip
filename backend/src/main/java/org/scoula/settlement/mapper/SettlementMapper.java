@@ -138,4 +138,11 @@ public interface SettlementMapper {
             @Param("myUserId") int myUserId,
             @Param("otherUserId") int otherUserId
     );
+
+    /**
+     * 정산 데이터를 배타적 락과 함께 조회
+     * @param settlementId 정산 ID
+     * @return 정산 정보 (트랜잭션 종료까지 락 유지)
+     */
+    SettlementVO selectForUpdateWithNicknames(@Param("settlementId") int settlementId);
 }

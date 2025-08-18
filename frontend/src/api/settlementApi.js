@@ -65,21 +65,6 @@ export const transferMoney = (payload) => {
 };
 
 /**
- * 여행 미정산 존재 여부 조회
- * @param {number} tripId - 여행 ID
- */
-export const getRemainingSettlements = (tripId) => {
-  return apiClient.get(`/settlements/${tripId}/remaining`);
-};
-
-/**
- * 사용자 전체 정산 상태 조회
- */
-export const getMySettlementStatus = () => {
-  return apiClient.get('/settlements/status');
-};
-
-/**
  * 정산 요청 알림 발송 API
  * @param {number} tripId - 여행 ID
  * @returns {Promise} - Axios Promise 객체

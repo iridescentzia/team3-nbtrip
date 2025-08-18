@@ -24,7 +24,7 @@ public class IndividualTransferProcessor {
 
         try {
             // 1. 정산 정보 조회
-            SettlementVO vo = mapper.getByIdWithNicknames(settlementId);
+            SettlementVO vo = mapper.selectForUpdateWithNicknames(settlementId); // 트랜잭션 안전성을 위한 배타적 락 적용
             if (vo == null) {
                 return createFailureDetail(detail, "정산 정보 없음", "해당 정산 내역을 찾을 수 없습니다");
             }

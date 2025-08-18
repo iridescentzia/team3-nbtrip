@@ -359,4 +359,16 @@
                 WHERE user_id = #{otherUserId}
             )
     </select>
+
+    <!-- 정산 데이터 + 닉네임 배타적 락 조회 (성능 최적화) -->
+    <select id="selectForUpdateWithNicknames" resultType="org.scoula.settlement.domain.SettlementVO">
+        SELECT s.*,
+               sender.nickname as senderNickname,
+               receiver.nickname as receiverNickname
+        FROM settlement s
+                 JOIN users sender ON s.sender_id = sender.user_id
+                 JOIN users receiver ON s.receiver_id = receiver.user_id
+        WHERE s.settlement_id = #{settlementId}
+            FOR UPDATE
+    </select>
 </mapper>
