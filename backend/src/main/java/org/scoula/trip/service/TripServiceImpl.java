@@ -178,4 +178,9 @@ public class TripServiceImpl implements TripService {
     public int deleteTrip(int tripId) {
         return mapper.deleteTrip(tripId);
     }
+
+    @Override
+    public int activateTrip(LocalDate today) {
+        return mapper.activateTrip(today);
+    }
 }

@@ -5,6 +5,7 @@ import org.scoula.trip.domain.TripMemberStatus;
 import org.scoula.trip.domain.TripStatus;
 import org.scoula.trip.dto.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -24,4 +25,5 @@ public interface TripService {
     TripDTO updateTrip(TripUpdateDTO tripUpdateDTO);
     int deleteTrip(int tripId);
     TripMemberStatus getMemberStatus(int tripId, int userId);
+    int activateTrip(LocalDate today);
 }
