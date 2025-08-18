@@ -105,6 +105,13 @@ async function inviteMembers() {
     await router.replace(`/trip/${tripData.value.tripId}`);
   } catch (error) {
     console.error('여행 초대 실패:', error);
+    if(error.status === 403) {
+      alert("여행 그룹장이 아닙니다.");
+      await router.replace(`/trip/${tripData.value.tripId}`);
+    }
+    else{
+      alert('오류가 발생했습니다... 다시 시도해주세요');
+    }
     inviteButton.disabled = true;
   }
 }
@@ -258,12 +265,14 @@ p{
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 0;
+  padding: 5px 0;
 }
 
 .menu-label{
   color: var(--theme-text);
   margin: 5px 0;
+  margin: 5px 5px;
+  padding-top: 20px;
 }
 
 .added-list button {
@@ -298,7 +307,7 @@ p{
 
 .tip-box{
   margin: 4px;
-  background: rgba(136, 136, 136, 0.3);
+  background: rgba(192, 191, 191, 0.3);
   border-radius: 8px;
   padding: 3px 7px;
   display: flex;
@@ -337,6 +346,7 @@ p{
   height : 25px;
   width : 25px;
   font-size : 14px;
+  font-weight: 600;
   margin-right: 10px;
 }
 
@@ -344,6 +354,7 @@ p{
   height : 30px;
   width : 30px;
   font-size : 14px;
+  font-weight: 600;
   margin-right: 10px;
 }
 .round-next-btn{
@@ -384,7 +395,7 @@ p{
   height: 40px;
   box-sizing: border-box;
   border-radius: 5px;
-  border: 1px solid var(--theme-text-light)
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .unit-text {

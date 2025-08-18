@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Param;
 import org.scoula.trip.domain.TripMemberStatus;
 import org.scoula.trip.domain.TripMemberVO;
 import org.scoula.trip.domain.TripVO;
+
 import java.util.List;
 
 @Mapper
@@ -20,6 +21,7 @@ public interface TripMapper {
     TripVO getTripDetail(int tripId);
     List<TripMemberVO> getTripMembers(int tripId);
     List<TripVO> getJoinedTrips(int userId);
+    List<TripVO> getJoinedTripDates(int userId);
     void createTrip(TripVO tripVO);
     int joinTrip(@Param("tripId") int tripId, @Param("userId") int userId);
     int changeMemberStatus(@Param("tripId") int tripId, @Param("userId") int userId, @Param("status") TripMemberStatus status);

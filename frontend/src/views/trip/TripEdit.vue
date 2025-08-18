@@ -37,7 +37,7 @@ const formatDate = (date) => {
 
 const handleUpdate = async () => {
   // VueDatePicker에서 start/end 날짜 추출
-  console.log("exposed clicked");
+  console.log("업데이트 버튼 클릭됨");
   const [startDate, endDate] = date.value && Array.isArray(date.value)
       ? date.value.map(formatDate)
       : [tripDetail.value.startDate, tripDetail.value.endDate];
@@ -119,7 +119,7 @@ onMounted(async ()=>{
 </script>
 
 <template>
-  <label for="editName">여행 이름 수정</label><br>
+  <label class="title" for="editName">여행 이름 수정</label><br>
   <input
       :disabled="!isOwner"
       type="text"
@@ -131,6 +131,7 @@ onMounted(async ()=>{
   날짜 변경하기
   <VueDatePicker
       v-model="date"
+      class="datepicker"
       :range="{ noDisabledRange: true }"
       :enable-time-picker="false"
       :disabled-dates="disableDates"
@@ -174,11 +175,15 @@ onMounted(async ()=>{
   justify-content: space-between;
   align-items: center;
 }
+.datepicker{
+  margin-top: 9px;
+  margin-bottom: 30px;
+}
 .to-edit-invite-btn {
   background: var(--theme-primary);
   color: var(--theme-text);
   border: none;
-  border-radius: 5px;
+  border-radius: 15px;
   padding: 5px 10px;
   height: 50%;
   cursor: pointer;
@@ -200,8 +205,9 @@ onMounted(async ()=>{
   height: 40px;
   box-sizing: border-box;
   border-radius: 5px;
-  border: 1px solid var(--theme-text-light);
-  margin-bottom: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  margin-top: 9px;
+  margin-bottom: 30px;
 }
 
 .avatar{
@@ -217,6 +223,7 @@ onMounted(async ()=>{
   height : 35px;
   width : 35px;
   font-size : 14px;
+  font-weight: 600;
   margin-right: 10px;
 }
 

@@ -95,9 +95,11 @@ public class PaymentServiceImpl implements PaymentService {
         validatePayment(paymentDTO, userId);
 
         // 수동 결제 시 사용자가 날짜/시간 입력하면 병합, 아니면 현재 시간
-        LocalDateTime payAt = (paymentDTO.getPaymentDate() != null && paymentDTO.getPaymentTime() != null)
-                ? LocalDateTime.of(paymentDTO.getPaymentDate(), paymentDTO.getPaymentTime())
+        LocalDateTime payAt = (paymentDTO.getPayAt() != null)
+                ? paymentDTO.getPayAt()
                 : LocalDateTime.now();
+        log.info(paymentDTO.getPayAt().toString());
+
 
         // 카테고리(merchantId)
         int merchantId = paymentDTO.getMerchantId();
@@ -252,8 +254,8 @@ public class PaymentServiceImpl implements PaymentService {
     public void updateManualPayment(int paymentId, PaymentDTO paymentDTO, int userId) {
         validatePayment(paymentDTO, userId);
 
-        LocalDateTime payAt = (paymentDTO.getPaymentDate() != null && paymentDTO.getPaymentTime() != null)
-                ? LocalDateTime.of(paymentDTO.getPaymentDate(), paymentDTO.getPaymentTime())
+        LocalDateTime payAt = (paymentDTO.getPayAt() != null)
+                ? paymentDTO.getPayAt()
                 : LocalDateTime.now();
 
         PaymentVO existingPayment = paymentMapper.selectPaymentById(paymentId);
@@ -417,34 +419,31 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("결제 참여자 삭제 중 오류가 발생했습니다.", e);
         }
 
-
-
-        // 결제 삭제 알림 생성
-//        MemberVO member = memberMapper.findById(userId);
-//        String fromUserNickname = member != null ? member.getNickname() : "알 수 없음";
-//
-//        MerchantVO merchant = merchantMapper.getMerchant(payment.getMerchantId());
-//        String merchantName = merchant != null ? merchant.getMerchantName() : "알 수 없음";
-//
-//        NotificationDTO notificationDTO = NotificationDTO.builder()
-//                .userId(userId)
-//                .fromUserId(userId)
-//                .tripId(payment.getTripId())
-//                .paymentId(paymentId)
-//                .notificationType("TRANSACTION")
-//                .actionType("DELETE")
-//                .fromUserNickname(fromUserNickname)
-//                .merchantName(merchantName)
-//                .build();
-//
-//        notificationService.createNotification(notificationDTO);
-
         // 결제 내역 삭제
         int deleted = paymentMapper.deletePaymentByPaymentId(paymentId);
         if (deleted == 0) {
             throw new RuntimeException("결제 삭제 실패");
         }
 
+        // 결제 삭제 알림 생성 (payment_id = null)
+        MemberVO member = memberMapper.findById(userId);
+        String fromUserNickname = member != null ? member.getNickname() : "알 수 없음";
+
+        MerchantVO merchant = merchantMapper.getMerchant(payment.getMerchantId());
+        String merchantName = merchant != null ? merchant.getMerchantName() : "알 수 없음";
+
+        NotificationDTO notificationDTO = NotificationDTO.builder()
+                .userId(userId)
+                .fromUserId(userId)
+                .tripId(payment.getTripId())
+                .paymentId(null)
+                .notificationType("TRANSACTION")
+                .actionType("DELETE")
+                .fromUserNickname(fromUserNickname)
+                .merchantName(merchantName)
+                .build();
+
+        notificationService.createNotification(notificationDTO);
 
         log.info("결제 [{}] 삭제 완료", paymentId);
     }

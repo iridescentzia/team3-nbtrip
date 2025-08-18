@@ -53,7 +53,7 @@
         WHERE tm.trip_id = #{tripId}
     </select>
     <select id="getTripMembers" resultMap="memberMap">
-        SELECT * FROM trip_member WHERE trip_id = #{tripId} AND member_status = 'JOINED';
+        SELECT * FROM trip_member WHERE trip_id = #{tripId} AND member_status IN ('JOINED', 'INVITED');
     </select>
     <select id="getJoinedTrips" resultMap="joinedTripsMap">
         SELECT t.* FROM trip_member tm
@@ -101,7 +101,16 @@
         WHERE trip_id = #{tripId}
         AND user_id = #{userId}
     </select>
-
+    <select id="getJoinedTripDates" resultType="org.scoula.trip.domain.TripVO">
+        SELECT
+            t.*
+        FROM trip_member tm
+                 JOIN trip t
+                      ON tm.trip_id = t.trip_id
+        WHERE tm.user_id = #{userId}
+          AND t.trip_status IN ('READY', 'ACTIVE')
+          AND tm.member_status = 'JOINED';
+    </select>
     <delete id="deleteTrip">
         DELETE FROM trip
         WHERE trip_id = #{tripId}

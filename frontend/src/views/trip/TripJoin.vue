@@ -32,15 +32,21 @@ const load = async () => {
 }
 
 const toNextPage = async () => {
-  const available = await tripApi.isAvailableDate(tripDetails.value.startDate, tripDetails.value.endDate);
-  console.log(available);
-  // if (available) {
-  if (true) {
-    await tripApi.acceptInvitation(tripId.value);
-    await router.replace(`/trip/join/${tripId.value}/complete`);
-  } else {
-    // 임시로 home으로 가도록 처리
-    await router.push(`/`);
+  try{
+    const available = await tripApi.isAvailableDate(tripDetails.value.startDate, tripDetails.value.endDate);
+    console.log(available);
+    if (available) {
+      await tripApi.acceptInvitation(tripId.value);
+      await router.replace(`/trip/join/${tripId.value}/complete`);
+    } else {
+      alert('해당 기간에 이미 참여 중인 여행이 있습니다. 홈으로 이동합니다.')
+      await router.replace(`/`);
+    }
+  }
+  catch(err){
+    console.error('데이터 로딩 실패: '+ err);
+    alert('잘못된 접근입니다. 홈으로 이동합니다.');
+    await router.replace(`/`);
   }
 }
 
