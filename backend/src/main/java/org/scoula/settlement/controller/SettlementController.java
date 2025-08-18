@@ -134,23 +134,10 @@ public class SettlementController {
         return ResponseEntity.ok(settlementService.getMyOverallSettlementStatus(userId));
     }
 
-    /**
-     * 4. 여행별 미정산 존재 여부
-     */
-    @GetMapping("/{tripId}/remaining")
-    public ResponseEntity<SettlementDTO.RemainingSettlementResponseDto> hasRemainingUnsettled(
-            @PathVariable int tripId,
-            @AuthenticationPrincipal CustomUser customUser
-    ) {
-        Integer userId = customUser.getUserId();
-        log.info("🟢GET /api/settlements/tripId={}/remaining, userId={}", tripId, userId);
-        return ResponseEntity.ok(settlementService.getRemainingSettlements(tripId));
-    }
-
     // ==================== 정산 요청 생성 API ====================
 
     /**
-     * 5. 정산 요청 생성 (시나리오 3번)
+     * 4. 정산 요청 생성 (시나리오 3번)
      * 그룹장이 '정산 요청하기' 클릭 시 호출
      * n빵 계산 서비스 호출 -> settlement에 pending 저장 (알림 발송 X)
      */
@@ -197,61 +184,10 @@ public class SettlementController {
         }
     }
 
-    // ==================== 상태 업데이트 API ====================
-
-    /**
-     * 6. 정산 상태 업데이트 (시나리오 5번)
-     * 특정 정산 row(1건)의 상태 변경
-     * ex) PUT /api/settlements/12/status → A가 B에게 송금 상태 변경
-     */
-    @PutMapping("/{settlementId}/status")
-    public ResponseEntity<String> updateStatus(
-            @PathVariable int settlementId,
-            @RequestBody SettlementDTO.UpdateSettlementStatusRequestDto request,
-            @AuthenticationPrincipal CustomUser customUser
-    ) {
-        Integer loginUserId = customUser.getUserId();
-        String status = request.getStatus();
-        log.info("🟢PUT /api/settlements/settlementId={}, status={}, userId={}", settlementId, status, loginUserId);
-
-        if (!isValidStatus(status)) {
-            return ResponseEntity.badRequest().body("Invalid status.");
-        }
-
-        // sender 권한 체크
-        if (!isSender(settlementId, loginUserId)) {
-            log.warn("🟢권한 없음 - userId={} tried to update settlement {}", loginUserId, settlementId);
-            return ResponseEntity.status(403).body("권한 없음: sender만 상태 변경 가능");
-        }
-
-        int updated = settlementService.updateSettlementStatus(settlementId, status.toUpperCase());
-
-        // 전체 정산 완료 시에만 완료 알림 발송
-        if (updated == 1 && "COMPLETED".equals(status.toUpperCase())) {
-            try {
-                SettlementVO settlement = settlementService.getById(settlementId);
-
-                // 해당 여행의 모든 정산이 완료되었는지 확인
-                if (settlementService.isAllSettlementCompleted(settlement.getTripId())) {
-                    sendSettlementCompletedNotification(loginUserId, settlement.getTripId());
-                    log.info("🎉 전체 정산 완료 알림 발송 완료 - tripId: {}", settlement.getTripId());
-                } else {
-                    log.info("✅ 개별 정산 완료, 전체 정산은 아직 진행 중 - settlementId: {}", settlementId);
-                }
-            } catch (Exception e) {
-                log.warn("정산 완료 알림 발송 실패 - settlementId: {}, error: {}", settlementId, e.getMessage());
-            }
-        }
-
-        return (updated == 1)
-                ? ResponseEntity.ok("Status changed to " + status)
-                : ResponseEntity.badRequest().body("Update failed. Invalid settlementId");
-    }
-
     // ==================== 송금 처리 API ====================
 
     /**
-     * 7. 실제 그룹원 간 송금 처리 (시나리오 5번 첫번째 단계)
+     * 5. 실제 그룹원 간 송금 처리 (시나리오 5번 첫번째 단계)
      * 정산 상태: PENDING -> COMPLETED 전환 + 잔액 차감/입금 수행
      */
     @PostMapping("/transfer")
@@ -364,15 +300,8 @@ public class SettlementController {
      * 상태 값 유효성 검증
      */
     private boolean isValidStatus(String status) {
-        if (status == null) return false;
-        switch (status.toUpperCase()) {
-            case "PENDING":
-            case "PROCESSING":
-            case "COMPLETED":
-                return true;
-            default:
-                return false;
-        }
+        return status != null &&
+                ("PENDING".equalsIgnoreCase(status) || "COMPLETED".equalsIgnoreCase(status));
     }
 
     /**
