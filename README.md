@@ -62,8 +62,8 @@
       <img src="./frontend/src/assets/img/readme/member/seungwook.png" height="150" alt="김승욱"/>
       <br /><a href="https://github.com/seunguk99"><b>김승욱</b></a>
       <ul align="left">
+        <li>여행 생성 및 멤버 초대</li>
         <li>여행 관리</li>
-        <li>그룹 관리</li>
       </ul>
     </td>
     <td align="center"><br>
