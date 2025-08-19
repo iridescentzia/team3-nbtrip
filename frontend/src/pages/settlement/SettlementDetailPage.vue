@@ -9,7 +9,7 @@ import {
   getMySettlementDetails,
   getSettlementBreakdown,
 } from '@/api/settlementApi';
-import SettlementReceiptModal from './SettlementReceiptModal.vue'; // 새로 만든 모달 컴포넌트
+import SettlementReceiptModal from '../../components/settlement/SettlementReceiptModal.vue'; // 새로 만든 모달 컴포넌트
 
 // ✅ Pinia Store 사용
 const settlementStore = useSettlementStore();

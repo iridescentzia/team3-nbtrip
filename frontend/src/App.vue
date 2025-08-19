@@ -1,13 +1,10 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router';
-import DefaultLayout from './components/layout/DefaultLayout.vue';
-import PaymentList from '@/views/paymentlist/PaymentList.vue';
-import axios from 'axios';
+import { RouterView } from 'vue-router';
 
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { getMyInfo, logoutMember } from '@/api/memberApi.js';
+import { getMyInfo } from '@/api/memberApi.js';
 
 const router = useRouter();
 const userInfo = ref({ nickname: '', name: '' });

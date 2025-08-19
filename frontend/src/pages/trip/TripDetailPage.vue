@@ -1,7 +1,7 @@
 <template>
   <div class="content-container">
-    <Header3 v-if="!isHeader1" :title="title"/>
-    <Header v-else :title="title" @back="router.back"/>
+    <Header3 v-if="!isHeader1" :title="title" />
+    <Header v-else :title="title" @back="router.back" />
 
     <TravelCard
       v-if="isReady"
@@ -49,11 +49,7 @@
       />
     </div>
     <div v-else-if="isReady">
-      <TripEdit
-          ref="updateTrip"
-          :is-owner="isOwner"
-          :is-closed="isClosed"
-      />
+      <TripEdit ref="updateTrip" :is-owner="isOwner" :is-closed="isClosed" />
     </div>
   </div>
 
@@ -75,9 +71,9 @@
   </button>
 
   <button
-      v-if="isReady && !isClosed && activeTab  === '그룹 관리' && (isOwner)"
-      class="floating-button"
-      @click="callChildUpdate"
+    v-if="isReady && !isClosed && activeTab === '그룹 관리' && isOwner"
+    class="floating-button"
+    @click="callChildUpdate"
   >
     저장하기
   </button>
@@ -92,14 +88,14 @@ import { computed, onMounted, ref } from 'vue';
 import { usePaymentlistStore } from '@/stores/tripStore.js';
 import { useRouter, useRoute } from 'vue-router';
 import Summary from '@/components/common/Summary.vue';
-import PaymentListInfo from '@/views/paymentlist/PaymentListInfo.vue';
-import TripEdit from '@/views/trip/TripEdit.vue';
+import PaymentListInfo from '@/components/paymentlist/PaymentListInfo.vue';
+import TripEdit from '@/components/trip/TripEdit.vue';
 import tripApi from '@/api/tripApi.js';
 import {
   requestSettlement,
   getSettlementSummary,
 } from '@/api/settlementApi.js';
-import Header3 from "@/components/layout/Header3.vue";
+import Header3 from '@/components/layout/Header3.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -238,8 +234,7 @@ const handleDelete = async () => {
     const tripId = route.params.tripId;
     await tripApi.deleteTrip(Number(tripId));
     console.log('id: ' + tripId + ' 여행 삭제');
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
   }
   alert('여행이 삭제되었습니다.');
@@ -290,11 +285,10 @@ const checkIfSettlementNeeded = async () => {
 
 onMounted(async () => {
   isHeader1.value = window.history.state?.isHeader1 ?? true;
-  try{
+  try {
     await tripStore.fetchTrip(route.params.tripId);
     console.log('current trip: ', tripStore.currentTrip);
-  }
-  catch(error){
+  } catch (error) {
     alert('잘못된 접근입니다.');
     await router.replace('/');
   }
