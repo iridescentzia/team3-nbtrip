@@ -2,13 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router';
 // 레이아웃 컴포넌트 import
 import DefaultLayout from '@/components/layout/DefaultLayout.vue';
 // 각 페이지 컴포넌트 import
-import Home from '@/views/home/Home.vue';
+import Home from '@/pages/home/HomePage.vue';
 // 분리된 라우트 설정 import
 import settlementRoutes from '@/router/settlementRoutes.js';
 import memberRoutes from '@/router/memberRoutes.js';
-import paymentRoutes from './paymentRoutes';
-import SettlementSummaryView from '../views/settlement/SettlementSummaryView.vue';
-import SettlementRequestView from '../views/settlement/SettlementRequestView.vue';
+import paymentRoutes from '@/router/paymentRoutes';
 import paymentlistRoutes from '@/router/paymentlistRoutes.js';
 import tripRoutes from '@/router/tripRoutes.js';
 import notificationRoutes from '@/router/notificationRoutes.js';
@@ -33,7 +31,7 @@ const router = createRouter({
         {
           path: '/:paths(.*)*',
           name: 'NotFound',
-          component: () => import('@/views/NotFound.vue'),
+          component: () => import('@/pages/NotFoundPage.vue'),
         },
       ],
     },

@@ -45,7 +45,7 @@
 import Header from '@/components/layout/Header.vue';
 import TravelCard from '@/components/common/TravelCard.vue';
 import Filter from '@/components/paymentlist/Filter.vue';
-import PaymentListInfo from './PaymentListInfo.vue';
+import PaymentListInfo from '../../components/paymentlist/PaymentListInfo.vue';
 
 import { onMounted, ref } from 'vue';
 import { usePaymentlistStore } from '@/stores/tripStore.js';

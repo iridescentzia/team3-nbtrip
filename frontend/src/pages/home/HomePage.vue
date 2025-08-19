@@ -4,11 +4,11 @@ import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useNotificationStore } from '@/stores/notificationStore';
 
-import AccountCard from './AccountCard.vue';
-import TravelInformationCard from './TravelInformationCard.vue';
-import SettlementCard from './SettlementCard.vue';
+import AccountCard from '../../components/home/AccountCard.vue';
+import TravelInformationCard from '../../components/home/TravelInformationCard.vue';
+import SettlementCard from '../../components/home/SettlementCard.vue';
 import Footer from '@/components/layout/Footer.vue';
-import AdCard from './AdCard.vue';
+import AdCard from '../../components/home/AdCard.vue';
 
 import tripApi from '@/api/tripApi.js';
 
