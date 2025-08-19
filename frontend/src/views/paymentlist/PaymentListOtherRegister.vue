@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { useTripStore } from '@/stores/trip';
+import { usePaymentlistStore } from '@/stores/tripStore';
 import paymentApi from '@/api/paymentApi';
 import Header from '@/components/layout/Header.vue';
 import VueDatePicker from '@vuepic/vue-datepicker';
@@ -10,7 +10,7 @@ import '@vuepic/vue-datepicker/dist/main.css';
 // --- 1. Imports & Setup ---
 const router = useRouter();
 const route = useRoute();
-const tripStore = useTripStore();
+const tripStore = usePaymentlistStore();
 
 // --- 2. State Management (ref, computed) ---
 

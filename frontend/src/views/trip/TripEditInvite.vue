@@ -1,24 +1,24 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import tripApi from "@/api/tripApi.js";
-import memberApi from "@/api/memberApi.js";
-import {useTripStore} from "@/stores/trip.js";
-import {useRouter, useRoute} from "vue-router";
+import tripApi from '@/api/tripApi.js';
+import memberApi from '@/api/memberApi.js';
+import { usePaymentlistStore } from '@/stores/tripStore';
+import { useRouter, useRoute } from 'vue-router';
 import { MoveRight, Search } from 'lucide-vue-next';
-import Header from "@/components/layout/Header.vue";
+import Header from '@/components/layout/Header.vue';
 import { Lightbulb } from 'lucide-vue-next';
 
 const userId = ref();
 const inputValue = ref('');
 const showList = ref(false);
-const store = useTripStore();
+const store = usePaymentlistStore();
 const options = ref([]);
 const addedItems = ref([]);
 const router = useRouter();
 const route = useRoute();
 const tripData = ref(null);
 var timer;
-const debouncedFetch = value => {
+const debouncedFetch = (value) => {
   clearTimeout(timer);
   timer = setTimeout(() => getOptions(value), 300);
 };
@@ -29,15 +29,15 @@ async function getOptions(query) {
     return;
   }
   try {
-    console.log("검색 요청:", query);
+    console.log('검색 요청:', query);
     const results = await tripApi.searchNickname(query);
     options.value = results.filter(
-        (item) =>
-            !addedItems.value.some((added) => added.userId === item.userId) &&
-            item.userId !== userId.value
+      (item) =>
+        !addedItems.value.some((added) => added.userId === item.userId) &&
+        item.userId !== userId.value
     );
   } catch (error) {
-    console.error("검색어 불러오기 실패:", error);
+    console.error('검색어 불러오기 실패:', error);
   }
 }
 
@@ -48,16 +48,13 @@ async function fetchTrip() {
     const result = await memberApi.getUserInfo(member.userId);
     const nickname = result.nickname;
     console.log(nickname);
-    addedItems.value.push(
-        {
-          userId: member.userId,
-          nickname: nickname,
-          preAdded: true,
-        }
-    );
+    addedItems.value.push({
+      userId: member.userId,
+      nickname: nickname,
+      preAdded: true,
+    });
   }
 }
-
 
 function onInput(e) {
   inputValue.value = e.target.value;
@@ -67,10 +64,10 @@ function onInput(e) {
 
 function onButtonClick(option) {
   console.log(option);
-  option={
+  option = {
     ...option,
     preAdded: false,
-  }
+  };
   addedItems.value.push(option);
   inputValue.value = '';
   showList.value = false;
@@ -94,8 +91,8 @@ async function inviteMembers() {
   const inviteButton = document.querySelector('.round-next-btn');
   try {
     inviteButton.disabled = true;
-    for(const item of addedItems.value){
-      if(item.preAdded){
+    for (const item of addedItems.value) {
+      if (item.preAdded) {
         continue;
       }
       await tripApi.inviteTrip(tripData.value.tripId, item.userId);
@@ -105,11 +102,10 @@ async function inviteMembers() {
     await router.replace(`/trip/${tripData.value.tripId}`);
   } catch (error) {
     console.error('여행 초대 실패:', error);
-    if(error.status === 403) {
-      alert("여행 그룹장이 아닙니다.");
+    if (error.status === 403) {
+      alert('여행 그룹장이 아닙니다.');
       await router.replace(`/trip/${tripData.value.tripId}`);
-    }
-    else{
+    } else {
       alert('오류가 발생했습니다... 다시 시도해주세요');
     }
     inviteButton.disabled = true;
@@ -123,50 +119,53 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
 });
-
 </script>
 
 <template>
-  <Header title="멤버 초대하기" @back="router.back"/>
+  <Header title="멤버 초대하기" @back="router.back" />
   <div class="content-container">
     <div class="info-box">
-      <p class="trip_title">{{tripData?.tripName}}</p>
+      <p class="trip_title">{{ tripData?.tripName }}</p>
       <p class="guide">친구들을 초대하고</p>
       <p class="guide">함께 여행을 계획하세요!</p>
       <div class="tip-box">
-        <p class="tip-text"><Lightbulb :size="12" />모든 것을 완벽하게 하려고 하기보다, </p>
+        <p class="tip-text">
+          <Lightbulb :size="12" />모든 것을 완벽하게 하려고 하기보다,
+        </p>
         <p class="tip-text">예기치 못한 상황을 즐겨보세요!</p>
       </div>
     </div>
     <div class="autocomplete" ref="wrapper" style="position: relative">
       <p class="menu-label">회원 검색</p>
       <div class="input-wrapper">
-            <span class="unit-text">
-              <Search size="20" />
-            </span>
+        <span class="unit-text">
+          <Search size="20" />
+        </span>
         <input
-            class="input-box"
-            v-bind:value="inputValue"
-            :disabled = "addedItems.length >= 10"
-            @input="onInput"
-            @focus="showList = true"
-            type="text"
-            placeholder="닉네임으로 검색"
+          class="input-box"
+          v-bind:value="inputValue"
+          :disabled="addedItems.length >= 10"
+          @input="onInput"
+          @focus="showList = true"
+          type="text"
+          placeholder="닉네임으로 검색"
         />
       </div>
-      <div
-          v-if="showList && options.length"
-          class="autocomplete-list"
-      >
+      <div v-if="showList && options.length" class="autocomplete-list">
         <div
-            class="autocomplete-item"
-            v-for="(option, index) in options"
-            :key="index"
+          class="autocomplete-item"
+          v-for="(option, index) in options"
+          :key="index"
         >
-          <div class = "avatar avatar-sm">{{ option.nickname.charAt(0) }}</div>
-          <div class = "autocomplete-name">
+          <div class="avatar avatar-sm">{{ option.nickname.charAt(0) }}</div>
+          <div class="autocomplete-name">
             {{ option.nickname }}
-            <button class="autocomplete-btn" @click.stop="onButtonClick(option)">초대하기</button>
+            <button
+              class="autocomplete-btn"
+              @click.stop="onButtonClick(option)"
+            >
+              초대하기
+            </button>
           </div>
         </div>
       </div>
@@ -175,31 +174,26 @@ onBeforeUnmount(() => {
         <ul>
           <li v-for="(item, idx) in addedItems" :key="idx">
             <div class="added-item">
-              <div class="avatar avatar-lg">{{ item.nickname.charAt(0)}}</div>
+              <div class="avatar avatar-lg">{{ item.nickname.charAt(0) }}</div>
               <div class="list-item">
                 {{ item.nickname }}
-                <button
-                    v-if="!item.preAdded"
-                    @click="removeItem(idx)"
-                >삭제</button>
+                <button v-if="!item.preAdded" @click="removeItem(idx)">
+                  삭제
+                </button>
               </div>
             </div>
           </li>
         </ul>
       </div>
     </div>
-    <button
-        class="round-next-btn"
-        @click="inviteMembers"
-    >
-      <MoveRight/>
+    <button class="round-next-btn" @click="inviteMembers">
+      <MoveRight />
     </button>
   </div>
 </template>
 
 <style scoped>
-
-p{
+p {
   margin: 0;
 }
 
@@ -233,7 +227,7 @@ p{
   background-color: var(--theme-bg);
 }
 
-.autocomplete-btn{
+.autocomplete-btn {
   background-color: var(--theme-primary);
   color: var(--theme-text);
   border: none;
@@ -245,11 +239,11 @@ p{
   background-color: #ffd166;
 }
 
-.autocomplete-name{
+.autocomplete-name {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex:1;
+  flex: 1;
 }
 
 .added-list {
@@ -268,7 +262,7 @@ p{
   padding: 5px 0;
 }
 
-.menu-label{
+.menu-label {
   color: var(--theme-text);
   margin: 5px 0;
   margin: 5px 5px;
@@ -284,7 +278,7 @@ p{
   cursor: pointer;
 }
 
-.info-box{
+.info-box {
   margin: 8px 0;
   background-color: #ffffff;
   padding: 16px 0;
@@ -294,18 +288,18 @@ p{
   flex-direction: column;
   align-items: center;
 }
-.trip_title{
+.trip_title {
   margin: 2px 0;
   color: var(--theme-text-light);
   font-size: 14px;
 }
-.guide{
+.guide {
   font-size: 22px;
   font-weight: bold;
   color: var(--theme-text);
 }
 
-.tip-box{
+.tip-box {
   margin: 4px;
   background: rgba(192, 191, 191, 0.3);
   border-radius: 8px;
@@ -314,13 +308,13 @@ p{
   flex-direction: column;
   align-items: center;
 }
-.tip-text{
+.tip-text {
   margin: 4px;
   font-size: 12px;
   color: var(--theme-text-light);
 }
 
-.added-item{
+.added-item {
   width: 100%;
   padding: 8px;
   background: white;
@@ -328,12 +322,12 @@ p{
   align-items: center;
   border-radius: 10px;
 }
-.list-item{
+.list-item {
   display: flex;
   justify-content: space-between;
   flex: 1;
 }
-.avatar{
+.avatar {
   border-radius: 50%;
   background: var(--theme-primary);
   color: white;
@@ -342,22 +336,22 @@ p{
   align-items: center;
 }
 
-.avatar-sm{
-  height : 25px;
-  width : 25px;
-  font-size : 14px;
+.avatar-sm {
+  height: 25px;
+  width: 25px;
+  font-size: 14px;
   font-weight: 600;
   margin-right: 10px;
 }
 
-.avatar-lg{
-  height : 30px;
-  width : 30px;
-  font-size : 14px;
+.avatar-lg {
+  height: 30px;
+  width: 30px;
+  font-size: 14px;
   font-weight: 600;
   margin-right: 10px;
 }
-.round-next-btn{
+.round-next-btn {
   background-color: var(--theme-primary);
   border-radius: 50%;
   border: none;
@@ -367,14 +361,14 @@ p{
   height: 50px;
   width: 50px;
   position: absolute;
-  bottom : 8%;
+  bottom: 8%;
   left: 50%;
   transform: translateX(-50%);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   cursor: pointer;
 }
 
-.round-next-btn:hover{
+.round-next-btn:hover {
   background-color: #ffd166;
 }
 
@@ -408,5 +402,4 @@ p{
   pointer-events: none;
   font-size: 14px;
 }
-
 </style>
