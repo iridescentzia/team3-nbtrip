@@ -6,7 +6,7 @@ import Home from '@/views/home/Home.vue';
 // 분리된 라우트 설정 import
 import settlementRoutes from '@/router/settlementRoutes.js';
 import memberRoutes from '@/router/memberRoutes.js';
-import paymentRoutes from './payment';
+import paymentRoutes from './paymentRoutes';
 import SettlementSummaryView from '../views/settlement/SettlementSummaryView.vue';
 import SettlementRequestView from '../views/settlement/SettlementRequestView.vue';
 import paymentlistRoutes from '@/router/paymentlistRoutes.js';
