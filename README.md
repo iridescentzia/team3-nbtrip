@@ -23,7 +23,7 @@
   <tr>
     <td align="center">
       <img src="./frontend/src/assets/img/readme/member/wonyoung.png" height="150" alt="김원영"/>
-      <br /><a href="https://github.com/githubID1"><b>김원영</b></a>
+      <br /><a href="https://github.com/iamwonyoungkim"><b>김원영</b></a>
       <ul align="left">
         <li>팀장</li>
         <li>QR 결제(입력)</li>
@@ -32,7 +32,7 @@
     </td>
     <td align="center">
       <img src="./frontend/src/assets/img/readme/member/zia.png" height="150" alt="이지아"/>
-      <br /><a href="https://github.com/githubID2"><b>이지아</b></a>
+      <br /><a href="https://github.com/iridescentzia"><b>이지아</b></a>
       <ul align="left">
         <li>백엔드 팀장</li>
         <li>정산 상태 처리</li>
@@ -41,7 +41,7 @@
     </td>
     <td align="center">
       <img src="./frontend/src/assets/img/readme/member/hyemi.png" height="150" alt="이혜미"/>
-      <br /><a href="https://github.com/githubID3"><b>이혜미</b></a>
+      <br /><a href="https://github.com/leehyemie"><b>이혜미</b></a>
       <ul align="left">
         <li>프론트엔드 팀장</li>
         <li>그룹 결제 내역 관리</li>
@@ -52,7 +52,7 @@
   <tr>
     <td align="center">
       <img src="./frontend/src/assets/img/readme/member/hyukju.png" height="150" alt="권혁주"/>
-      <br /><a href="https://github.com/githubID4"><b>권혁주</b></a>
+      <br /><a href="https://github.com/kwon990217"><b>권혁주</b></a>
       <ul align="left">
         <li>메인 홈</li>
         <li>푸시 알림</li>
@@ -60,7 +60,7 @@
     </td>
     <td align="center">
       <img src="./frontend/src/assets/img/readme/member/seungwook.png" height="150" alt="김승욱"/>
-      <br /><a href="https://github.com/githubID5"><b>김승욱</b></a>
+      <br /><a href="https://github.com/seunguk99"><b>김승욱</b></a>
       <ul align="left">
         <li>여행 관리</li>
         <li>그룹 관리</li>
@@ -68,7 +68,7 @@
     </td>
     <td align="center"><br>
       <img src="./frontend/src/assets/img/readme/member/geonwoo.png" height="150" alt="이건우"/>
-      <br /><a href="https://github.com/githubID6"><b>이건우</b></a>
+      <br /><a href="https://github.com/Kyun17"><b>이건우</b></a>
       <ul align="left">
         <li>정산 계산</li>
         <li>선/기타 결제 등록</li>
@@ -79,7 +79,7 @@
   <tr>
     <td align="center">
       <img src="./frontend/src/assets/img/readme/member/minho.png" height="150" alt="이민호"/>
-      <br /><a href="https://github.com/githubID7"><b>이민호</b></a>
+      <br /><a href="https://github.com/ppappiko"><b>이민호</b></a>
       <ul align="left">
         <li>여행 리포트</li>
         <li>결제 내역</li>
@@ -87,7 +87,7 @@
     </td>
     <td align="center">
       <img src="./frontend/src/assets/img/readme/member/eunsol.png" height="155" alt="이은솔"/>
-      <br /><a href="https://github.com/githubID8"><b>이은솔</b></a>
+      <br /><a href="https://github.com/yel0732"><b>이은솔</b></a>
       <ul align="left">
         <li>QR 결제(송금)</li>
         <li>선/기타 결제 등록 및 수정</li>
@@ -95,7 +95,7 @@
     </td>
     <td align="center">
       <img src="./frontend/src/assets/img/readme/member/subeen.png" height="150" alt="주수빈"/>
-      <br /><a href="https://github.com/githubID9"><b>주수빈</b></a>
+      <br /><a href="https://github.com/subeen1902"><b>주수빈</b></a>
       <ul align="left">
         <li>JWT 기반 인증·인가</li>
         <li>회원/계좌 관리</li>
