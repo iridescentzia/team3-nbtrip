@@ -61,7 +61,7 @@ import {
 import { useRoute, useRouter } from 'vue-router';
 import chartApi from '@/api/chartApi';
 import Header from '@/components/layout/Header3.vue';
-import AIReport from './AiReport.vue';
+import AIReport from '@/components/report/AiReport.vue';
 import { FileChartColumn } from 'lucide-vue-next';
 
 ChartJS.register(

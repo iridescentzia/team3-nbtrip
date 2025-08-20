@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper" @click="$emit('click')">
     <!-- computed된 filteredPayments를 순회하며 카드 렌더링 -->
-    <ExpenseCard
+    <PaymentListInfoCard
       v-for="(item, index) in filteredPayments"
       :key="index"
       class="expense-card-item"
@@ -20,7 +20,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import ExpenseCard from '@/views/paymentlist/PaymentListInfoCard.vue';
+import PaymentListInfoCard from '@/components/paymentlist/PaymentListInfoCard.vue';
 import paymentlistApi from '@/api/paymentlistApi';
 
 const props = defineProps({
