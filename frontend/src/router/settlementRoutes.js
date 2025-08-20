@@ -2,37 +2,40 @@ export default [
   {
     path: '/settlement/:tripId/pending',
     name: 'SettlementPendingNotice',
-    component: () => import('@/views/settlement/SettlementPendingNotice.vue'),
+    component: () =>
+      import('@/pages/settlement/SettlementPendingNoticePage.vue'),
   },
   {
     path: '/settlement/:tripId/completed',
     name: 'SettlementCompletedNotice',
-    component: () => import('@/views/settlement/SettlementCompletedNotice.vue'),
+    component: () =>
+      import('@/pages/settlement/SettlementCompletedNoticePage.vue'),
   },
   // /settlement/1, /settlement/4 처럼 동적인 tripId를 받을 수 있도록 설정합니다.
   {
     path: '/settlement/:tripId',
     name: 'settlementSummary',
-    component: () => import('@/views/settlement/SettlementSummaryView.vue'),
+    component: () => import('@/pages/settlement/SettlementSummaryPage.vue'),
   },
   {
     path: '/settlement/:tripId/request',
     name: 'settlementRequest',
-    component: () => import('@/views/settlement/SettlementRequestView.vue'),
+    component: () => import('@/pages/settlement/SettlementRequestPage.vue'),
   },
   {
     path: '/settlement/:tripId/detail',
     name: 'settlementDetail',
-    component: () => import('@/views/settlement/SettlementDetailView.vue'),
+    component: () => import('@/pages/settlement/SettlementDetailPage.vue'),
   },
   {
     path: '/settlement/:tripId/failure',
     name: 'SettlementFailureNotice',
-    component: () => import('@/views/settlement/SettlementFailureNotice.vue'),
+    component: () =>
+      import('@/pages/settlement/SettlementFailureNoticePage.vue'),
   },
   {
     path: '/settlement/explain',
     name: 'SettlementGuide',
-    component: () => import('@/views/settlement/SettlementGuide.vue'),
+    component: () => import('@/pages/settlement/SettlementGuidePage.vue'),
   },
 ];
