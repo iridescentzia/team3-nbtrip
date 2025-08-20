@@ -35,6 +35,9 @@ load();
         :trip-id="trip.tripId"
         @click="handleCardClick"
     />
+    <p v-if="joinedTripList.length === 0" class="empty-message">
+      참여한 여행이 없습니다.
+    </p>
   </div>
   <Footer />
 </template>
@@ -49,6 +52,13 @@ load();
   gap: 15px;
   overflow-y: auto;
   padding: calc(56px) 1.25rem 1.25rem;
+}
+
+.empty-message {
+  text-align: center;
+  color: var(--theme-text);
+  margin-top: 2rem;
+  font-size: 1rem;
 }
 
 </style>
