@@ -1,0 +1,27 @@
+name: Deploy To EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH로 EC2에 접속하기
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }} # EC2의 주소
+          username: ${{ secrets.EC2_USERNAME }} # EC2 접속 username
+          key: ${{ secrets.EC2_PRIVATE_KEY }} # EC2의 Key 파일
+          script_stop: true
+          script: |
+            cd /home/ubuntu/team3-nbtrip/backend
+            git pull origin main
+            ./gradlew clean build
+            # 빌드된 WAR을 Tomcat webapps로 복사
+            sudo cp build/libs/*SNAPSHOT.war /opt/tomcat/webapps/ROOT.war
+            sudo chown tomcat:tomcat /opt/tomcat/webapps/ROOT.war
+            # Tomcat 재시작
+            sudo systemctl restart tomcat
