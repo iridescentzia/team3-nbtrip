@@ -50,6 +50,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           source: backend/build/libs/*SNAPSHOT.war
           target: /home/ubuntu/deploy/tobe
+          strip_components: 3
 
       # EC2에서 Tomcat에 반영 (ROOT로 교체) 및 재시작
       - name: SSH로 EC2에 접속하여 배포 반영
