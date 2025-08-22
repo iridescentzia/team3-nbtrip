@@ -1,0 +1,69 @@
+name: Deploy Frontend to EC2 (Dynamic)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/**'
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install & Build
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm run build
+
+      # dist/** 만 EC2의 staging(tobe)으로 보냄
+      - name: Upload dist to EC2 (staging)
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: frontend/dist/**
+          target: /home/ubuntu/frontend/tobe
+          strip_components: 2
+
+      # 릴리즈 생성 → current 링크 스왑 → Nginx reload → 정리
+      - name: Promote & Swap
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            set -e
+            TS=$(date +%Y%m%d%H%M%S)
+            NEW_RELEASE="/home/ubuntu/frontend/releases/$TS"
+
+            mkdir -p "$NEW_RELEASE"
+            rsync -a --delete /home/ubuntu/frontend/tobe/ "$NEW_RELEASE"/
+
+            # 간단 헬스체크
+            test -f "$NEW_RELEASE/index.html"
+
+            # 심볼릭 링크 원자적 교체
+            ln -sfn "$NEW_RELEASE" /home/ubuntu/frontend/releases/current
+            sudo ln -sfn /home/ubuntu/frontend/releases/current /var/www/nbtrip
+
+            sudo nginx -t
+            sudo systemctl reload nginx
+
+            # 오래된 릴리즈 정리(최근 5개만 유지)
+            cd /home/ubuntu/frontend/releases
+            ls -1dt [0-9]* | tail -n +6 | xargs -r rm -rf
+
+            # 스테이징 비우기
+            rm -rf /home/ubuntu/frontend/tobe/*

@@ -17,11 +17,12 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8080',  // 톰캣 또는 Spring 서버 주소
         changeOrigin: true,
-        rewrite: path => path.replace(/^\/api/, '')
+        // rewrite: path => path.replace(/^\/api/, '')
       },
     },
   },
   build: {
-    outDir: '../backend/src/main/webapp/resources',
+    outDir: 'dist',
+    emptyOutDir: true,
   },
 });
