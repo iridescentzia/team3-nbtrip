@@ -17,9 +17,6 @@ const firebaseConfig = {
 // Firebase 초기화
 const app = initializeApp(firebaseConfig);
 
-// FCM 메시징 객체
-const messaging = getMessaging(app);
-
 // SW와 동일 규칙의 매핑 함수
 function mapUrlFromData(data = {}) {
   const type = data.type;
@@ -46,53 +43,58 @@ function mapUrlFromData(data = {}) {
   }
 }
 
+const canUseFCM =
+    typeof window !== "undefined" &&
+    window.isSecureContext &&
+    "serviceWorker" in navigator &&
+    "Notification" in window &&
+    "PushManager" in window;
+
+let messaging = null;
+if (canUseFCM) {
+  messaging = getMessaging(app);
+
+  onMessage(messaging, (payload) => {
+    console.log("푸시 알림 수신:", payload);
+    const url = mapUrlFromData(payload.data || {});
+    if (!url) return;
+
+    if (Notification.permission === "granted" && payload.notification) {
+      const { title, body } = payload.notification;
+      const n = new Notification(title, { body });
+      n.onclick = () => {
+        window.focus();
+        router.push(url);
+        n.close();
+      };
+    }
+  });
+} else {
+  console.info("[FCM] 비지원 환경 → FCM 건너뜀(앱은 정상 렌더)");
+}
+
 // 브라우저에서 FCM 토큰 발급
 export const requestPermissionAndGetToken = async (registration) => {
-  console.log(">>> FCM 권한 요청 시도"); // 확인용 로그
+  if (!canUseFCM || !messaging) {
+    console.warn("[FCM] 지원되지 않는 환경");
+    return null;
+  }
+
   try {
-    // 1. 알림 권한 요청
     const permission = await Notification.requestPermission();
-    console.log(">>> 브라우저 권한 상태:", permission);
-    if (permission !== 'granted') {
-      console.warn('알림 권한이 거부되었습니다.');
+    if (permission !== "granted") {
+      console.warn("알림 권한이 거부되었습니다.");
       return null;
     }
 
-    // 2. 토큰 발급
-    const token = await getToken(messaging, {
+    return await getToken(messaging, {
       vapidKey: "BKLHna4RJKWaEv5iaGUoi-T9IExHNzhNdt7WLyy2cwArSy3U9ZLro1omUR6FwzpUduZM6A6_tIu-OLepc7uuvlc",
-      serviceWorkerRegistration: registration
+      serviceWorkerRegistration: registration,
     });
-
-    if (token) {
-      return token;
-    } else {
-      console.warn("토큰을 받을 수 없습니다. 권한을 허용했는지 확인하세요.");
-    }
   } catch (error) {
     console.error("토큰 발급 오류:", error);
+    return null;
   }
 };
-
-
-// Foreground 메시지 수신 리스너
-onMessage(messaging, (payload) => {
-  console.log("푸시 알림 수신:", payload);
-  const url = mapUrlFromData(payload.data || {});
-  if(!url) return;
-
-  // 알림 직접 표시
-  if (Notification.permission === 'granted' && payload.notification) {
-    const { title, body } = payload.notification;
-    const n = new Notification(title, {
-      body, 
-    });
-    n.onclick = () => {
-      window.focus();
-      router.push(url);
-      n.close();
-    };
-  }
-});
 
 export default app;
