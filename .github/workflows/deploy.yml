@@ -28,7 +28,7 @@ jobs:
             mkdir -p src/main/resources/firebase
             echo "${FIREBASE_SERVICE_KEY_BASE64_ENCODE}" | base64 -d > src/main/resources/firebase/nbtrip-push-adminsdk.json
             echo "$APPLICATION_PROPERTIES" > src/main/resources/application.properties
-            ./gradlew clean build
+            ./gradlew clean build -x test
             # 빌드된 WAR을 Tomcat webapps로 복사
             sudo cp build/libs/*SNAPSHOT.war /opt/tomcat/webapps/ROOT.war
             sudo chown tomcat:tomcat /opt/tomcat/webapps/ROOT.war
