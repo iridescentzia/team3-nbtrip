@@ -25,6 +25,27 @@ jobs:
           npm ci
           npm run build
 
+      - name: Prepare target dirs & permissions
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            # 디렉터리 없으면 생성
+            sudo mkdir -p /home/ubuntu/frontend/releases
+            sudo mkdir -p /home/ubuntu/frontend/tobe
+            sudo mkdir -p /var/www
+
+            # ubuntu 계정이 쓸 수 있도록 소유권 정리
+            sudo chown -R ubuntu:ubuntu /home/ubuntu/frontend
+
+            # 최초 1회: Nginx 루트 심볼릭 링크 세팅
+            if [ ! -L /var/www/nbtrip ]; then
+              sudo ln -s /home/ubuntu/frontend/releases/current /var/www/nbtrip
+            fi
+
       # dist/** 만 EC2의 staging(tobe)으로 보냄
       - name: Upload dist to EC2 (staging)
         uses: appleboy/scp-action@v0.1.7
