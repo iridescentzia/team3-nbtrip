@@ -8,29 +8,67 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: SSH로 EC2에 접속하기
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-          APPLICATION_PROPERTIES: ${{secrets.APPLICATION_PROPERTIES}}
-          FIREBASE_SERVICE_KEY_BASE64_ENCODE: ${{secrets.FIREBASE_SERVICE_KEY_BASE64_ENCODE}}
+      - name: Github Repository 파일 불러오기
+        uses: actions/checkout@v4
+
+      - name: JDK 17 설치
+        uses: actions/setup-java@v4
         with:
-          host: ${{ secrets.EC2_HOST }} # EC2의 주소
-          username: ${{ secrets.EC2_USERNAME }} # EC2 접속 username
-          key: ${{ secrets.EC2_PRIVATE_KEY }} # EC2의 Key 파일
-          envs: APPLICATION_PROPERTIES,FIREBASE_SERVICE_KEY_BASE64_ENCODE
+          distribution: temurin
+          java-version: 17
+
+      - name: backend 작업 디렉터리 권한 설정
+        run: chmod +x ./backend/gradlew
+
+      - name: application.properties 만들기
+        run: |
+          mkdir -p ./backend/src/main/resources
+          echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./backend/src/main/resources/application.properties
+
+      # Firebase 서비스 키(base64) 복원
+      - name: Firebase service key 복원
+        run: |
+          mkdir -p ./backend/src/main/resources/firebase
+          echo "${{ secrets.FIREBASE_SERVICE_KEY_BASE64_ENCODE }}" | base64 -d > ./backend/src/main/resources/firebase/nbtrip-push-adminsdk.json
+
+      - name: 테스트 제외 빌드 (WAR)
+        working-directory: ./backend
+        run: ./gradlew clean build -x test
+
+      - name: 산출물 확인
+        working-directory: ./backend/build/libs
+        run: ls -l
+
+      # WAR 파일을 EC2의 임시 폴더로 전송
+      - name: SCP로 EC2에 WAR 전송
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: backend/build/libs/*SNAPSHOT.war
+          target: /home/ubuntu/deploy/tobe
+
+      # EC2에서 Tomcat에 반영 (ROOT로 교체) 및 재시작
+      - name: SSH로 EC2에 접속하여 배포 반영
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
           script_stop: true
           script: |
-            cd /home/ubuntu/team3-nbtrip/backend
-            rm -rf src/main/resources/application.properties
-            git pull origin main
-            # Firebase service account key 복원 추가
-            mkdir -p src/main/resources/firebase
-            echo "${FIREBASE_SERVICE_KEY_BASE64_ENCODE}" | base64 -d > src/main/resources/firebase/nbtrip-push-adminsdk.json
-            echo "$APPLICATION_PROPERTIES" > src/main/resources/application.properties
-            ./gradlew clean build -x test
-            # 빌드된 WAR을 Tomcat webapps로 복사
-            sudo cp build/libs/*SNAPSHOT.war /opt/tomcat/webapps/ROOT.war
+            set -e
+            sudo mkdir -p /opt/tomcat/webapps
+            sudo mkdir -p /home/ubuntu/deploy/tobe
+            # 최신 WAR를 ROOT.war로 교체
+            LATEST_WAR=$(ls -t /home/ubuntu/deploy/tobe/*SNAPSHOT.war | head -n 1)
+            # 캐시 디렉토리 제거
+            sudo rm -rf /opt/tomcat/webapps/ROOT
+            # war 교체
+            sudo cp "$LATEST_WAR" /opt/tomcat/webapps/ROOT.war
             sudo chown tomcat:tomcat /opt/tomcat/webapps/ROOT.war
             # Tomcat 재시작
             sudo systemctl restart tomcat
