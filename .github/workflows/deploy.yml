@@ -11,14 +11,23 @@ jobs:
     steps:
       - name: SSH로 EC2에 접속하기
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          APPLICATION_PROPERTIES: ${{secrets.APPLICATION_PROPERTIES}}
+          FIREBASE_SERVICE_KEY_BASE64_ENCODE: ${{secrets.FIREBASE_SERVICE_KEY_BASE64_ENCODE}}
         with:
           host: ${{ secrets.EC2_HOST }} # EC2의 주소
           username: ${{ secrets.EC2_USERNAME }} # EC2 접속 username
           key: ${{ secrets.EC2_PRIVATE_KEY }} # EC2의 Key 파일
+          envs: APPLICATION_PROPERTIES,FIREBASE_SERVICE_KEY_BASE64_ENCODE
           script_stop: true
           script: |
             cd /home/ubuntu/team3-nbtrip/backend
+            rm -rf src/main/resources/application.properties
             git pull origin main
+            # Firebase service account key 복원 추가
+            mkdir -p src/main/resources/firebase
+            echo "${FIREBASE_SERVICE_KEY_BASE64_ENCODE}" | base64 -d > src/main/resources/firebase/nbtrip-push-adminsdk.json
+            echo "$APPLICATION_PROPERTIES" > src/main/resources/application.properties
             ./gradlew clean build
             # 빌드된 WAR을 Tomcat webapps로 복사
             sudo cp build/libs/*SNAPSHOT.war /opt/tomcat/webapps/ROOT.war
