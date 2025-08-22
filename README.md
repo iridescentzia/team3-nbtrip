@@ -11,6 +11,12 @@
 
 ---
 
+## 🚀 배포 주소
+
+> [https://nbtrip.site](https://nbtrip.site)
+
+- 푸시 알림(FCM)은 HTTPS 환경에서 정상 동작합니다.
+
 ## 🚩 프로젝트
 > 진행 기간 : 2025.07.09. ~ 2025.08.21. (7주)
 - **목표**: 여행 그룹 간의 번거로운 비용 정산 과정을 자동화하고, 실시간 소비 내역을 공유하여 **금융 생활의 편의성**을 제공합니다.
@@ -37,6 +43,7 @@
         <li>백엔드 팀장</li>
         <li>정산 상태 처리</li>
         <li>그룹원 간 다중 송금</li>
+        <li>CI/CD 및 서비스 배포</li>
       </ul>
     </td>
     <td align="center">
@@ -134,6 +141,9 @@
   <img src="https://img.shields.io/badge/ERD%20Cloud-blue" />
   <img src="https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black" />
   <img src="https://img.shields.io/badge/OpenAI-412991?logo=openai&logoColor=white" />
+  <img src="https://img.shields.io/badge/GitHub%20Actions-2088FF?logo=githubactions&logoColor=white" />
+  <img src="https://img.shields.io/badge/AWS%20EC2-FF9900?logo=amazonec2&logoColor=white" />
+  <img src="https://img.shields.io/badge/Nginx-009639?logo=nginx&logoColor=white" />
 </p>
 
 ### 🎨 Design
