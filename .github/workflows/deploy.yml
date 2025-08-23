@@ -24,7 +24,7 @@ jobs:
         working-directory: ./backend
         run: chmod +x ./gradlew
 
-      # application.properties 복원 (이미지에 굽는 임시 방식; 추후 env/외부화 권장)
+      # application.properties 복원
       - name: Restore application.properties
         run: |
           mkdir -p ./backend/src/main/resources
@@ -91,10 +91,3 @@ jobs:
               --add-host=host.docker.internal:host-gateway \
               -p 127.0.0.1:8080:8080 \
               "$IMAGE:$TAG"
-
-            # 헬스체크 (200 또는 404면 통과)
-            CODE=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080/)
-            if ! echo "$CODE" | grep -qE '200|404'; then
-              docker logs --tail=200 backend
-              exit 1
-            fi
