@@ -91,7 +91,6 @@ jobs:
             docker run -d --name backend \
               --restart unless-stopped \
               -e SPRING_PROFILES_ACTIVE=prod \
-              -e DB_PASS='${{ secrets.DB_PASS }}' \
               -p 127.0.0.1:8080:8080 \
               "$IMAGE:$TAG"
 
