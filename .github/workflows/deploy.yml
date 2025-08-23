@@ -78,10 +78,6 @@ jobs:
             IMAGE="$ECR/nbtrip-server"
             TAG="${{ github.sha }}"
 
-            # (EC2 역할에 ECR Pull 권한 없으면 로그인 필요)
-            aws ecr get-login-password --region ap-northeast-2 \
-              | docker login --username AWS --password-stdin "$ECR"
-
             # 기존 컨테이너/호스트 Tomcat 정리(포트 충돌 방지)
             docker rm -f backend || true
             sudo systemctl stop tomcat || true
