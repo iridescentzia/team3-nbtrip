@@ -135,15 +135,25 @@
   <img src="https://img.shields.io/badge/JWT-000000?logo=jsonwebtokens&logoColor=white" />
 </p>
 
-### 🗄 Database & Infra
+### 🗄 Database
 <p>
   <img src="https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white" />
   <img src="https://img.shields.io/badge/ERD%20Cloud-blue" />
-  <img src="https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black" />
-  <img src="https://img.shields.io/badge/OpenAI-412991?logo=openai&logoColor=white" />
+</p>
+
+### ☁ Infra & DevOps
+<p>
   <img src="https://img.shields.io/badge/GitHub%20Actions-2088FF?logo=githubactions&logoColor=white" />
+  <img src="https://img.shields.io/badge/Amazon%20ECR-FF9900?logo=amazonaws&logoColor=white" />
   <img src="https://img.shields.io/badge/AWS%20EC2-FF9900?logo=amazonec2&logoColor=white" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white" />
   <img src="https://img.shields.io/badge/Nginx-009639?logo=nginx&logoColor=white" />
+</p>
+
+### 🔌 External Services / Integrations
+<p>
+  <img src="https://img.shields.io/badge/OpenAI%20API-412991?logo=openai&logoColor=white" />
+  <img src="https://img.shields.io/badge/Firebase%20FCM-FFCA28?logo=firebase&logoColor=black" />
 </p>
 
 ### 🎨 Design
@@ -158,6 +168,7 @@
   <img src="https://img.shields.io/badge/Git-F05032?logo=git&logoColor=white" />
   <img src="https://img.shields.io/badge/Notion-000000?logo=notion&logoColor=white" />
   <img src="https://img.shields.io/badge/Google%20Drive-4285F4?logo=googledrive&logoColor=white" />
+  <img src="https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white" />
 </p>
 
 ---
