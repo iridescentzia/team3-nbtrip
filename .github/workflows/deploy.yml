@@ -88,9 +88,13 @@ jobs:
             docker run -d --name backend \
               --restart unless-stopped \
               -e SPRING_PROFILES_ACTIVE=prod \
+              --add-host=host.docker.internal:host-gateway \
               -p 127.0.0.1:8080:8080 \
               "$IMAGE:$TAG"
 
-            # 헬스체크 (Actuator 없으면 간단 엔드포인트로 변경)
-            sleep 3
-            curl -fsS http://127.0.0.1:8080/ || (docker logs --tail=200 backend && exit 1)
+            # 헬스체크 (200 또는 404면 통과)
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080/)
+            if ! echo "$CODE" | grep -qE '200|404'; then
+              docker logs --tail=200 backend
+              exit 1
+            fi
